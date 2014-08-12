@@ -41,5 +41,20 @@ public class MWBFActions
 		return Utils.buildResponse(returnStr);
 	}
 	
+	@GET
+	@Path("/test")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response test()
+	{
+		String returnStr = null;
+		log.info("Test Test.");
+		
+	
+		returnStr =   "{\"success\":0,\"message\":\"Unable to get list of activities.\"}";
+
+		return Utils.buildResponse(returnStr);
+	}
+	
 	
 }
