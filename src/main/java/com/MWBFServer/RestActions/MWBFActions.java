@@ -51,7 +51,7 @@ public class MWBFActions
 		log.info("Test Test.");
 		
 	
-		returnStr =   "{\"success\":0,\"message\":\"Unable to get list of activities.\"}";
+		returnStr =   "{\"success\":1,\"message\":\"Test successful.\"}";
 
 		return Utils.buildResponse(returnStr);
 	}
