@@ -1,7 +1,10 @@
 package com.example;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
+
+import com.example.services.TimeService;
 
 /**
  *
@@ -10,14 +13,18 @@ import org.eclipse.jetty.webapp.WebAppContext;
  * launching should fire this main method.
  *
  */
-public class Main {
-
+public class Main 
+{
+	private static final Logger log = Logger.getLogger(Main.class);
     /**
      * @param args
      */
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception
+    {
         String webappDirLocation = "src/main/webapp/";
 
+        log.info("In the Main function");
+        
         // The port that we should run on can be set into an environment variable
         // Look for that variable and default to 8080 if it isn't there.
         String webPort = System.getenv("PORT");
