@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -28,7 +29,30 @@ public class MWBFActions
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getActivityList()
 	{
-		log.info("Fetching All Activities.");
+		log.info("Fetching All Activities  (get).");
+		
+		// First check the list is empty,
+		// If it is look up all activities
+		if ( m_activitiesList.isEmpty() )
+			m_activitiesList = Utils.getActivityList();
+		
+		String returnStr = null;
+		Gson gson = new Gson();
+		if ( m_activitiesList != null )
+			returnStr = gson.toJson(m_activitiesList);
+		else
+			returnStr =   "{\"success\":0,\"message\":\"Unable to get list of activities.\"}";
+
+		return Utils.buildResponse(returnStr);
+	}
+	
+	@POST
+	@Path("/activities")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getActivityListPost()
+	{
+		log.info("Fetching All Activities (post).");
 		
 		// First check the list is empty,
 		// If it is look up all activities
