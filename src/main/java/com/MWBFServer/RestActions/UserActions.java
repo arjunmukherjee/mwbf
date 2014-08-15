@@ -15,8 +15,7 @@ import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.MWBFServer.Activity.Activities;
-import com.MWBFServer.Activity.UserActivity;
+import com.MWBFServer.Activity.*;
 import com.MWBFServer.Users.*;
 import com.MWBFServer.Utils.Utils;
 import com.google.gson.Gson;
@@ -127,42 +126,12 @@ public class UserActions
 		return Utils.buildResponse(returnStr);
 	}
 	
-	@GET
-	@Path("/activities")
-	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getUserActivity(@QueryParam("user_id") String _userId)
-	{
-		String returnStr = null;
-		User user = m_existingUsersHash.get(_userId);
-		if ( user == null )
-		{
-			returnStr =   "{\"success\":0,\"message\":\"Unable to find user to look up activity.\"}";
-		}
-		else
-		{
-			log.info("Fetching Activity : UserId["+ user.getId() +"], Email[" + user.getEmail() + "]");
-			
-			Gson gson = new Gson();
-		 
-			// Look up the users activities
-			List<UserActivity> activityList = Utils.getUserActivityForDateRange(user,null,null);
-			if ( activityList != null )
-				returnStr = gson.toJson(activityList);
-			else
-				returnStr =   "{\"success\":0,\"message\":\"Unable to find activity for user.\"}";
-		}
-		
-		return Utils.buildResponse(returnStr);
-	}
-	
 	@POST
-	@Path("/activities")
+	@Path("/activitiesByActivity")
 	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getUserActivityPost(String _incomingData)
+	public Response getUserActivitiesByActivity(String _incomingData)
 	{
-		//log.info("Got message : [" + _incomingData + "]");
 		JSONObject userData = null;
 		try 
 		{
@@ -174,16 +143,15 @@ public class UserActions
 		}
 
 		String returnStr = null;
-		User user = m_existingUsersHash.get(userData.optString("user_id"));
 		String fromDate = userData.optString("from_date");
 		String toDate = userData.optString("to_date");
+		
+		User user = m_existingUsersHash.get(userData.optString("user_id"));
 		if ( user == null )
-		{
 			returnStr =   "{\"success\":0,\"message\":\"Unable to find user to look up activity.\"}";
-		}
 		else
 		{
-			log.info("Fetching Activity : UserId["+ user.getId() +"], Email[" + user.getEmail() + "]");
+			log.info("Fetching activities by activity : UserId["+ user.getId() +"], Email[" + user.getEmail() + "]");
 			
 			Gson gson = new Gson();
 		 
@@ -197,6 +165,47 @@ public class UserActions
 		
 		return Utils.buildResponse(returnStr);
 	}
+
+	@POST
+	@Path("/activitiesByTime")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getUserActivitiesByTime(String _incomingData)
+	{
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+
+		String returnStr = null;
+		String fromDate = userData.optString("from_date");
+		String toDate = userData.optString("to_date");
+		
+		User user = m_existingUsersHash.get(userData.optString("user_id"));
+		if ( user == null )
+			returnStr =   "{\"success\":0,\"message\":\"Unable to find user to look up activity.\"}";
+		else
+		{
+			log.info("Fetching activities by time : UserId["+ user.getId() +"], Email[" + user.getEmail() + "]");
+			
+			Gson gson = new Gson();
+		 
+			// Look up the users activities
+			List<UserActivity> activityList = Utils.getUserActivityForDateRange(user, fromDate, toDate);
+			if ( activityList != null )
+				returnStr = gson.toJson(activityList);
+			else
+				returnStr =   "{\"success\":0,\"message\":\"Unable to find activity for user.\"}";
+		}
+		
+		return Utils.buildResponse(returnStr);
+	}
+
 	
 	private Response validateUser(String _email, String _password) 
 	{

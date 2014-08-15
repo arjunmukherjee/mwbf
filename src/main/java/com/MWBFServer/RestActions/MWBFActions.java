@@ -23,28 +23,6 @@ public class MWBFActions
 	private static final Logger log = Logger.getLogger(MWBFActions.class);
 	private static List<Activities> m_activitiesList = new ArrayList<Activities>();
 	
-	@GET
-	@Path("/activities")
-	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getActivityList()
-	{
-		log.info("Fetching All Activities  (get).");
-		
-		// First check the list is empty,
-		// If it is look up all activities
-		if ( m_activitiesList.isEmpty() )
-			m_activitiesList = Utils.getActivityList();
-		
-		String returnStr = null;
-		Gson gson = new Gson();
-		if ( m_activitiesList != null )
-			returnStr = gson.toJson(m_activitiesList);
-		else
-			returnStr =   "{\"success\":0,\"message\":\"Unable to get list of activities.\"}";
-
-		return Utils.buildResponse(returnStr);
-	}
 	
 	@POST
 	@Path("/activities")
@@ -52,7 +30,7 @@ public class MWBFActions
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getActivityListPost()
 	{
-		log.info("Fetching All Activities (post).");
+		log.info("Fetching All MWBF Activities.");
 		
 		// First check the list is empty,
 		// If it is look up all activities

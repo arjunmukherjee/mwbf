@@ -13,7 +13,7 @@
   	</servlet>
   	<servlet-mapping>
     	<servlet-name>RestServlet</servlet-name>
-    	<url-pattern>/rest/*</url-pattern>
+    	<url-pattern>/mwbf/*</url-pattern>
   	</servlet-mapping>
     
     <session-config>
