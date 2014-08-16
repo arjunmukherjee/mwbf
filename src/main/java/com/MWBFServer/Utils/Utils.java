@@ -60,12 +60,10 @@ public class Utils
 	
 	/**
 	 * Lookup up all the activities for the user.
+	 * Aggregate it by Activity
 	 */
-	public static List<UserActivity> getUserActivityForDateRange(User _user, String _fromDate, String _toDate)
+	public static List<UserActivity> getUserActivitiesByActivityForDateRange(User _user, String _fromDate, String _toDate)
 	{
-		List<UserActivity> activityList =  (List<UserActivity>) DbConnection.queryGetUserActivity(_user);
-		Map<String,UserActivity> activityHash = new HashMap<String,UserActivity>();
-		
 		Date fromDate = null,toDate = null;
 		try 
 		{
@@ -77,6 +75,8 @@ public class Utils
 			e.printStackTrace();
 		}
 		
+		List<UserActivity> activityList =  (List<UserActivity>) DbConnection.queryGetUserActivity(_user);
+		Map<String,UserActivity> activityHash = new HashMap<String,UserActivity>();
 		
 		// Aggregate the activities (units and points)
 		for (UserActivity ua : activityList)
@@ -101,9 +101,28 @@ public class Utils
 		List<UserActivity> returnList = new ArrayList<UserActivity>();
 		for (UserActivity ua : activityHash.values())
 			returnList.add(ua);
-			//log.info("");
-		
+			
 		return returnList;
+	}
+	
+	/**
+	 * Lookup up all the activities for the user.
+	 * Aggregate it by Time
+	 */
+	public static List<?> getUserActivitiesByTimeForDateRange(User _user, String _fromDate, String _toDate)
+	{
+		Date fromDate = null,toDate = null;
+		try 
+		{
+			fromDate = new SimpleDateFormat("MMMM d, yyyy K:m:s a", Locale.ENGLISH).parse(_fromDate);
+			toDate = new SimpleDateFormat("MMMM d, yyyy K:m:s a", Locale.ENGLISH).parse(_toDate);
+		} 
+		catch (ParseException e) 
+		{
+			e.printStackTrace();
+		}
+		
+		return DbConnection.queryGetUserActivityByTime(_user, fromDate, toDate);
 	}
 	
 	/**
@@ -138,5 +157,5 @@ public class Utils
 			mActivitieshash.put(activity.getActivityName(), activity);
 		}
 	}
-
+	
 }

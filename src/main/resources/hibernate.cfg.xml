@@ -10,12 +10,12 @@
 
         <!-- Database connection settings -->
         <property name="connection.driver_class">org.postgresql.Driver</property>
+       
         <property name="hibernate.connection.url">jdbc:postgresql://ec2-54-235-245-180.compute-1.amazonaws.com:5432/d6c24ss7bhdvd1?sslfactory=org.postgresql.ssl.NonValidatingFactory&amp;ssl=true</property>
-        <!-- <property name="hibernate.connection.url">jdbc:postgresql://localhost:5433/mwbf</property> -->
-
         <property name="connection.username">mboqdysjxkavpy</property>
         <property name="connection.password">hatN43fI0ESg4fc_s5wpXGaJrj</property>
         
+        <!-- <property name="hibernate.connection.url">jdbc:postgresql://localhost:5433/mwbf</property> -->
         <!-- <property name="connection.username">postgres</property> -->
         <!-- <property name="connection.password">password</property> -->
 
@@ -36,7 +36,7 @@
 
 		<mapping class="com.MWBFServer.Activity.Activities"/>
 		<mapping class="com.MWBFServer.Activity.UserActivity"/>
-        <mapping class="com.MWBFServer.Users.User"/>
+		<mapping class="com.MWBFServer.Users.User"/>
         
     </session-factory>
 

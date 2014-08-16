@@ -156,7 +156,7 @@ public class UserActions
 			Gson gson = new Gson();
 		 
 			// Look up the users activities
-			List<UserActivity> activityList = Utils.getUserActivityForDateRange(user, fromDate, toDate);
+			List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(user, fromDate, toDate);
 			if ( activityList != null )
 				returnStr = gson.toJson(activityList);
 			else
@@ -195,14 +195,15 @@ public class UserActions
 			
 			Gson gson = new Gson();
 		 
-			// Look up the users activities
-			List<UserActivity> activityList = Utils.getUserActivityForDateRange(user, fromDate, toDate);
+			// Look up the users activities, aggregated by time
+			List<?> activityList = Utils.getUserActivitiesByTimeForDateRange(user, fromDate, toDate);
 			if ( activityList != null )
 				returnStr = gson.toJson(activityList);
 			else
 				returnStr =   "{\"success\":0,\"message\":\"Unable to find activity for user.\"}";
 		}
 		
+		//log.info("Activities by time : [" + returnStr + "]");
 		return Utils.buildResponse(returnStr);
 	}
 

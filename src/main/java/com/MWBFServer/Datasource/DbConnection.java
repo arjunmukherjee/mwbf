@@ -170,7 +170,7 @@ public class DbConnection
 		query.setDate("toDate", _toDate);
 		query.setString("aggregateBy", dateAggregatedBy);
 
-		log.info("Query : [" + query.getQueryString() + "]");
+		//log.info("Query : [" + query.getQueryString() + "]");
 		
 		return executeListQuery(query,session);
     }
