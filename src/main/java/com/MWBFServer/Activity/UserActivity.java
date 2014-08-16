@@ -110,5 +110,4 @@ public class UserActivity
 	{
 		return "User : [" + user.getId() + "], Activity [" + activityId + "], Units [" + exerciseUnits + "], Date [" + date.toString() + "]";
 	}
-		
 }
