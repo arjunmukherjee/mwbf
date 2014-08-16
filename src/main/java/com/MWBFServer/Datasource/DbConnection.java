@@ -1,6 +1,8 @@
 package com.MWBFServer.Datasource;
 
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Query;
@@ -89,87 +91,117 @@ public class DbConnection
 		return true;
 	}
 	
+	/**
+	 * Returns a list of all registered users.
+	 * @return
+	 */
 	public static List<User> queryGetUsers()
 	{
 		// creating session object
 		Session session = getSession();
-        List<User> userList = null;
-
-        try
-		{
-        	session.beginTransaction();
-			
-        	Query query = session.createQuery("FROM User");
-            userList = query.list();
-            session.getTransaction().commit();
-     	}
-		catch(Exception e)
-		{
-			log.error("Execption during select : " + e.getMessage());
-			session.getTransaction().rollback();
-		}
-		finally
-		{
-			session.close();
-		}
-        
-        return userList;
+       	Query query = session.createQuery("FROM User");
+      
+        return (List<User>) executeListQuery(query, session);
 	}
 	
+	/**
+	 * Returns a list of all valid MWBF activities.
+	 * @return
+	 */
 	public static List<Activities> queryGetActivityList()
 	{
 		// creating session object
 		Session session = getSession();
-        List<Activities> activityList = null;
-
-        try
-		{
-        	session.beginTransaction();
-			
-        	Query query = session.createQuery("FROM Activities");
-            activityList = query.list();
-            session.getTransaction().commit();
-     	}
-		catch(Exception e)
-		{
-			log.error("Execption during select : " + e.getMessage());
-			session.getTransaction().rollback();
-		}
-		finally
-		{
-			session.close();
-		}
-        
-        return activityList;
+       	Query query = session.createQuery("FROM Activities");
+      
+        return (List<Activities>) executeListQuery(query, session);
 	}
 	
+	/**
+	 * Returns a list of UserActivities aggregated by activity.
+	 * @param _user
+	 * @return
+	 */
 	public static List<UserActivity> queryGetUserActivity(User _user)
 	{
 		// creating session object
 		Session session = getSession();
-        List<UserActivity> activityList = null;
+       	
+		String hql = "FROM UserActivity UA WHERE UA.user = :userId";
+        Query query = session.createQuery(hql);
+        query.setString("userId", _user.getId());
+      
+        return (List<UserActivity>) executeListQuery(query, session);
+	}
+	
+	/**
+	 * Returns a list of UserActivities aggregated by time
+	 * @param _user
+	 * @param _fromDate
+	 * @param _toDate
+	 * @return
+	 */
+	public static List<?> queryGetUserActivityByTime(User _user, Date _fromDate, Date _toDate)
+	{
+		String dateAggregatedBy = "month";
+		long diffInMillies = _toDate.getTime() - _fromDate.getTime();
+		if ( TimeUnit.DAYS.convert(diffInMillies,TimeUnit.MILLISECONDS) > 350 )
+			dateAggregatedBy = "month";
+		else if ( TimeUnit.DAYS.convert(diffInMillies,TimeUnit.MILLISECONDS) > 1  )
+			dateAggregatedBy = "day";
+		else 
+			dateAggregatedBy = "hour";
+		
+		log.info("Getting user activities by time from [" + _fromDate.toString() + "] to [" + _toDate.toString() + "], aggregating by [" + dateAggregatedBy + "].");
+		
+		// creating session object
+		Session session = getSession();
 
-        try
+		//SELECT SUM(UA.points), date_trunc('month',UA.activity_date) FROM user_activity UA
+		//WHERE UA.activity_date > '01/01/2014' AND UA.activity_date < '12/31/2014' 
+		//GROUP BY date_trunc('month',UA.activity_date)
+		//ORDER BY date_trunc('month',UA.activity_date)
+		
+		String hql = "SELECT SUM(UA.points), date_trunc(:aggregateBy,UA.date) FROM UserActivity UA";
+		hql += " WHERE UA.date > :fromDate AND UA.date < :toDate GROUP BY date_trunc(:aggregateBy,UA.date),UA.date";
+		hql += " ORDER BY date_trunc(:aggregateBy,UA.date)";
+		Query query = session.createQuery(hql);
+		query.setDate("fromDate", _fromDate);
+		query.setDate("toDate", _toDate);
+		query.setString("aggregateBy", dateAggregatedBy);
+
+		log.info("Query : [" + query.getQueryString() + "]");
+		
+		return executeListQuery(query,session);
+    }
+	
+	/**
+	 * Executes the query and returns a generic list of the results.
+	 * @param _query
+	 * @param _session
+	 * @return
+	 */
+	private static List<?> executeListQuery(Query _query, Session _session)
+	{
+		List<?> resultList = null;
+		
+		try
 		{
-        	session.beginTransaction();
-			
-        	String hql = "FROM UserActivity UA WHERE UA.user = :userId";
-        	Query query = session.createQuery(hql);
-        	query.setString("userId", _user.getId());
-        	
-        	activityList = query.list();
-        	session.getTransaction().commit();
-     	}
+			_session.beginTransaction();
+
+			resultList = _query.list();
+			_session.getTransaction().commit();
+		}
 		catch(Exception e)
 		{
 			log.error("Execption during select : " + e.getMessage());
-			session.getTransaction().rollback();
+			_session.getTransaction().rollback();
 		}
 		finally
 		{
-			session.close();
+			_session.close();
 		}
-        
-        return activityList;
+
+		return resultList;
 	}
 }
