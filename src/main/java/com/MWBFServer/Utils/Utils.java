@@ -1,10 +1,12 @@
 package com.MWBFServer.Utils;
 
+import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -18,6 +20,11 @@ import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Datasource.DbConnection;
 import com.MWBFServer.Users.User;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
 public class Utils 
 {
@@ -109,7 +116,7 @@ public class Utils
 	 * Lookup up all the activities for the user.
 	 * Aggregate it by Time
 	 */
-	public static List<?> getUserActivitiesByTimeForDateRange(User _user, String _fromDate, String _toDate)
+	public static List<UserActivityByTime> getUserActivitiesByTimeForDateRange(User _user, String _fromDate, String _toDate)
 	{
 		Date fromDate = null,toDate = null;
 		try 
@@ -121,8 +128,42 @@ public class Utils
 		{
 			e.printStackTrace();
 		}
+		List<?> resultList = DbConnection.queryGetUserActivityByTime(_user, fromDate, toDate);
+		Gson gson = new Gson();
+		String returnStr = gson.toJson(resultList);
 		
-		return DbConnection.queryGetUserActivityByTime(_user, fromDate, toDate);
+		JsonParser parser = new JsonParser();
+	    JsonArray jArray = parser.parse(returnStr).getAsJsonArray();
+
+	    Map<String,UserActivityByTime> aggregatedActivityMap = new LinkedHashMap<String,UserActivityByTime>();
+
+	    for(JsonElement obj : jArray )
+	    {
+	    	String[] parts = obj.toString().split(",");
+	    	String date = parts[0].substring(2);
+	    	
+	    	Double points = Double.valueOf(parts[2].substring(0, parts[2].length()-1));
+	    	
+	        if (aggregatedActivityMap.containsKey(date))
+			{
+	        	UserActivityByTime uatTemp = aggregatedActivityMap.get(date);
+	        	Double tempPoints = uatTemp.points + points;
+	        	
+	        	UserActivityByTime uatOld = new UserActivityByTime(date, tempPoints);
+	        	aggregatedActivityMap.put(date, uatOld);
+			}
+			else
+			{
+				UserActivityByTime uatNew = new UserActivityByTime(date, points);
+				aggregatedActivityMap.put(date, uatNew);
+			}
+	    }
+	    
+	    List<UserActivityByTime> returnList = new ArrayList<UserActivityByTime>();
+		for (UserActivityByTime ua : aggregatedActivityMap.values())
+			returnList.add(ua);
+		
+		return returnList;
 	}
 	
 	/**
@@ -158,4 +199,20 @@ public class Utils
 		}
 	}
 	
+	public static class UserActivityByTime
+	{
+		String date;
+		double points;
+		
+		public UserActivityByTime(String _date, Double _points )
+		{
+			points = _points;
+			date = _date;
+		}
+		
+		public String toString()
+		{
+			return "Points["+points+"], Date["+date+"]";
+		}
+	}
 }

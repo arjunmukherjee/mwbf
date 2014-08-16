@@ -157,20 +157,16 @@ public class DbConnection
 		// creating session object
 		Session session = getSession();
 
-		//SELECT SUM(UA.points), date_trunc('month',UA.activity_date) FROM user_activity UA
-		//WHERE UA.activity_date > '01/01/2014' AND UA.activity_date < '12/31/2014' 
-		//GROUP BY date_trunc('month',UA.activity_date)
-		//ORDER BY date_trunc('month',UA.activity_date)
-		
-		String hql = "SELECT SUM(UA.points), date_trunc(:aggregateBy,UA.date) FROM UserActivity UA";
-		hql += " WHERE UA.date > :fromDate AND UA.date < :toDate GROUP BY date_trunc(:aggregateBy,UA.date),UA.date";
+		String hql = "SELECT date_trunc(:aggregateBy,UA.date),SUM(UA.points) FROM UserActivity UA";
+		hql += " WHERE UA.date > :fromDate AND UA.date < :toDate";
+		hql += " GROUP BY date_trunc(:aggregateBy,UA.date),UA.date";
 		hql += " ORDER BY date_trunc(:aggregateBy,UA.date)";
 		Query query = session.createQuery(hql);
 		query.setDate("fromDate", _fromDate);
 		query.setDate("toDate", _toDate);
 		query.setString("aggregateBy", dateAggregatedBy);
 
-		//log.info("Query : [" + query.getQueryString() + "]");
+		log.info("Query : [" + query.getQueryString() + "]");
 		
 		return executeListQuery(query,session);
     }
