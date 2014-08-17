@@ -141,32 +141,20 @@ public class DbConnection
 	 * @param _toDate
 	 * @return
 	 */
-	public static List<?> queryGetUserActivityByTime(User _user, Date _fromDate, Date _toDate)
+	public static List<?> queryGetUserActivityByTime(User _user, Date _fromDate, Date _toDate, String _dateAggregatedBy)
 	{
-		String dateAggregatedBy = "month";
-		long diffInMillies = _toDate.getTime() - _fromDate.getTime();
-		if ( TimeUnit.DAYS.convert(diffInMillies,TimeUnit.MILLISECONDS) > 350 )
-			dateAggregatedBy = "month";
-		else if ( TimeUnit.DAYS.convert(diffInMillies,TimeUnit.MILLISECONDS) > 1  )
-			dateAggregatedBy = "day";
-		else 
-			dateAggregatedBy = "hour";
-		
-		log.info("Getting user activities by time from [" + _fromDate.toString() + "] to [" + _toDate.toString() + "], aggregating by [" + dateAggregatedBy + "].");
+		log.info("Getting user activities by time from [" + _fromDate.toString() + "] to [" + _toDate.toString() + "], aggregating by [" + _dateAggregatedBy + "].");
 		
 		// creating session object
 		Session session = getSession();
 
-		String hql = "SELECT date_trunc(:aggregateBy,UA.date),SUM(UA.points) FROM UserActivity UA";
-		hql += " WHERE UA.date > :fromDate AND UA.date < :toDate";
-		hql += " GROUP BY date_trunc(:aggregateBy,UA.date),UA.date";
-		hql += " ORDER BY date_trunc(:aggregateBy,UA.date)";
-		Query query = session.createQuery(hql);
-		query.setDate("fromDate", _fromDate);
-		query.setDate("toDate", _toDate);
-		query.setString("aggregateBy", dateAggregatedBy);
-
-		log.info("Query : [" + query.getQueryString() + "]");
+		String hql = "SELECT colA, SUM(colB) FROM (SELECT date_trunc('"+_dateAggregatedBy+"',UA.activity_date) colA,SUM(UA.points) colB FROM user_activity UA";
+		hql += " WHERE UA.activity_date > '"+_fromDate+"' AND UA.activity_date < '"+_toDate+"'";
+		hql += " GROUP BY UA.activity_date";
+		hql += " ORDER BY date_trunc('"+_dateAggregatedBy+"',UA.activity_date))sub GROUP BY colA";	
+		Query query = session.createSQLQuery(hql);
+	
+		//log.info("Query : [" + query.toString() + "]");
 		
 		return executeListQuery(query,session);
     }

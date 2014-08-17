@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Response;
 
@@ -128,42 +129,45 @@ public class Utils
 		{
 			e.printStackTrace();
 		}
-		List<?> resultList = DbConnection.queryGetUserActivityByTime(_user, fromDate, toDate);
+		
+		String dateAggregatedBy = "month";
+		long diffInMillies = toDate.getTime() - fromDate.getTime();
+		if ( TimeUnit.DAYS.convert(diffInMillies,TimeUnit.MILLISECONDS) > 350 )
+			dateAggregatedBy = "month";
+		else if ( TimeUnit.HOURS.convert(diffInMillies,TimeUnit.MILLISECONDS) > 24  )
+			dateAggregatedBy = "day";
+		else 
+			dateAggregatedBy = "hour";
+		
+		List<?> resultList = DbConnection.queryGetUserActivityByTime(_user, fromDate, toDate, dateAggregatedBy);
 		Gson gson = new Gson();
 		String returnStr = gson.toJson(resultList);
 		
 		JsonParser parser = new JsonParser();
 	    JsonArray jArray = parser.parse(returnStr).getAsJsonArray();
 
-	    Map<String,UserActivityByTime> aggregatedActivityMap = new LinkedHashMap<String,UserActivityByTime>();
-
+	    List<UserActivityByTime> returnList = new ArrayList<UserActivityByTime>();
+		
 	    for(JsonElement obj : jArray )
 	    {
 	    	String[] parts = obj.toString().split(",");
 	    	String date = parts[0].substring(2);
 	    	
-	    	Double points = Double.valueOf(parts[2].substring(0, parts[2].length()-1));
+	    	if (dateAggregatedBy.equals("month"))
+	    		date = date.substring(0, 3);
+	    	else if (dateAggregatedBy.equals("hour"))
+	    	{
+	    		date = parts[1].substring(6);
+	    		date = date.substring(0, date.length()-1);
+	    	}
 	    	
-	        if (aggregatedActivityMap.containsKey(date))
-			{
-	        	UserActivityByTime uatTemp = aggregatedActivityMap.get(date);
-	        	Double tempPoints = uatTemp.points + points;
-	        	
-	        	UserActivityByTime uatOld = new UserActivityByTime(date, tempPoints);
-	        	aggregatedActivityMap.put(date, uatOld);
-			}
-			else
-			{
-				UserActivityByTime uatNew = new UserActivityByTime(date, points);
-				aggregatedActivityMap.put(date, uatNew);
-			}
+	    	Double points = Double.valueOf(parts[2].substring(0, parts[2].length()-1));
+	    	UserActivityByTime uat = new UserActivityByTime(date, points);
+	 
+	    	returnList.add(uat);
 	    }
-	    
-	    List<UserActivityByTime> returnList = new ArrayList<UserActivityByTime>();
-		for (UserActivityByTime ua : aggregatedActivityMap.values())
-			returnList.add(ua);
-		
-		return returnList;
+	  
+	   return returnList;
 	}
 	
 	/**

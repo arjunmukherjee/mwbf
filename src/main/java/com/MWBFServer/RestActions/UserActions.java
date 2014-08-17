@@ -203,7 +203,6 @@ public class UserActions
 				returnStr =   "{\"success\":0,\"message\":\"Unable to find activity for user.\"}";
 		}
 		
-		log.info("Activities by time : [" + returnStr + "]");
 		return Utils.buildResponse(returnStr);
 	}
 
