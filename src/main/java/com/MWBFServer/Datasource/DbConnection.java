@@ -150,12 +150,11 @@ public class DbConnection
 
 		String hql = "SELECT colA, SUM(colB) FROM (SELECT date_trunc('"+_dateAggregatedBy+"',UA.activity_date) colA,SUM(UA.points) colB FROM user_activity UA";
 		hql += " WHERE UA.activity_date > '"+_fromDate+"' AND UA.activity_date < '"+_toDate+"'";
+		hql += " AND UA.user_id = '"+_user.getId()+"'";
 		hql += " GROUP BY UA.activity_date";
 		hql += " ORDER BY date_trunc('"+_dateAggregatedBy+"',UA.activity_date))sub GROUP BY colA";	
 		Query query = session.createSQLQuery(hql);
 	
-		//log.info("Query : [" + query.toString() + "]");
-		
 		return executeListQuery(query,session);
     }
 	
@@ -187,5 +186,35 @@ public class DbConnection
 		}
 
 		return resultList;
+	}
+
+	public static Boolean deleteAllActivitiesForUser(User _user) 
+	{
+		// creating session object
+		Session session = getSession();
+		
+		try
+		{
+			session.beginTransaction();
+
+			String hql = "delete FROM UserActivity UA WHERE UA.user = :userId";
+	        Query query = session.createQuery(hql);
+	        query.setString("userId", _user.getId());
+			
+	        query.executeUpdate();
+			session.getTransaction().commit();
+		}
+		catch(Exception e)
+		{
+			log.error("Execption during select : " + e.getMessage());
+			session.getTransaction().rollback();
+			return false;
+		}
+		finally
+		{
+			session.close();
+		}
+		
+		return true;
 	}
 }

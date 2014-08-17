@@ -207,6 +207,16 @@ public class Utils
 		}
 	}
 	
+	/**
+	 * Deletes all the activities for a given user.
+	 * @param user
+	 * @return Boolean
+	 */
+	public static Boolean deleteAllActivitiesForUser(User _user) 
+	{
+		return DbConnection.deleteAllActivitiesForUser(_user);
+	}
+	
 	public static class UserActivityByTime
 	{
 		String date;

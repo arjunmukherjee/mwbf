@@ -84,7 +84,10 @@ public class UserActions
 		String returnStr = null;
 		// First check if the email address is already registered
 		if ( m_existingUsersHash.containsKey(newUser.getEmail()) )
+		{
+			log.warn("Email is already registered.");
 			returnStr =   "{\"success\":0,\"message\":\"Email is already registered.\"}";
+		}
 		else
 		{
 			// If successful, add to the local cache
@@ -95,7 +98,10 @@ public class UserActions
 				m_existingUsersHash.put(newUser.getEmail(),newUser);
 			}
 			else
+			{
+				log.warn("Unable to register user, please try again.");
 				returnStr =   "{\"success\":0,\"message\":\"Unable to register user, please try again.\"}";
+			}
 		}
 		
 		return Utils.buildResponse(returnStr);
@@ -121,7 +127,10 @@ public class UserActions
 		if ( Utils.logActivity(newActivityList) )
 			returnStr =   "{\"success\":1,\"message\":\"Activity logged.\"}";
 		else
+		{
+			log.warn("Unable to log activity, please try again.");
 			returnStr =   "{\"success\":0,\"message\":\"Unable to log activity, please try again.\"}";
+		}
 		
 		return Utils.buildResponse(returnStr);
 	}
@@ -148,7 +157,10 @@ public class UserActions
 		
 		User user = m_existingUsersHash.get(userData.optString("user_id"));
 		if ( user == null )
+		{
+			log.warn("Unable to find user to look up activity");
 			returnStr =   "{\"success\":0,\"message\":\"Unable to find user to look up activity.\"}";
+		}
 		else
 		{
 			log.info("Fetching activities by activity : UserId["+ user.getId() +"], Email[" + user.getEmail() + "]");
@@ -188,7 +200,10 @@ public class UserActions
 		
 		User user = m_existingUsersHash.get(userData.optString("user_id"));
 		if ( user == null )
+		{
+			log.warn("Unable to find user to look up activity");
 			returnStr =   "{\"success\":0,\"message\":\"Unable to find user to look up activity.\"}";
+		}
 		else
 		{
 			log.info("Fetching activities by time : UserId["+ user.getId() +"], Email[" + user.getEmail() + "]");
@@ -206,6 +221,42 @@ public class UserActions
 		return Utils.buildResponse(returnStr);
 	}
 
+	@POST
+	@Path("/deleteUserActivities")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response resetUserData(String _incomingData)
+	{
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+		log.info("Deleting all activities for user [" + userData.optString("user_id") + "]");
+		
+		User user = m_existingUsersHash.get(userData.optString("user_id"));
+		
+		String returnStr = null;
+		if ( user == null )
+		{
+			log.warn("Unable to find user to look up activity");
+			returnStr =   "{\"success\":0,\"message\":\"Unable to find user to look up activity.\"}";
+		}
+		else
+		{
+			// Delete all of the users activities
+			if ( !Utils.deleteAllActivitiesForUser(user) )
+				returnStr = "{\"success\":0,\"message\":\"Unable to delete user activity.\"}";
+			else
+				returnStr =   "{\"success\":1,\"message\":\"Deleted all of the users activities.\"}";
+		}
+		
+		return Utils.buildResponse(returnStr);
+	}
 	
 	private Response validateUser(String _email, String _password) 
 	{
