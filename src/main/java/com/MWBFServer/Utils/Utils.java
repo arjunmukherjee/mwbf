@@ -150,18 +150,22 @@ public class Utils
 		
 	    for(JsonElement obj : jArray )
 	    {
-	    	String[] parts = obj.toString().split(",");
-	    	String date = parts[0].substring(2);
+	    	String[] dateParts = obj.toString().split(",");
+	    	String date = dateParts[0].substring(2);
 	    	
 	    	if (dateAggregatedBy.equals("month"))
 	    		date = date.substring(0, 3);
 	    	else if (dateAggregatedBy.equals("hour"))
 	    	{
-	    		date = parts[1].substring(6);
+	    		date = dateParts[1].substring(6);
 	    		date = date.substring(0, date.length()-1);
+	    		
+	    		String[] hourParts = date.split(":");
+	    		String tempDate = hourParts[0]+hourParts[2].substring(2);
+	    		date = tempDate;
 	    	}
 	    	
-	    	Double points = Double.valueOf(parts[2].substring(0, parts[2].length()-1));
+	    	Double points = Double.valueOf(dateParts[2].substring(0, dateParts[2].length()-1));
 	    	UserActivityByTime uat = new UserActivityByTime(date, points);
 	 
 	    	returnList.add(uat);
