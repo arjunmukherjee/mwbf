@@ -59,6 +59,35 @@ public class UserActions
 	}
 	
 	@POST
+	@Path("/fbLogin")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response validateFBUser(String _incomingData)
+	{
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+		
+		log.info("FaceBook user login [" + userData.optString("email") + "]");
+		
+		String returnStr = null;
+		if ( (userData.optString("email") !=null) && (userData.optString("email").length() > 1) && m_existingUsersHash.containsKey(userData.optString("email")) )
+			returnStr =   "{\"success\":1,\"message\":\"Welcome!\"}";
+		else
+			returnStr =   "{\"success\":0,\"message\":\"Please register your account first (New User on the Main page).\"}";
+			
+		
+		
+		return Utils.buildResponse(returnStr);
+	}
+	
+	@POST
 	@Path("/add")
 	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
 	@Produces(MediaType.APPLICATION_JSON)
@@ -94,6 +123,53 @@ public class UserActions
 			if ( Utils.addUser(newUser) )
 			{
 				returnStr =   "{\"success\":1,\"message\":\"Welcome " + newUser.getFirstName() + " " + newUser.getLastName() + ".\"}";
+				m_validUsersSet.add(newUser);
+				m_existingUsersHash.put(newUser.getEmail(),newUser);
+			}
+			else
+			{
+				log.warn("Unable to register user, please try again.");
+				returnStr =   "{\"success\":0,\"message\":\"Unable to register user, please try again.\"}";
+			}
+		}
+		
+		return Utils.buildResponse(returnStr);
+	}
+	
+	
+	@POST
+	@Path("/fbAdd")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response addFBUser(String _incomingData)
+	{
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+		
+		User newUser = new User(userData.optString("email"));
+		
+		log.info("ADDING FACEBOOK USER : Email[" + newUser.getEmail() + "]");
+		
+		String returnStr = null;
+		// First check if the email address is already registered
+		if ( m_existingUsersHash.containsKey(newUser.getEmail()) )
+		{
+			log.warn("Email is already registered.");
+			returnStr =   "{\"success\":0,\"message\":\"Email is already registered.\"}";
+		}
+		else
+		{
+			// If successful, add to the local cache
+			if ( Utils.addUser(newUser) )
+			{
+				returnStr =   "{\"success\":1,\"message\":\"Welcome !\"}";
 				m_validUsersSet.add(newUser);
 				m_existingUsersHash.put(newUser.getEmail(),newUser);
 			}

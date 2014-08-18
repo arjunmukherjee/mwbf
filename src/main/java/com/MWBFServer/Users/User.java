@@ -45,6 +45,18 @@ public class User implements Serializable
 		memberSince = new Date();
 	}
 	
+	/**
+	 * Registers a Facebook user
+	 * @param _email
+	 */
+	public User(String _email)
+	{
+		id = _email;
+		email = _email;
+		memberSince = new Date();
+	}
+
+	
 	@Id
 	@Column (name="ID")
 	public String getId() 
