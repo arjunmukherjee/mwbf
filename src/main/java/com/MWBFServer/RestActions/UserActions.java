@@ -80,7 +80,7 @@ public class UserActions
 		if ( (userData.optString("email") !=null) && (userData.optString("email").length() > 1) && m_existingUsersHash.containsKey(userData.optString("email")) )
 			returnStr =   "{\"success\":1,\"message\":\"Welcome!\"}";
 		else
-			returnStr =   "{\"success\":0,\"message\":\"Please register your account first (New User on the Main page).\"}";
+			returnStr =   "{\"success\":0,\"message\":\"Please register your account first (New User).\"}";
 			
 		
 		
