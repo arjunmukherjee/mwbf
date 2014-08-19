@@ -360,5 +360,125 @@ public class UserActions
 		return Utils.buildResponse(returnStr);
 	}
 	
+	@POST
+	@Path("/friends")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getUserFriends(String _incomingData)
+	{
+		String returnStr = "{\"success\":0,\"message\":\"Unable to find your friends.\"}";
+		
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+			User user = m_existingUsersHash.get(userData.optString("user_id"));
+			if ( user == null )
+			{
+				log.warn("Unable to find user.");
+				returnStr = "{\"success\":0,\"message\":\"Unable to find logged in user (something's wrong).\"}";
+			}
+			else
+			{
+				log.info("Fetching all friends for UserId["+ user.getId() +"]");
+				
+				Gson gson = new Gson();
+			 
+				// Look up the users friends
+				List<User> friendsList = Utils.getUserFriendsList(user);
+				if ( friendsList != null )
+					returnStr = gson.toJson(friendsList);
+				else
+					returnStr = "{\"success\":0,\"message\":\"Unable to find your friends.\"}";
+			}
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+	
+		return Utils.buildResponse(returnStr);
+	}
+	
+	@POST
+	@Path("/addFriend")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response addUserFriends(String _incomingData)
+	{
+		String returnStr = "{\"success\":0,\"message\":\"Unable to add friend, please try again.\"}";
+		
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+			
+			User user = m_existingUsersHash.get(userData.optString("user_id"));
+			User friend = m_existingUsersHash.get(userData.optString("friend_user_id"));
+			if ( user == null || friend == null )
+			{
+				log.warn("Unable to find user or friend to add.");
+				returnStr = "{\"success\":0,\"message\":\"Unable to find the user or the friend in the system (something's wrong).\"}";
+			}
+			else
+			{
+				log.info("Adding friend ["+ friend.getId() +"], to User[" + user.getId() + "]");
+				
+				// If successful, add to the local cache
+				if ( Utils.addFriend(user,friend) )
+					returnStr =   "{\"success\":1,\"message\":\"Friend added.\"}";
+				else
+				{
+					log.warn("Unable to add friend, please try again.");
+					returnStr = "{\"success\":0,\"message\":\"Unable to add friend, please try again.\"}";
+				}
+			}
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+
+		return Utils.buildResponse(returnStr);
+	}
+	
+	@POST
+	@Path("/findFriend")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response findFriend(String _incomingData)
+	{
+		String returnStr = "{\"success\":0,\"message\":\"Unable to find your friend. Please ask them to join us..\"}";
+		
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+			
+			User user = m_existingUsersHash.get(userData.optString("user_id"));
+			if ( user == null )
+			{
+				log.warn("Unable to find your friend [" + userData.optString("user_id") + "]. Please ask them to join us.");
+				returnStr =   "{\"success\":0,\"message\":\"Unable to find your friend. Please ask them to join us.\"}";
+			}
+			else
+			{
+				log.warn("Found friend with id[" + user.getId() + "].");
+				
+				// No need to send back the password
+				user.setPassword("");
+				
+				Gson gson = new Gson();
+				returnStr = gson.toJson(user);
+			}
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+	
+		return Utils.buildResponse(returnStr);
+	}
+	
 }
 

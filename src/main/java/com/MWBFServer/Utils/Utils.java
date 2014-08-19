@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Datasource.DbConnection;
+import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -217,6 +218,36 @@ public class Utils
 		return DbConnection.deleteAllActivitiesForUser(_user);
 	}
 	
+	/**
+	 * 
+	 * @param _user
+	 * @return
+	 */
+	public static List<User> getUserFriendsList(User _user) 
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	/**
+	 * Add a friend to a user.
+	 * @param _user
+	 * @param _friend
+	 * @return
+	 */
+	public static boolean addFriend(User _user, User _friend) 
+	{
+		Friends friendObj = new Friends(_user,_friend);
+		Friends userObj = new Friends(_friend,_user);
+		
+		List<Friends> friendsList = new ArrayList<Friends>();
+		friendsList.add(userObj);
+		friendsList.add(friendObj);
+		
+		return DbConnection.saveList(friendsList);
+	}
+
+	
 	public static class UserActivityByTime
 	{
 		String date;
@@ -233,4 +264,5 @@ public class Utils
 			return "Points["+points+"], Date["+date+"]";
 		}
 	}
+
 }
