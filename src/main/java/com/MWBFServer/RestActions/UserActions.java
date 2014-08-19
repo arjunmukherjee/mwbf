@@ -74,15 +74,28 @@ public class UserActions
 			e.printStackTrace();
 		}
 		
-		log.info("FaceBook user login [" + userData.optString("email") + "]");
+		String email = userData.optString("email").trim();
+		String firstName = userData.optString("firstName").trim();
+		String lastName = userData.optString("lastName").trim();
 		
+		log.info("FaceBook user login [" + email + "], FirstName[" + firstName + "], LastName[" + lastName + "]");
+		
+		//  First check if the user exists, if not, then register the user
 		String returnStr = null;
-		if ( (userData.optString("email") !=null) && (userData.optString("email").length() > 1) && m_existingUsersHash.containsKey(userData.optString("email")) )
-			returnStr =   "{\"success\":1,\"message\":\"Welcome!\"}";
+		if ( (email == null) || (email.length() <= 1)  )
+			returnStr =   "{\"success\":0,\"message\":\"Unable to login. Invalid email address obtained from Facebook!\"}";
 		else
-			returnStr =   "{\"success\":0,\"message\":\"Please register your account first (New User).\"}";
-			
-		
+		{
+			String name = firstName + " " + lastName;
+			if (m_existingUsersHash.containsKey(email)) 
+				returnStr =   "{\"success\":1,\"message\":\"Welcome "+name+" !\"}";
+			else
+			{
+				log.info("First time FaceBook User Registering [" + email + "]");
+				User newUser = new User(email,"",firstName,lastName);
+				returnStr = addUser(newUser);
+			}
+		}
 		
 		return Utils.buildResponse(returnStr);
 	}
@@ -118,20 +131,8 @@ public class UserActions
 			returnStr =   "{\"success\":0,\"message\":\"Email is already registered.\"}";
 		}
 		else
-		{
 			// If successful, add to the local cache
-			if ( Utils.addUser(newUser) )
-			{
-				returnStr =   "{\"success\":1,\"message\":\"Welcome " + newUser.getFirstName() + " " + newUser.getLastName() + ".\"}";
-				m_validUsersSet.add(newUser);
-				m_existingUsersHash.put(newUser.getEmail(),newUser);
-			}
-			else
-			{
-				log.warn("Unable to register user, please try again.");
-				returnStr =   "{\"success\":0,\"message\":\"Unable to register user, please try again.\"}";
-			}
-		}
+			returnStr = addUser(newUser);
 		
 		return Utils.buildResponse(returnStr);
 	}
@@ -165,22 +166,33 @@ public class UserActions
 			returnStr =   "{\"success\":0,\"message\":\"Email is already registered.\"}";
 		}
 		else
-		{
-			// If successful, add to the local cache
-			if ( Utils.addUser(newUser) )
-			{
-				returnStr =   "{\"success\":1,\"message\":\"Welcome !\"}";
-				m_validUsersSet.add(newUser);
-				m_existingUsersHash.put(newUser.getEmail(),newUser);
-			}
-			else
-			{
-				log.warn("Unable to register user, please try again.");
-				returnStr =   "{\"success\":0,\"message\":\"Unable to register user, please try again.\"}";
-			}
-		}
+			returnStr = addUser(newUser);
 		
 		return Utils.buildResponse(returnStr);
+	}
+
+	/**
+	 * Add the user : persist in DB and save in cache.
+	 * @param newUser
+	 * @return
+	 */
+	private String addUser(User newUser) 
+	{
+		String returnStr;
+		// If successful, add to the local cache
+		if ( Utils.addUser(newUser) )
+		{
+			returnStr =   "{\"success\":1,\"message\":\"Welcome !\"}";
+			m_validUsersSet.add(newUser);
+			m_existingUsersHash.put(newUser.getEmail(),newUser);
+		}
+		else
+		{
+			log.warn("Unable to register user, please try again.");
+			returnStr =   "{\"success\":0,\"message\":\"Unable to register user, please try again.\"}";
+		}
+		
+		return returnStr;
 	}
 	
 	@POST
