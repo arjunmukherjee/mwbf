@@ -37,6 +37,7 @@
 		<mapping class="com.MWBFServer.Activity.Activities"/>
 		<mapping class="com.MWBFServer.Activity.UserActivity"/>
 		<mapping class="com.MWBFServer.Users.User"/>
+		<mapping class="com.MWBFServer.Users.Friends"/>
         
     </session-factory>
 
