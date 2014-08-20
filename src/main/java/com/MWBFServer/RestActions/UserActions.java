@@ -385,9 +385,19 @@ public class UserActions
 				Gson gson = new Gson();
 			 
 				// Look up the users friends
-				List<User> friendsList = Utils.getUserFriendsList(user);
+				List<Friends> friendsList = Utils.getUserFriendsList(user);
+				
+				// Null out the user Object and the password fields
 				if ( friendsList != null )
+				{
+					for (Friends friendPair : friendsList)
+					{
+						friendPair.setUser(null);
+						friendPair.getFriend().setPassword("");
+					}
+				
 					returnStr = gson.toJson(friendsList);
+				}
 				else
 					returnStr = "{\"success\":0,\"message\":\"Unable to find your friends.\"}";
 			}
@@ -396,7 +406,7 @@ public class UserActions
 		{
 			e.printStackTrace();
 		}
-	
+		
 		return Utils.buildResponse(returnStr);
 	}
 	

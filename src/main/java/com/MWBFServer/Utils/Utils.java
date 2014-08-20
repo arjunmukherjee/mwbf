@@ -219,14 +219,13 @@ public class Utils
 	}
 	
 	/**
-	 * 
+	 * Get a list of all of the users friends.
 	 * @param _user
 	 * @return
 	 */
-	public static List<User> getUserFriendsList(User _user) 
+	public static List<Friends> getUserFriendsList(User _user) 
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return (List<Friends>) DbConnection.queryGetFriendsList(_user);
 	}
 	
 	/**

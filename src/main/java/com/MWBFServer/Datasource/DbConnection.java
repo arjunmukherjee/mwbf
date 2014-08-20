@@ -12,6 +12,7 @@ import org.hibernate.cfg.Configuration;
 
 import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
+import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
 
 @SuppressWarnings("deprecation")
@@ -216,5 +217,17 @@ public class DbConnection
 		}
 		
 		return true;
+	}
+
+	public static List<Friends> queryGetFriendsList(User _user) 
+	{
+		// creating session object
+		Session session = getSession();
+
+		String hql = "FROM Friends UA WHERE UA.user = :userId";
+		Query query = session.createQuery(hql);
+		query.setString("userId", _user.getId());
+
+		return (List<Friends>) executeListQuery(query, session);
 	}
 }
