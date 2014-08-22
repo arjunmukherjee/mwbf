@@ -38,6 +38,8 @@
 		<mapping class="com.MWBFServer.Activity.UserActivity"/>
 		<mapping class="com.MWBFServer.Users.User"/>
 		<mapping class="com.MWBFServer.Users.Friends"/>
+		<mapping class="com.MWBFServer.Challenges.Challenge"/>
+		<mapping class="com.MWBFServer.Stats.PersonalStats"/>
         
     </session-factory>
 
