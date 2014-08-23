@@ -2,7 +2,6 @@ package com.MWBFServer.Datasource;
 
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Query;
@@ -12,6 +11,9 @@ import org.hibernate.cfg.Configuration;
 
 import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
+import com.MWBFServer.Challenges.Challenge;
+import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
+import com.MWBFServer.Stats.PersonalStats;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
 
@@ -135,6 +137,7 @@ public class DbConnection
         return (List<UserActivity>) executeListQuery(query, session);
 	}
 	
+	
 	/**
 	 * Returns a list of UserActivities aggregated by time
 	 * @param _user
@@ -224,10 +227,69 @@ public class DbConnection
 		// creating session object
 		Session session = getSession();
 
-		String hql = "FROM Friends UA WHERE UA.user = :userId";
+		String hql = "FROM Friends FR WHERE FR.user = :userId";
 		Query query = session.createQuery(hql);
 		query.setString("userId", _user.getId());
 
 		return (List<Friends>) executeListQuery(query, session);
 	}
+
+	public static List<Challenge> queryGetChallenges(User _user) 
+	{
+		// creating session object
+		Session session = getSession();
+
+		String hql = "select start_date,end_date,challenge_name from mwbf_challenges a JOIN challenge_playersSet b";
+		hql += " on a.id=b.challenge_id and b.player_id = '"+ _user.getId() + "'";
+		Query query = session.createSQLQuery(hql);
+		
+		log.info("Query ["+query.getQueryString()+"]");
+		
+		/*
+		String hql = "select * from challenge_playersSet";
+		hql += " where challenge_id in (";
+		hql += " select challenge_id from challenge_playersSet where player_id='arjunmuk@gmail.com')";
+
+		String hql = "select * from challenge_activitySet"; 
+		hql += " where challenge_id in (";
+		hql += " select challenge_id from challenge_playersSet where player_id='arjunmuk@gmail.com')"; 
+		*/
+		
+		return (List<Challenge>) executeListQuery(query, session);
+	}
+
+	
+	/**
+	 * Get the users personal stats (weight, body fat percentage etc)
+	 * @param _user
+	 * @return
+	 */
+	public static List<PersonalStats> queryGetPersonalStats(User _user) 
+	{
+		// creating session object
+		Session session = getSession();
+
+		String hql = "FROM PersonalStats PS WHERE PS.user = :userId";
+		Query query = session.createQuery(hql);
+		query.setString("userId", _user.getId());
+
+		return (List<PersonalStats>) executeListQuery(query, session);
+	}
+
+
+	/**
+	 * Retrieve the users all time bestDay, bestMonth and bestYear
+	 * @param _user
+	 */
+	public static List<UserActivityByTime> queryGetAllTimeHighs(User _user, String _aggregateBy)
+	{
+		Session session = getSession();
+		String hql = "SELECT colA, SUM(colB) FROM (SELECT date_trunc('" + _aggregateBy + "',UA.activity_date) colA,SUM(UA.points) colB";
+		hql += " FROM user_activity UA WHERE UA.user_id = '" + _user.getId() + "'";
+		hql += " GROUP BY UA.activity_date ORDER BY date_trunc('" + _aggregateBy + "',UA.activity_date))sub GROUP BY colA";
+				
+		Query query = session.createSQLQuery(hql);
+		return (List<UserActivityByTime>) executeListQuery(query,session);
+	}
+
 }

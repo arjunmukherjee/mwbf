@@ -1,6 +1,8 @@
 package com.MWBFServer.RestActions;
 
 import java.lang.reflect.Type;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +18,9 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.MWBFServer.Activity.*;
+import com.MWBFServer.Challenges.Challenge;
+import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
+import com.MWBFServer.Stats.PersonalStats;
 import com.MWBFServer.Users.*;
 import com.MWBFServer.Utils.Utils;
 import com.google.gson.Gson;
@@ -34,7 +39,7 @@ public class UserActions
 		// Load all the users into the cache
 		Utils.loadUsers(m_validUsersSet, m_existingUsersHash);
 		
-		// Load all the activities into the cache
+		// Load all the MWBF activities into the cache
 		Utils.loadActivities(m_activitiesHash);
 	}
 	
@@ -87,13 +92,56 @@ public class UserActions
 		else
 		{
 			String name = firstName + " " + lastName;
-			if (m_existingUsersHash.containsKey(email)) 
+			User user = m_existingUsersHash.get(email);
+			if ( user != null ) 
 				returnStr =   "{\"success\":1,\"message\":\"Welcome "+name+" !\"}";
 			else
 			{
 				log.info("First time FaceBook User Registering [" + email + "]");
 				User newUser = new User(email,"",firstName,lastName);
 				returnStr = addUser(newUser);
+			}
+		}
+		
+		return Utils.buildResponse(returnStr);
+	}
+	
+	
+	@POST
+	@Path("/allTimeHighs")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getAllTimeHighs(String _incomingData)
+	{
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+		
+		String email = userData.optString("user_id").trim();
+		
+		//  First check if the user exists, if not, then register the user
+		String returnStr = null;
+		if ( (email == null) || (email.length() <= 1)  )
+			returnStr =   "{\"success\":0,\"message\":\"Unable to get all time high for the user\"}";
+		else
+		{
+			User user = m_existingUsersHash.get(email);
+			if ( user != null ) 
+			{
+				// Get the users personal stats
+				Gson gson = new Gson();
+				 
+				// Look up the users personal stats
+				log.info("Getting the users all time high stats.");
+				List<UserActivityByTime> allTimeHighList = Utils.getAllTimeHighs(user);
+				if ( allTimeHighList != null && allTimeHighList.size() > 0 )
+					returnStr = gson.toJson(allTimeHighList);
 			}
 		}
 		
@@ -487,6 +535,97 @@ public class UserActions
 			e.printStackTrace();
 		}
 	
+		return Utils.buildResponse(returnStr);
+	}
+	
+	
+	@POST
+	@Path("/challenge/add")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response addChallenge(String _incomingData)
+	{
+		String returnStr = null;
+		
+		//Challenge newChallenge = gson.fromJson(_incomingData, Challenge.class);
+		
+		// TODO : Test Code, must be cleaned
+		Set<String> usersSet = new HashSet<String>();
+		usersSet.add("admin");
+		usersSet.add("arjunmuk@gmail.com");
+		
+		Set<String> activitySet = new HashSet<String>();
+		
+		List<Activities> activitiesList = Utils.getActivityList();
+		for (Activities a : activitiesList)
+			activitySet.add(a.getActivityName());
+		
+		Date startDate = new Date();
+		Calendar c = Calendar.getInstance();
+		c.setTime(new Date()); 
+		c.add(Calendar.DATE, 30); 
+		Date endDate = c.getTime();
+		
+		Challenge newChallenge = new Challenge("FirstChallenge",startDate,endDate,usersSet,activitySet);
+				
+		
+		// If successful, add to the local cache
+		if ( Utils.addChallenge(newChallenge) )
+			returnStr =   "{\"success\":1,\"message\":\"New challenge added.\"}";
+		else
+		{
+			log.warn("Unable to add challenge, please try again.");
+			returnStr =   "{\"success\":0,\"message\":\"Unable to add challenge, please try again.\"}";
+		}
+		
+		return Utils.buildResponse(returnStr);
+	}
+	
+	@POST
+	@Path("/challenge/getAll")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getAllChallenges(String _incomingData)
+	{
+		// TODO
+		
+		String returnStr = "{\"success\":0,\"message\":\"Unable to find your challenges.\"}";
+		
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+			User user = m_existingUsersHash.get(userData.optString("user_id"));
+			if ( user == null )
+			{
+				log.warn("Unable to find user.");
+				returnStr = "{\"success\":0,\"message\":\"Unable to find logged in user (something's wrong).\"}";
+			}
+			else
+			{
+				log.info("Fetching all challenges for UserId["+ user.getId() +"]");
+				
+				Gson gson = new Gson();
+			 
+				// Look up the users friends
+				List<Challenge> challengeList = Utils.getChallenges(user);
+				
+				// Convert the List to a Json representation
+				if ( challengeList != null )
+				{
+					returnStr = gson.toJson(challengeList);
+				}
+				else
+					returnStr = "{\"success\":0,\"message\":\"Unable to find your challenges.\"}";
+			}
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+		
+		log.info("GetAllChallenges Returning [" + returnStr + "]");
+		
 		return Utils.buildResponse(returnStr);
 	}
 	
