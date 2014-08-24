@@ -546,28 +546,9 @@ public class UserActions
 	public Response addChallenge(String _incomingData)
 	{
 		String returnStr = null;
-		
-		//Challenge newChallenge = gson.fromJson(_incomingData, Challenge.class);
-		
-		// TODO : Test Code, must be cleaned
-		Set<String> usersSet = new HashSet<String>();
-		usersSet.add("admin");
-		usersSet.add("arjunmuk@gmail.com");
-		
-		Set<String> activitySet = new HashSet<String>();
-		
-		List<Activities> activitiesList = Utils.getActivityList();
-		for (Activities a : activitiesList)
-			activitySet.add(a.getActivityName());
-		
-		Date startDate = new Date();
-		Calendar c = Calendar.getInstance();
-		c.setTime(new Date()); 
-		c.add(Calendar.DATE, 30); 
-		Date endDate = c.getTime();
-		
-		Challenge newChallenge = new Challenge("FirstChallenge",startDate,endDate,usersSet,activitySet);
-				
+		Gson gson = new Gson();
+		Challenge newChallenge = gson.fromJson(_incomingData, Challenge.class);
+		log.info("Adding new challenge [" + newChallenge.toString() + "]");
 		
 		// If successful, add to the local cache
 		if ( Utils.addChallenge(newChallenge) )
