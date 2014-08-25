@@ -11,7 +11,6 @@ import org.hibernate.cfg.Configuration;
 
 import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
-import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Stats.PersonalStats;
 import com.MWBFServer.Users.Friends;
@@ -162,6 +161,14 @@ public class DbConnection
 		return executeListQuery(query,session);
     }
 	
+	public static List<?> queryGetUserActivityByTime(String _user, Date _fromDate, Date _toDate)
+	{
+		String hql = "select SUM(points) from user_activity where user_id='" + _user + "'";
+		hql += " and activity_date > '" + _fromDate + "' and activity_date < '" + _toDate + "' group by user_id";	
+	
+		return createQueryAndExecute(hql);
+    }
+	
 	/**
 	 * Executes the query and returns a generic list of the results.
 	 * @param _query
@@ -234,28 +241,71 @@ public class DbConnection
 		return (List<Friends>) executeListQuery(query, session);
 	}
 
-	public static List<Challenge> queryGetChallenges(User _user) 
+	/**
+	 * For a given user, get a list of all the challenges the user is involved in.
+	 * @param _user
+	 * @return
+	 */
+	public static List<?> queryGetChallenges(User _user) 
+	{
+		String hql = "select * from mwbf_challenges a JOIN challenge_playersSet b";
+		hql += " on a.id=b.challenge_id and b.player_id = '"+ _user.getId() + "'";
+		
+		return  createQueryAndExecute(hql);
+	}
+	
+	/**
+	 * Get the players involved in the challenged identified by the set of challengeIds.
+	 * 
+	 * @param _user
+	 * @param _ids
+	 * @return
+	 */
+	public static List<?> queryGetChallengePlayers(String _idList) 
+	{
+		String hql = "select * from challenge_playersSet where challenge_id in (" + _idList + ")";
+		return  createQueryAndExecute(hql);
+	}
+	
+	/**
+	 * Get a list of all the activities for the challenges identified by the idList.
+	 * @param _idList
+	 * @return
+	 */
+	public static List<?> queryGetChallengeActivities(String _idList) 
+	{
+		String hql = "select * from challenge_activitySet where challenge_id in (" + _idList + ")";
+		return  createQueryAndExecute(hql);
+	}
+	
+	/**
+	 * Get the sum of points per player for specific date ranges.
+	 * @param _userId
+	 * @param _startDate
+	 * @param _endDate
+	 * @return
+	 */
+	public static List<?> queryGetPlayerPointsByDate(String _userId, Date _startDate, Date _endDate) 
+	{
+		String hql = "select SUM(points),user_id from user_activity where user_id='"+ _userId +"'";
+		hql += " and activity_date > '8/18/2014' and activity_date < '8/20/2014' group by user_id";
+				
+		return  createQueryAndExecute(hql);
+	}
+	
+	/**
+	 * Create the query and execute it.
+	 * @param _query
+	 * @return
+	 */
+	private static List<?> createQueryAndExecute(String _query)
 	{
 		// creating session object
 		Session session = getSession();
 
-		String hql = "select start_date,end_date,challenge_name from mwbf_challenges a JOIN challenge_playersSet b";
-		hql += " on a.id=b.challenge_id and b.player_id = '"+ _user.getId() + "'";
-		Query query = session.createSQLQuery(hql);
-		
-		log.info("Query ["+query.getQueryString()+"]");
-		
-		/*
-		String hql = "select * from challenge_playersSet";
-		hql += " where challenge_id in (";
-		hql += " select challenge_id from challenge_playersSet where player_id='arjunmuk@gmail.com')";
+		Query query = session.createSQLQuery(_query);
 
-		String hql = "select * from challenge_activitySet"; 
-		hql += " where challenge_id in (";
-		hql += " select challenge_id from challenge_playersSet where player_id='arjunmuk@gmail.com')"; 
-		*/
-		
-		return (List<Challenge>) executeListQuery(query, session);
+		return  executeListQuery(query, session);
 	}
 
 	
@@ -283,13 +333,13 @@ public class DbConnection
 	 */
 	public static List<UserActivityByTime> queryGetAllTimeHighs(User _user, String _aggregateBy)
 	{
-		Session session = getSession();
 		String hql = "SELECT colA, SUM(colB) FROM (SELECT date_trunc('" + _aggregateBy + "',UA.activity_date) colA,SUM(UA.points) colB";
 		hql += " FROM user_activity UA WHERE UA.user_id = '" + _user.getId() + "'";
 		hql += " GROUP BY UA.activity_date ORDER BY date_trunc('" + _aggregateBy + "',UA.activity_date))sub GROUP BY colA";
 				
-		Query query = session.createSQLQuery(hql);
-		return (List<UserActivityByTime>) executeListQuery(query,session);
+		return (List<UserActivityByTime>) createQueryAndExecute(hql);
 	}
+
+	
 
 }

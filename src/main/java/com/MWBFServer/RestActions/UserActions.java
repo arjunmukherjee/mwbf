@@ -19,6 +19,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.MWBFServer.Activity.*;
 import com.MWBFServer.Challenges.Challenge;
+import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Stats.PersonalStats;
 import com.MWBFServer.Users.*;
@@ -589,7 +590,7 @@ public class UserActions
 				Gson gson = new Gson();
 			 
 				// Look up the users friends
-				List<Challenge> challengeList = Utils.getChallenges(user);
+				List<DBReturnChallenge> challengeList = Utils.getChallenges(user);
 				
 				// Convert the List to a Json representation
 				if ( challengeList != null )
@@ -604,8 +605,6 @@ public class UserActions
 		{
 			e.printStackTrace();
 		}
-		
-		log.info("GetAllChallenges Returning [" + returnStr + "]");
 		
 		return Utils.buildResponse(returnStr);
 	}

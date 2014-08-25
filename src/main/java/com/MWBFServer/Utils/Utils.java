@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -18,9 +19,9 @@ import org.apache.log4j.Logger;
 import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Challenges.Challenge;
+import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Datasource.DbConnection;
-import com.MWBFServer.Stats.PersonalStats;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
 import com.google.gson.Gson;
@@ -268,22 +269,137 @@ public class Utils
 	 * @param _user
 	 * @return
 	 */
-	public static List<Challenge> getChallenges(User _user) 
+	public static List<DBReturnChallenge> getChallenges(User _user) 
 	{
-		List<Challenge> resultList = (List<Challenge>)DbConnection.queryGetChallenges(_user);
+		// First get the id for the challenge from the playerSet
+		// Use this id to lookup all players
+		// Use this id to lookup all challenges
+		List<?> challengeList = DbConnection.queryGetChallenges(_user);
 		
 		Gson gson = new Gson();
-		String returnStr = gson.toJson(resultList);
+		String challengeStr = gson.toJson(challengeList);
 		
 		JsonParser parser = new JsonParser();
-	    JsonArray jArray = parser.parse(returnStr).getAsJsonArray();
+	    JsonArray jArray = parser.parse(challengeStr).getAsJsonArray();
+	    
+	    Map<String,DBReturnChallenge> challengeMap = new HashMap<String,DBReturnChallenge>();
 		
+	    String idList = "999999999999999";
 	    for(JsonElement obj : jArray )
 	    {
-	    	log.info("Elem ["+obj.toString()+"]");
+	    	String[] challengeParts = obj.toString().split(",");
+	    	String id = challengeParts[0].substring(1);
+	    	idList = id + "," + idList;
+	    	
+	    	String endDateStr = challengeParts[1].substring(1);
+	    	String endYear = challengeParts[2].split(" ")[1].trim();
+	    	endDateStr = endDateStr + "," + endYear;
+	    	
+	    	String startDateStr = challengeParts[4].substring(1);
+	    	String startYear = challengeParts[5].split(" ")[1].trim();
+	    	startDateStr = startDateStr + "," + startYear;
+	    	
+	    	String name = challengeParts[3].substring(1, challengeParts[3].length()-1);
+	    	
+	    	Date endDate = null;
+	    	Date startDate = null;
+			try 
+			{
+				startDate = new SimpleDateFormat("MMMM d,yyyy", Locale.ENGLISH).parse(startDateStr);
+		    	endDate = new SimpleDateFormat("MMMM d,yyyy", Locale.ENGLISH).parse(endDateStr);
+			} 
+			catch (ParseException e)
+			{
+				e.printStackTrace();
+			}
+	    	
+			DBReturnChallenge ch = new DBReturnChallenge(name,startDate,endDate,null,null);
+	    	challengeMap.put(id, ch);
 	    }
 	    
-		return (List<Challenge>) resultList;
+	    // Get the players for all the challenges
+	    Map<String,HashSet<String>> playerMap = new HashMap<String,HashSet<String>>();
+	 	List<?> playersList = DbConnection.queryGetChallengePlayers(idList);
+	 	String playersStr = gson.toJson(playersList);
+	 	jArray = parser.parse(playersStr).getAsJsonArray();
+	 	for(JsonElement obj : jArray )
+	    {
+	 		String[] challengeParts = obj.toString().split(",");
+	    	String id = challengeParts[0].substring(1);
+	    	String userId = challengeParts[1].substring(1,challengeParts[1].length()-2);
+	    	
+	    	if (playerMap.containsKey(id))
+	    		playerMap.get(id).add(userId);
+	    	else
+	    	{
+	    		HashSet<String> userIdSet = new HashSet<String>();
+	    		userIdSet.add(userId);
+	    		playerMap.put(id,userIdSet);
+	    	}
+	    }
+	 	
+	 	// Get the activities for all the challenges
+	    Map<String,HashSet<String>> activityMap = new HashMap<String,HashSet<String>>();
+	 	List<?> activityList = DbConnection.queryGetChallengeActivities(idList);
+	 	String activityStr = gson.toJson(activityList);
+	 	jArray = parser.parse(activityStr).getAsJsonArray();
+	 	for(JsonElement obj : jArray )
+	    {
+	 		String[] challengeParts = obj.toString().split(",");
+	    	String id = challengeParts[0].substring(1);
+	    	String activity = challengeParts[1].substring(1,challengeParts[1].length()-2);
+	    	
+	    	if (activityMap.containsKey(id))
+	    		activityMap.get(id).add(activity);
+	    	else
+	    	{
+	    		HashSet<String> activitySet = new HashSet<String>();
+	    		activitySet.add(activity);
+	    		activityMap.put(id,activitySet);
+	    	}
+	    }
+	 	
+	 	// Complete the challenge object
+	 	// Add it to the return list
+	 	List<DBReturnChallenge> returnList = new ArrayList<DBReturnChallenge>();
+	 	for (String id : challengeMap.keySet())
+	 	{
+	 		DBReturnChallenge ch = challengeMap.get(id);
+	 		ch.setId(Long.parseLong(id));
+	 		ch.setPlayersPointsSet(constructPlayerPointsSet(playerMap.get(id),ch.getStartDate(),ch.getEndDate()));
+	 		ch.setActivitySet(activityMap.get(id));
+
+	 		returnList.add(ch);
+	 	}
+	
+	 	return returnList;
+	}
+	
+	private static Set<String> constructPlayerPointsSet(Set<String> _players, Date _fromDate, Date _toDate)
+	{
+		Gson gson = new Gson();
+		JsonParser parser = new JsonParser();
+		JsonArray jArray;
+		Set<String> playerPointsMap = new HashSet<String>();
+		
+		for (String player : _players)
+		{
+			// Get the points for each player between the start and endDates
+		 	List<?> userActivityList =  DbConnection.queryGetUserActivityByTime(player,_fromDate,_toDate);
+		 	
+		 	if (userActivityList == null || userActivityList.size() <= 0 )
+		 		playerPointsMap.add(player + "," + "0");
+		 	else
+		 	{
+		 	 	String activityStr = gson.toJson(userActivityList);
+			 	
+			 	jArray = parser.parse(activityStr).getAsJsonArray();
+			 	for(JsonElement obj : jArray )
+			 		playerPointsMap.add(player + "," + obj.toString());
+			}
+		}
+		
+		return playerPointsMap;
 	}
 	
 
