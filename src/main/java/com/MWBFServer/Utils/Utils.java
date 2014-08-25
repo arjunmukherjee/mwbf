@@ -366,7 +366,7 @@ public class Utils
 	 	{
 	 		DBReturnChallenge ch = challengeMap.get(id);
 	 		ch.setId(Long.parseLong(id));
-	 		ch.setPlayersPointsSet(constructPlayerPointsSet(playerMap.get(id),ch.getStartDate(),ch.getEndDate()));
+	 		ch.setPlayersPointsSet(constructPlayerPointsSet(playerMap.get(id),ch.getStartDate(),ch.getEndDate(),activityMap.get(id)));
 	 		ch.setActivitySet(activityMap.get(id));
 
 	 		returnList.add(ch);
@@ -375,17 +375,22 @@ public class Utils
 	 	return returnList;
 	}
 	
-	private static Set<String> constructPlayerPointsSet(Set<String> _players, Date _fromDate, Date _toDate)
+	private static Set<String> constructPlayerPointsSet(Set<String> _players, Date _fromDate, Date _toDate, Set<String> _activitySet)
 	{
 		Gson gson = new Gson();
 		JsonParser parser = new JsonParser();
 		JsonArray jArray;
 		Set<String> playerPointsMap = new HashSet<String>();
 		
+		// Construct the list of activities to sum the points by
+		String activityList = null;
+		for(String activity : _activitySet)
+			activityList = "'" + activity + "'," + activityList; 
+		
 		for (String player : _players)
 		{
 			// Get the points for each player between the start and endDates
-		 	List<?> userActivityList =  DbConnection.queryGetUserActivityByTime(player,_fromDate,_toDate);
+		 	List<?> userActivityList =  DbConnection.queryGetUserActivityByTime(player,_fromDate,_toDate, activityList);
 		 	
 		 	if (userActivityList == null || userActivityList.size() <= 0 )
 		 		playerPointsMap.add(player + "," + "0");

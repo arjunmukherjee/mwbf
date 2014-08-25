@@ -161,10 +161,11 @@ public class DbConnection
 		return executeListQuery(query,session);
     }
 	
-	public static List<?> queryGetUserActivityByTime(String _user, Date _fromDate, Date _toDate)
+	public static List<?> queryGetUserActivityByTime(String _user, Date _fromDate, Date _toDate, String _activityList)
 	{
 		String hql = "select SUM(points) from user_activity where user_id='" + _user + "'";
-		hql += " and activity_date > '" + _fromDate + "' and activity_date < '" + _toDate + "' group by user_id";	
+		hql += " and activity_date > '" + _fromDate + "' and activity_date < '" + _toDate + "'";
+		hql += " and activity_id in (" + _activityList + ")";
 	
 		return createQueryAndExecute(hql);
     }
