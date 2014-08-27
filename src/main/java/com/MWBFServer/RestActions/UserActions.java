@@ -258,7 +258,11 @@ public class UserActions
 		
 		// Multiply the activity's points * the number of exercise units and then store in db
 		for (UserActivity ua : newActivityList)
-			ua.setPoints(m_activitiesHash.get(ua.getActivityId()).getPointsPerUnit() * ua.getExerciseUnits());
+		{
+			Double points = m_activitiesHash.get(ua.getActivityId()).getPointsPerUnit() * ua.getExerciseUnits();
+			points = Utils.round(points, 2);
+			ua.setPoints(points);
+		}
 		
 		// If successful, add to the local cache
 		if ( Utils.logActivity(newActivityList) )

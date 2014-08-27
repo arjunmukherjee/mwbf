@@ -479,12 +479,31 @@ public class Utils
 	    	date.trim();
 	    	
 	    	Double points = Double.valueOf(dateParts[2].substring(0, dateParts[2].length()-1));
+	    	points = round(points,2);
 	    	UserActivityByTime uat = new UserActivityByTime(date, points);
 	 
 	    	returnList.add(uat);
 	    }
 		
 		return returnList;
+	}
+	
+	/**
+	 * Round off a double value.
+	 * 
+	 * @param value
+	 * @param places
+	 * @return
+	 */
+	public static double round(double value, int places) 
+	{
+	    if (places < 0) 
+	    	throw new IllegalArgumentException();
+
+	    long factor = (long) Math.pow(10, places);
+	    value = value * factor;
+	    long tmp = Math.round(value);
+	    return (double) tmp / factor;
 	}
 
 }
