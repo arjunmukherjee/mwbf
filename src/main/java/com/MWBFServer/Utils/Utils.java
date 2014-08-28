@@ -479,7 +479,7 @@ public class Utils
 	    	date.trim();
 	    	
 	    	Double points = Double.valueOf(dateParts[2].substring(0, dateParts[2].length()-1));
-	    	points = round(points,2);
+	    	points = round(points,1);
 	    	UserActivityByTime uat = new UserActivityByTime(date, points);
 	 
 	    	returnList.add(uat);

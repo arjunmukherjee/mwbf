@@ -260,7 +260,7 @@ public class UserActions
 		for (UserActivity ua : newActivityList)
 		{
 			Double points = m_activitiesHash.get(ua.getActivityId()).getPointsPerUnit() * ua.getExerciseUnits();
-			points = Utils.round(points, 2);
+			points = Utils.round(points, 1);
 			ua.setPoints(points);
 		}
 		
