@@ -383,7 +383,7 @@ public class Utils
 	 	for (String id : challengeMap.keySet())
 	 	{
 	 		DBReturnChallenge ch = challengeMap.get(id);
-	 		HashSet<String> messageSet = new HashSet<String>();
+	 		List<String> messageList = new ArrayList<String>();
 	 		List<?> userActivityList = DbConnection.queryUserActivitiesPerChallenge(playerMap.get(id),activityMap.get(id),ch.getStartDate(),ch.getEndDate());
 	 		String userActivityStr = gson.toJson(userActivityList);
 		 	jArray = parser.parse(userActivityStr).getAsJsonArray();
@@ -406,10 +406,10 @@ public class Utils
 		 		actString.append(DataCache.m_activitiesHash.get(activityId).getMeasurementUnit());
 		 		actString.append(" on ");
 		 		actString.append(activityDate);
-		 		messageSet.add(actString.toString());
+		 		messageList.add(actString.toString());
 		    }
 		 	
-		 	ch.setMessagesSet(messageSet);
+		 	ch.setMessagesList(messageList);
 	 	}
 	 
 	 	return returnList;

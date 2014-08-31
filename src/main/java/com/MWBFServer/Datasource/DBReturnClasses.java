@@ -1,8 +1,10 @@
 package com.MWBFServer.Datasource;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,7 +46,7 @@ public class DBReturnClasses
 		private Date endDate;
 		private Set<String> playerPointsSet = new HashSet<String>();
 		private Set<String> activitySet = new HashSet<String>();
-		private Set<String> messagesSet = new HashSet<String>();
+		private List<String> messageList = new ArrayList<String>();
 		
 		/**
 		 * 
@@ -86,9 +88,9 @@ public class DBReturnClasses
 			activitySet = _activitySet;
 		}
 		
-		public void setMessagesSet(Set<String> _messagesSet) 
+		public void setMessagesList(List<String> _messageList) 
 		{
-			messagesSet = _messagesSet;
+			messageList = _messageList;
 		}
 		
 		public void setCreatorId(String _creatorId) 
@@ -99,7 +101,7 @@ public class DBReturnClasses
 		@Override
 		public String toString()
 		{
-			return "Name["+name+"], Creator[" + creatorId + "], StartDate["+startDate.toString()+"], EndDate["+endDate.toString()+"], NumberOfPlayers["+playerPointsSet.size()+"], NumberOfActivities["+activitySet.size()+"], NumberOfMessages[" + messagesSet.size() + "]";
+			return "Name["+name+"], Creator[" + creatorId + "], StartDate["+startDate.toString()+"], EndDate["+endDate.toString()+"], NumberOfPlayers["+playerPointsSet.size()+"], NumberOfActivities["+activitySet.size()+"], NumberOfMessages[" + messageList.size() + "]";
 		}	
 	}
 
