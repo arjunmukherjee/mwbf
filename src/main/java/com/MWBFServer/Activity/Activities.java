@@ -12,6 +12,7 @@ public class Activities
 {
 	private long id;
 	private String activityName;
+	private String pastVerb;
 	private String measurementUnit;
 	private String measurementUnitShort;
 	private double pointsPerUnit;
@@ -67,11 +68,20 @@ public class Activities
 		this.measurementUnitShort = measurementUnitShort;
 	}
 	
+	@Column (name="PAST_VERB")
+	public String getPastVerb() 
+	{
+		return pastVerb;
+	}
+	public void setPastVerb(String pastVerb) 
+	{
+		this.pastVerb = pastVerb;
+	}
+
 	
 	@Override
 	public String toString()
 	{
 		return "Id [" + id + "], Name[" + activityName + "], PointsPerUnit[" + pointsPerUnit + "]";
 	}
-
 }

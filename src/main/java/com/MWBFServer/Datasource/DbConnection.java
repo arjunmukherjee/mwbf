@@ -1,8 +1,10 @@
 package com.MWBFServer.Datasource;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -335,7 +337,7 @@ public class DbConnection
 	public static List<?> queryGetPlayerPointsByDate(String _userId, Date _startDate, Date _endDate) 
 	{
 		String hql = "select SUM(points),user_id from user_activity where user_id='"+ _userId +"'";
-		hql += " and activity_date > '8/18/2014' and activity_date < '8/20/2014' group by user_id";
+		hql += " and activity_date > '" + _startDate + "' and activity_date < '" + _endDate + "'";
 				
 		return  createQueryAndExecute(hql);
 	}
@@ -385,6 +387,28 @@ public class DbConnection
 		hql += " GROUP BY UA.activity_date ORDER BY date_trunc('" + _aggregateBy + "',UA.activity_date))sub GROUP BY colA";
 				
 		return (List<UserActivityByTime>) createQueryAndExecute(hql);
+	}
+
+	/**
+	 * Get a list of all the activities for the players 
+	 * Used to construct the message board.
+	 * Restrict to the last 50 messages.
+	 * 
+	 * @param hashSet
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 */
+	public static List<?> queryUserActivitiesPerChallenge(HashSet<String> _playersSet, HashSet<String> _activitiesSet, Date _startDate, Date _endDate) 
+	{
+		String playersStr = StringUtils.join(_playersSet, "','");
+		String activityStr = StringUtils.join(_activitiesSet, "','");
+		
+		String hql = "select * from user_activity where user_id in ('"+ playersStr +"')";
+		hql += " and activity_id in ('" + activityStr + "')";
+		hql += " and activity_date > '" + _startDate + "' and activity_date < '" + _endDate + "' order by activity_date limit 50";
+				
+		return  createQueryAndExecute(hql);
 	}
 
 	

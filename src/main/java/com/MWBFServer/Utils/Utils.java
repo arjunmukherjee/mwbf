@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.persistence.Cache;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
@@ -21,6 +22,7 @@ import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
+import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Datasource.DbConnection;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
@@ -69,7 +71,9 @@ public class Utils
 		List<User> userList = (List<User>) DbConnection.queryGetUsers();
 		for (User user : userList)
 		{
-			_validUsers.add(user);
+			if ( _validUsers != null )
+				_validUsers.add(user);
+			
 			_existingUsers.put(user.getEmail(),user);
 		}
 	}
@@ -373,7 +377,41 @@ public class Utils
 
 	 		returnList.add(ch);
 	 	}
-	
+	 	
+	 	// Construct the message board
+	 	// Get the activities for the players between the given dates
+	 	for (String id : challengeMap.keySet())
+	 	{
+	 		DBReturnChallenge ch = challengeMap.get(id);
+	 		HashSet<String> messageSet = new HashSet<String>();
+	 		List<?> userActivityList = DbConnection.queryUserActivitiesPerChallenge(playerMap.get(id),activityMap.get(id),ch.getStartDate(),ch.getEndDate());
+	 		String userActivityStr = gson.toJson(userActivityList);
+		 	jArray = parser.parse(userActivityStr).getAsJsonArray();
+		 	for(JsonElement obj : jArray )
+		    {
+		 		String[] activityParts = obj.toString().split(",");
+		 		String activityId = activityParts[1].substring(1,activityParts[1].length()-1);
+		 		String activityDate = activityParts[2].substring(1);
+		 		String activityUnits = activityParts[4];
+		 		String userId = activityParts[6].substring(1,activityParts[6].length()-2);
+		 		
+		 		User user = DataCache.m_usersHash.get(userId);
+		 		StringBuilder actString = new StringBuilder();
+		 		actString.append(user.getFirstName());
+		 		actString.append(" ");
+		 		actString.append(DataCache.m_activitiesHash.get(activityId).getPastVerb());
+		 		actString.append(" ");
+		 		actString.append(activityUnits);
+		 		actString.append(" ");
+		 		actString.append(DataCache.m_activitiesHash.get(activityId).getMeasurementUnit());
+		 		actString.append(" on ");
+		 		actString.append(activityDate);
+		 		messageSet.add(actString.toString());
+		    }
+		 	
+		 	ch.setMessagesSet(messageSet);
+	 	}
+	 
 	 	return returnList;
 	}
 	

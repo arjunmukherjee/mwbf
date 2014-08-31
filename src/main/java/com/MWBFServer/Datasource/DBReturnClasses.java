@@ -44,6 +44,7 @@ public class DBReturnClasses
 		private Date endDate;
 		private Set<String> playerPointsSet = new HashSet<String>();
 		private Set<String> activitySet = new HashSet<String>();
+		private Set<String> messagesSet = new HashSet<String>();
 		
 		/**
 		 * 
@@ -85,6 +86,11 @@ public class DBReturnClasses
 			activitySet = _activitySet;
 		}
 		
+		public void setMessagesSet(Set<String> _messagesSet) 
+		{
+			messagesSet = _messagesSet;
+		}
+		
 		public void setCreatorId(String _creatorId) 
 		{
 			this.creatorId = _creatorId;
@@ -93,7 +99,7 @@ public class DBReturnClasses
 		@Override
 		public String toString()
 		{
-			return "Name["+name+"], Creator[" + creatorId + "], StartDate["+startDate.toString()+"], EndDate["+endDate.toString()+"], NumberOfPlayers["+playerPointsSet.size()+"], NumberOfActivities["+activitySet.size()+"]";
+			return "Name["+name+"], Creator[" + creatorId + "], StartDate["+startDate.toString()+"], EndDate["+endDate.toString()+"], NumberOfPlayers["+playerPointsSet.size()+"], NumberOfActivities["+activitySet.size()+"], NumberOfMessages[" + messagesSet.size() + "]";
 		}	
 	}
 
