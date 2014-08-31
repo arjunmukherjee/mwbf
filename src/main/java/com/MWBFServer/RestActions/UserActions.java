@@ -543,7 +543,6 @@ public class UserActions
 		return Utils.buildResponse(returnStr);
 	}
 	
-	
 	@POST
 	@Path("/challenge/add")
 	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
@@ -552,20 +551,70 @@ public class UserActions
 	{
 		String returnStr = null;
 		Gson gson = new Gson();
-		Challenge newChallenge = gson.fromJson(_incomingData, Challenge.class);
-		log.info("Adding new challenge [" + newChallenge.toString() + "]");
-		
-		// If successful, add to the local cache
-		if ( Utils.addChallenge(newChallenge) )
-			returnStr =   "{\"success\":1,\"message\":\"New challenge added.\"}";
-		else
+		JSONObject userData;
+		try 
 		{
+			userData = new JSONObject(_incomingData);
+			User user = m_existingUsersHash.get(userData.optString("user_id"));
+			
+			Challenge newChallenge = gson.fromJson(_incomingData, Challenge.class);
+			newChallenge.setCreator(user);
+			log.info("Adding new challenge [" + newChallenge.toString() + "]");
+			
+			// If successful, add to the local cache
+			if ( Utils.addChallenge(newChallenge) )
+				returnStr =   "{\"success\":1,\"message\":\"New challenge added.\"}";
+			else
+			{
+				log.warn("Unable to add challenge, please try again.");
+				returnStr =   "{\"success\":0,\"message\":\"Unable to add challenge, please try again.\"}";
+			}
+		} 
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
 			log.warn("Unable to add challenge, please try again.");
 			returnStr =   "{\"success\":0,\"message\":\"Unable to add challenge, please try again.\"}";
 		}
 		
 		return Utils.buildResponse(returnStr);
 	}
+
+	@POST
+	@Path("/challenge/delete")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response deleteChallenge(String _incomingData)
+	{
+		String returnStr = null;
+		JSONObject userData;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+			User user = m_existingUsersHash.get(userData.optString("user_id"));
+			String challengeId = userData.optString("challenge_id");
+			
+			log.info("Deleting  challenge [" + challengeId + "]");
+			
+			// If successful, add to the local cache
+			if ( Utils.deleteChallenge(challengeId) )
+				returnStr =   "{\"success\":1,\"message\":\"Challenge deleted.\"}";
+			else
+			{
+				log.warn("Unable to delete challenge, please try again.");
+				returnStr =   "{\"success\":0,\"message\":\"Unable to delete challenge, please try again.\"}";
+			}
+		} 
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+			log.warn("Unable to delete challenge, please try again.");
+			returnStr =   "{\"success\":0,\"message\":\"Unable to delete challenge, please try again.\"}";
+		}
+		
+		return Utils.buildResponse(returnStr);
+	}
+
 	
 	@POST
 	@Path("/challenge/getAll")
@@ -573,8 +622,6 @@ public class UserActions
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAllChallenges(String _incomingData)
 	{
-		// TODO
-		
 		String returnStr = "{\"success\":0,\"message\":\"Unable to find your challenges.\"}";
 		
 		JSONObject userData = null;
@@ -598,9 +645,7 @@ public class UserActions
 				
 				// Convert the List to a Json representation
 				if ( challengeList != null )
-				{
 					returnStr = gson.toJson(challengeList);
-				}
 				else
 					returnStr = "{\"success\":0,\"message\":\"Unable to find your challenges.\"}";
 			}

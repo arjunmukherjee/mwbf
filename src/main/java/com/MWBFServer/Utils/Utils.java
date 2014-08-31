@@ -300,6 +300,7 @@ public class Utils
 	    	startDateStr = startDateStr + "," + startYear;
 	    	
 	    	String name = challengeParts[3].substring(1, challengeParts[3].length()-1);
+	    	String creator = challengeParts[6].substring(1, challengeParts[6].length()-1);
 	    	
 	    	Date endDate = null;
 	    	Date startDate = null;
@@ -314,6 +315,7 @@ public class Utils
 			}
 	    	
 			DBReturnChallenge ch = new DBReturnChallenge(name,startDate,endDate,null,null);
+			ch.setCreatorId(creator);
 	    	challengeMap.put(id, ch);
 	    }
 	    
@@ -504,6 +506,26 @@ public class Utils
 	    value = value * factor;
 	    long tmp = Math.round(value);
 	    return (double) tmp / factor;
+	}
+
+	/**
+	 * First find the challenge object.
+	 * Delete the challenge object.
+	 * @param challengeId
+	 * @return
+	 */
+	public static boolean deleteChallenge(String _challengeId) 
+	{
+		List<Challenge> challengeList = (List<Challenge>) DbConnection.queryGetChallenge(_challengeId);
+		Challenge challenge = challengeList.get(0);
+		
+		boolean success = true;
+		if (challenge != null )
+			success = DbConnection.deleteChallenge(challenge);
+		else
+			success = false;
+		
+		return success;
 	}
 
 }

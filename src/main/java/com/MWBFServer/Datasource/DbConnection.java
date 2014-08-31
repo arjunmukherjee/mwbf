@@ -11,6 +11,7 @@ import org.hibernate.cfg.Configuration;
 
 import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
+import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Stats.PersonalStats;
 import com.MWBFServer.Users.Friends;
@@ -136,8 +137,7 @@ public class DbConnection
         return (List<UserActivity>) executeListQuery(query, session);
 	}
 	
-	
-	/**
+/**
 	 * Returns a list of UserActivities aggregated by time
 	 * @param _user
 	 * @param _fromDate
@@ -252,8 +252,54 @@ public class DbConnection
 		String hql = "select * from mwbf_challenges a JOIN challenge_playersSet b";
 		hql += " on a.id=b.challenge_id and b.player_id = '"+ _user.getId() + "'";
 		
-		return  createQueryAndExecute(hql);
+		return createQueryAndExecute(hql);
 	}
+	
+	/**
+	 * Returns a Challenge.
+	 * @param challenge_id
+	 * @return
+	 */
+	public static List<?> queryGetChallenge(String _challengeId)
+	{
+		// creating session object
+		Session session = getSession();
+		
+		long challengeIdLong = Long.parseLong(_challengeId);
+       	
+		String hql = "FROM Challenge CH WHERE CH.id = :challengeId";
+        Query query = session.createQuery(hql);
+        query.setLong("challengeId", challengeIdLong);
+      
+        return (List<?>) executeListQuery(query, session);
+	}
+	
+	/**
+	 * Delete a challenge.
+	 * @param _challenge
+	 */
+	public static boolean deleteChallenge(Challenge _challenge) 
+	{
+		Session s = getSession();
+		try
+		{
+			s.beginTransaction();
+			s.delete(_challenge);
+			s.getTransaction().commit();
+		}
+		catch(Exception e)
+		{
+			log.error("Execption during delete : " + e.getMessage());
+			s.getTransaction().rollback();
+			return false;
+		}
+		finally
+		{
+			s.close();
+		}
+		
+		return true;
+	} 
 	
 	/**
 	 * Get the players involved in the challenged identified by the set of challengeIds.

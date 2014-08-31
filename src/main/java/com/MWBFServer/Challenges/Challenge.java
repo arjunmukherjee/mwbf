@@ -9,10 +9,10 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinTable;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Users.User;
 
 @Entity
@@ -20,6 +20,7 @@ import com.MWBFServer.Users.User;
 public class Challenge 
 {
 	private long id;
+	private User creator;
 	private String name;
 	private Date startDate;
 	private Date endDate;
@@ -56,6 +57,14 @@ public class Challenge
 		this.id = _id;
 	}
 	
+	@ManyToOne
+    @JoinColumn(name = "user_id")
+	public User getCreator() {
+		return creator;
+	}
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
 	
 	@Column (name="CHALLENGE_NAME")
 	public String getName() {
@@ -64,8 +73,7 @@ public class Challenge
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-	
+		
 	@Column (name="START_DATE")
 	public Date getStartDate() {
 		return startDate;
@@ -73,8 +81,7 @@ public class Challenge
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
 	}
-	
-	
+		
 	@Column (name="END_DATE")
 	public Date getEndDate() {
 		return endDate;
@@ -105,6 +112,6 @@ public class Challenge
 	@Override
 	public String toString()
 	{
-		return "Name["+name+"], StartDate["+startDate.toString()+"], EndDate["+endDate.toString()+"], NumberOfPlayers["+playersSet.size()+"], NumberOfActivities["+activitySet.size()+"]";
+		return "Name["+name+"], StartDate["+startDate.toString()+"], EndDate["+endDate.toString()+"], NumberOfPlayers["+playersSet.size()+"], NumberOfActivities["+activitySet.size()+"], Creator[" + creator.getEmail() + "]";
 	}
 }
