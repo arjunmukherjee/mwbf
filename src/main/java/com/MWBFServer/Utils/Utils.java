@@ -456,38 +456,41 @@ public class Utils
 	public static List<UserActivityByTime> getAllTimeHighs(User _user) 
 	{
 	    List<UserActivityByTime> returnListDay = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, "day"), "day");
-	    List<UserActivityByTime> returnListMonth = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, "month"), "month");
-	    List<UserActivityByTime> returnListYear = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, "year"), "year");
+	    
 	    
 	    UserActivityByTime bestDay;
 	    UserActivityByTime bestMonth;
 	    UserActivityByTime bestYear;
 	    List<UserActivityByTime> returnList = new ArrayList<UserActivityByTime>();
 	    
-	    bestDay = returnListDay.get(0);
-	    for (UserActivityByTime uat : returnListDay)
+	    if ( (returnListDay != null) && (returnListDay.size() > 0) )
 	    {
-	    	if (uat.getPoints() > bestDay.getPoints())
-	    		bestDay = uat;
+		    bestDay = returnListDay.get(0);
+		    for (UserActivityByTime uat : returnListDay)
+		    {
+		    	if (uat.getPoints() > bestDay.getPoints())
+		    		bestDay = uat;
+		    }
+		    List<UserActivityByTime> returnListMonth = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, "month"), "month");
+		    bestMonth = returnListMonth.get(0);
+		    for (UserActivityByTime uat : returnListMonth)
+		    {
+		    	if (uat.getPoints() > bestMonth.getPoints())
+		    		bestMonth = uat;
+		    }
+		    
+		    List<UserActivityByTime> returnListYear = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, "year"), "year");
+		    bestYear = returnListYear.get(0);
+		    for (UserActivityByTime uat : returnListYear)
+		    {
+		    	if (uat.getPoints() > bestYear.getPoints())
+		    		bestYear = uat;
+		    }
+		    
+		    returnList.add(bestDay);
+		    returnList.add(bestMonth);
+		    returnList.add(bestYear);
 	    }
-	    
-	    bestMonth = returnListMonth.get(0);
-	    for (UserActivityByTime uat : returnListMonth)
-	    {
-	    	if (uat.getPoints() > bestMonth.getPoints())
-	    		bestMonth = uat;
-	    }
-	    
-	    bestYear = returnListYear.get(0);
-	    for (UserActivityByTime uat : returnListYear)
-	    {
-	    	if (uat.getPoints() > bestYear.getPoints())
-	    		bestYear = uat;
-	    }
-	    
-	    returnList.add(bestDay);
-	    returnList.add(bestMonth);
-	    returnList.add(bestYear);
 	    
 		return returnList;
 	}
