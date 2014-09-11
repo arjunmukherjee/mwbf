@@ -1,8 +1,6 @@
 package com.MWBFServer.RestActions;
 
 import java.lang.reflect.Type;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,7 +19,6 @@ import com.MWBFServer.Activity.*;
 import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
-import com.MWBFServer.Stats.PersonalStats;
 import com.MWBFServer.Users.*;
 import com.MWBFServer.Utils.Utils;
 import com.google.gson.Gson;
@@ -46,25 +43,6 @@ public class UserActions
 	
 	
 	@POST
-	@Path("/login")
-	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response validateUser(String _incomingData)
-	{
-		JSONObject userData = null;
-		try 
-		{
-			userData = new JSONObject(_incomingData);
-		}
-		catch (JSONException e) 
-		{
-			e.printStackTrace();
-		}
-		
-		return validateUser(userData.optString("email"), userData.optString("password"));
-	}
-	
-	@POST
 	@Path("/fbLogin")
 	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
 	@Produces(MediaType.APPLICATION_JSON)
@@ -83,8 +61,9 @@ public class UserActions
 		String email = userData.optString("email").trim();
 		String firstName = userData.optString("firstName").trim();
 		String lastName = userData.optString("lastName").trim();
+		String profileId = userData.optString("profileId").trim();
 		
-		log.info("FaceBook user login [" + email + "], FirstName[" + firstName + "], LastName[" + lastName + "]");
+		log.info("FaceBook user login [" + email + "], FirstName[" + firstName + "], LastName[" + lastName + "], ProfileId[" + profileId + "]");
 		
 		//  First check if the user exists, if not, then register the user
 		String returnStr = null;
@@ -99,7 +78,7 @@ public class UserActions
 			else
 			{
 				log.info("First time FaceBook User Registering [" + email + "]");
-				User newUser = new User(email,"",firstName,lastName);
+				User newUser = new User(email,firstName,lastName,profileId);
 				returnStr = addUser(newUser);
 			}
 		}
@@ -399,20 +378,6 @@ public class UserActions
 		return Utils.buildResponse(returnStr);
 	}
 	
-	private Response validateUser(String _email, String _password) 
-	{
-		String returnStr = null;
-		log.info("Looking for User with Email : [" + _email + "]");
-		
-		User player = new User(_email,_password,"","");
-		if ( !m_validUsersSet.contains(player) )
-			returnStr =   "{\"success\":0,\"message\":\"Username and/or password is invalid.\"}";
-		else
-			returnStr = "{\"success\":1}";
-		
-		return Utils.buildResponse(returnStr);
-	}
-	
 	@POST
 	@Path("/friends")
 	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
@@ -425,10 +390,11 @@ public class UserActions
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			User user = m_existingUsersHash.get(userData.optString("user_id"));
+			String userId = userData.optString("user_id");
+			User user = m_existingUsersHash.get(userId);
 			if ( user == null )
 			{
-				log.warn("Unable to find user.");
+				log.warn("Unable to find logged in user (something's wrong) [" + userId + "].");
 				returnStr = "{\"success\":0,\"message\":\"Unable to find logged in user (something's wrong).\"}";
 			}
 			else
@@ -444,11 +410,8 @@ public class UserActions
 				if ( friendsList != null )
 				{
 					for (Friends friendPair : friendsList)
-					{
 						friendPair.setUser(null);
-						friendPair.getFriend().setPassword("");
-					}
-				
+					
 					returnStr = gson.toJson(friendsList);
 				}
 				else
@@ -528,9 +491,6 @@ public class UserActions
 			{
 				log.warn("Found friend with id[" + user.getId() + "].");
 				
-				// No need to send back the password
-				user.setPassword("");
-				
 				Gson gson = new Gson();
 				returnStr = gson.toJson(user);
 			}
@@ -591,7 +551,6 @@ public class UserActions
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			User user = m_existingUsersHash.get(userData.optString("user_id"));
 			String challengeId = userData.optString("challenge_id");
 			
 			log.info("Deleting  challenge [" + challengeId + "]");

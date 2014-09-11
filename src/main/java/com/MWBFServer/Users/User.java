@@ -20,9 +20,9 @@ public class User implements Serializable
 	private String id;
 	private String email;
 	private String userName;
-	private String password;
 	private String firstName;
 	private String lastName;
+	private String fbProfileId;
 	private Date memberSince;
 	
 	
@@ -31,17 +31,16 @@ public class User implements Serializable
 	/**
 	 * 
 	 * @param _email
-	 * @param _password
 	 * @param _userName
 	 */
-	public User(String _email, String _password, String _firstName, String _lastName)
+	public User(String _email, String _firstName, String _lastName, String _fbProfileId)
 	{
 		id = _email;
 		email = _email;
-		password = _password;
 		userName = _email;
 		firstName = _firstName;
 		lastName = _lastName;
+		fbProfileId = _fbProfileId;
 		memberSince = new Date();
 	}
 	
@@ -90,18 +89,6 @@ public class User implements Serializable
 		email = _email;
 	}
 	
-	
-	@Column (name="PASSWORD")
-	public String getPassword() 
-	{
-		return password;
-	}
-	public void setPassword(String m_password) 
-	{
-		this.password = m_password;
-	}
-	
-	
 	@Column (name="FIRST_NAME")
 	public String getFirstName() 
 	{
@@ -134,11 +121,20 @@ public class User implements Serializable
 		this.memberSince = _memberSince;
 	}
 
+	@Column (name="FB_PROFILE_ID")
+	public String getFbProfileId() 
+	{
+		return fbProfileId;
+	}
+	public void setFbProfileId(String fbProfileId) 
+	{
+		this.fbProfileId = fbProfileId;
+	}
 	
 	@Override
 	public int hashCode()
 	{
-	    return new HashCodeBuilder().append(id).append(userName).append(password).toHashCode();
+	    return new HashCodeBuilder().append(id).append(userName).toHashCode();
 	}
 
 	@Override
@@ -153,7 +149,6 @@ public class User implements Serializable
 	        return new EqualsBuilder()
 	            .append(id, other.id)
 	            .append(userName, other.userName)
-	            .append(password, other.password)
 	            .isEquals();
 	    } 
 	    else
@@ -163,6 +158,6 @@ public class User implements Serializable
 	@Override
 	public String toString()
 	{
-		return "User : UserId[" + getId() + "], Email[" + getEmail() + "], UserName[" + getUserName() + "], Password[" + getPassword() + "]";
+		return "User : UserId[" + getId() + "], Email[" + getEmail() + "], UserName[" + getUserName() + "]";
 	}
 }
