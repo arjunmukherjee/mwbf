@@ -11,12 +11,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
-import com.MWBFServer.Activity.Activities;
-import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Challenges.Challenge;
-import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
-import com.MWBFServer.Stats.PersonalStats;
-import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
 
 @SuppressWarnings("deprecation")
@@ -100,26 +95,26 @@ public class DbConnection
 	 * Returns a list of all registered users.
 	 * @return
 	 */
-	public static List<User> queryGetUsers()
+	public static List<?> queryGetUsers()
 	{
 		// creating session object
 		Session session = getSession();
        	Query query = session.createQuery("FROM User");
       
-        return (List<User>) executeListQuery(query, session);
+        return executeListQuery(query, session);
 	}
 	
 	/**
 	 * Returns a list of all valid MWBF activities.
 	 * @return
 	 */
-	public static List<Activities> queryGetActivityList()
+	public static List<?> queryGetActivityList()
 	{
 		// creating session object
 		Session session = getSession();
        	Query query = session.createQuery("FROM Activities");
       
-        return (List<Activities>) executeListQuery(query, session);
+        return executeListQuery(query, session);
 	}
 	
 	/**
@@ -127,7 +122,7 @@ public class DbConnection
 	 * @param _user
 	 * @return
 	 */
-	public static List<UserActivity> queryGetUserActivity(User _user)
+	public static List<?> queryGetUserActivity(User _user)
 	{
 		// creating session object
 		Session session = getSession();
@@ -136,7 +131,7 @@ public class DbConnection
         Query query = session.createQuery(hql);
         query.setString("userId", _user.getId());
       
-        return (List<UserActivity>) executeListQuery(query, session);
+        return executeListQuery(query, session);
 	}
 	
 /**
@@ -232,7 +227,7 @@ public class DbConnection
 		return true;
 	}
 
-	public static List<Friends> queryGetFriendsList(User _user) 
+	public static List<?> queryGetFriendsList(User _user) 
 	{
 		// creating session object
 		Session session = getSession();
@@ -241,7 +236,7 @@ public class DbConnection
 		Query query = session.createQuery(hql);
 		query.setString("userId", _user.getId());
 
-		return (List<Friends>) executeListQuery(query, session);
+		return executeListQuery(query, session);
 	}
 
 	/**
@@ -363,7 +358,7 @@ public class DbConnection
 	 * @param _user
 	 * @return
 	 */
-	public static List<PersonalStats> queryGetPersonalStats(User _user) 
+	public static List<?> queryGetPersonalStats(User _user) 
 	{
 		// creating session object
 		Session session = getSession();
@@ -372,7 +367,7 @@ public class DbConnection
 		Query query = session.createQuery(hql);
 		query.setString("userId", _user.getId());
 
-		return (List<PersonalStats>) executeListQuery(query, session);
+		return executeListQuery(query, session);
 	}
 
 
@@ -380,13 +375,13 @@ public class DbConnection
 	 * Retrieve the users all time bestDay, bestMonth and bestYear
 	 * @param _user
 	 */
-	public static List<UserActivityByTime> queryGetAllTimeHighs(User _user, String _aggregateBy)
+	public static List<?> queryGetAllTimeHighs(User _user, String _aggregateBy)
 	{
 		String hql = "SELECT colA, SUM(colB) FROM (SELECT date_trunc('" + _aggregateBy + "',UA.activity_date) colA,SUM(UA.points) colB";
 		hql += " FROM user_activity UA WHERE UA.user_id = '" + _user.getId() + "'";
 		hql += " GROUP BY UA.activity_date ORDER BY date_trunc('" + _aggregateBy + "',UA.activity_date))sub GROUP BY colA";
 				
-		return (List<UserActivityByTime>) createQueryAndExecute(hql);
+		return createQueryAndExecute(hql);
 	}
 
 	/**

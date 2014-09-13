@@ -215,9 +215,7 @@ public class Utils
 	{
 		List<Activities> activitiesList =  (List<Activities>) DbConnection.queryGetActivityList();
 		for (Activities activity : activitiesList)
-		{
 			mActivitieshash.put(activity.getActivityName(), activity);
-		}
 	}
 	
 	/**

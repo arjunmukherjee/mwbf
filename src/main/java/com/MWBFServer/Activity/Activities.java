@@ -16,6 +16,7 @@ public class Activities
 	private String measurementUnit;
 	private String measurementUnitShort;
 	private double pointsPerUnit;
+	private double wholeUnit;
 	
 	@Id @GeneratedValue
 	@Column (name="ID")
@@ -46,6 +47,16 @@ public class Activities
 	public void setPointsPerUnit(double pointsPerUnit) 
 	{
 		this.pointsPerUnit = pointsPerUnit;
+	}
+	
+	@Column (name="WHOLE_UNIT")
+	public double getWholeUnit() 
+	{
+		return wholeUnit;
+	}
+	public void setWholeUnit(double wholeUnit) 
+	{
+		this.wholeUnit = wholeUnit;
 	}
 	
 	@Column (name="MEASUREMENT_UNIT")
@@ -84,4 +95,5 @@ public class Activities
 	{
 		return "Id [" + id + "], Name[" + activityName + "], PointsPerUnit[" + pointsPerUnit + "]";
 	}
+
 }
