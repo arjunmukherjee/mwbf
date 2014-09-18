@@ -233,7 +233,7 @@ public class UserActions
 		Gson gson = new Gson();
 		
 		//TODO: remove this
-		log.warn("Vivek's test warning");
+		log.warn("Vivek's test warning, again");
 		
 		Type collectionType = new TypeToken<List<UserActivity>>(){}.getType();
 		List<UserActivity> newActivityList = gson.fromJson(_incomingData, collectionType);
