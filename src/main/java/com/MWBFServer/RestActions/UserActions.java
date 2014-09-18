@@ -232,6 +232,7 @@ public class UserActions
 		String returnStr = null;
 		Gson gson = new Gson();
 		
+		
 		Type collectionType = new TypeToken<List<UserActivity>>(){}.getType();
 		List<UserActivity> newActivityList = gson.fromJson(_incomingData, collectionType);
 		
