@@ -134,8 +134,6 @@ public class UserActions
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response addUser(String _incomingData)
 	{
-		log.info("Adding User to MWBF");
-		
 		JSONObject userData = null;
 		try 
 		{
