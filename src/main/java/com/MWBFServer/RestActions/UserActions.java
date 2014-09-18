@@ -231,7 +231,8 @@ public class UserActions
 	{
 		String returnStr = null;
 		Gson gson = new Gson();
-		
+
+		log.info("Logging user activity [" + _incomingData + "]");
 		
 		Type collectionType = new TypeToken<List<UserActivity>>(){}.getType();
 		List<UserActivity> newActivityList = gson.fromJson(_incomingData, collectionType);
@@ -244,7 +245,7 @@ public class UserActions
 			ua.setPoints(points);
 		}
 		
-		// If successful, add to the local cache
+		// TODO : If successful, add to the local cache
 		if ( Utils.logActivity(newActivityList) )
 			returnStr =   "{\"success\":1,\"message\":\"Activity logged.\"}";
 		else
