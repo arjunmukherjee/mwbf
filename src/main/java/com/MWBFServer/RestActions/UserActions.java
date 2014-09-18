@@ -11,6 +11,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.google.gson.JsonSyntaxException;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -231,9 +232,18 @@ public class UserActions
 	{
 		String returnStr = null;
 		Gson gson = new Gson();
-		
+
+		log.info("Logging user activities [" + _incomingData + "]");
+
 		Type collectionType = new TypeToken<List<UserActivity>>(){}.getType();
-		List<UserActivity> newActivityList = gson.fromJson(_incomingData, collectionType);
+		List<UserActivity> newActivityList = null;
+        try {
+            newActivityList = gson.fromJson(_incomingData, collectionType);
+        } catch (JsonSyntaxException jse) {
+            log.error("Error logging user activity.", jse);
+            returnStr =   "{\"success\":0,\"message\":\"Unable to log activity, please try again.\"}";
+            return Utils.buildResponse(returnStr);
+        }
 		
 		// Multiply the activity's points * the number of exercise units and then store in db
 		for (UserActivity ua : newActivityList)
