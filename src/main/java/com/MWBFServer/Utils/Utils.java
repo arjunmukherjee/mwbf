@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.persistence.Cache;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
@@ -401,7 +400,7 @@ public class Utils
 		 		actString.append(" ");
 		 		actString.append(activityUnits);
 		 		actString.append(" ");
-		 		actString.append(DataCache.m_activitiesHash.get(activityId).getMeasurementUnit());
+		 		actString.append(DataCache.m_activitiesHash.get(activityId).getMeasurementUnitShort());
 		 		actString.append(" on ");
 		 		actString.append(activityDate);
 		 		messageList.add(actString.toString());

@@ -237,9 +237,12 @@ public class UserActions
 
 		Type collectionType = new TypeToken<List<UserActivity>>(){}.getType();
 		List<UserActivity> newActivityList = null;
-        try {
+        try 
+        {
             newActivityList = gson.fromJson(_incomingData, collectionType);
-        } catch (JsonSyntaxException jse) {
+        } 
+        catch (JsonSyntaxException jse) 
+        {
             log.error("Error logging user activity.", jse);
             returnStr =   "{\"success\":0,\"message\":\"Unable to log activity, please try again.\"}";
             return Utils.buildResponse(returnStr);
