@@ -446,7 +446,7 @@ public class UserActions
 	public Response getUserFriendsActivities(String _incomingData)
 	{
 		String returnStr = "{\"success\":0,\"message\":\"Unable to find your friends.\"}";
-		
+		//TODO: Fix this method
 		JSONObject userData = null;
 		try 
 		{
