@@ -473,6 +473,7 @@ public class UserActions
                 log.info("Before Utils.getUserFriendsActivities(friendsList)");
 				List<String> activityList = Utils.getUserFriendsActivities(friendsList);
                 log.info("### After Utils.getUserFriendsActivities(friendsList)");
+                log.info("### activityList count = "+activityList.size());
 				// Null out the user Object and the password fields
 				if ( activityList != null )
 					returnStr = gson.toJson(activityList);
