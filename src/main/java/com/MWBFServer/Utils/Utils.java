@@ -570,19 +570,28 @@ public class Utils
 	 */
 	public static List<String> getUserFriendsActivities(List<Friends> friendsList) 
 	{
-		List<String> friendIdList = new ArrayList<String>();
+		// TODO : Highly inefficient
+		
+		List<UserActivity> activityList = new ArrayList<UserActivity>();
 		for (Friends friend : friendsList)
-			friendIdList.add(friend.getFriend().getId());
+		{
+			List<UserActivity> friendActivityList = (List<UserActivity>) DbConnection.queryGetFriendsActivities(friend.getFriend().getId());
+			activityList.addAll(friendActivityList);
+		}
 		
 		// Get the list of activities and sort them by time
-		List<UserActivity> activityList = (List<UserActivity>) DbConnection.queryGetFriendsActivities(friendIdList);
 		Collections.sort(activityList);
 		
 		List<String> friendActivityList = new ArrayList<String>();
 		for (UserActivity activity : activityList)
 			friendActivityList.add(activity.constructNotificationString());
 		
-		return friendActivityList;
+		// Return only the last 50 items
+		int startIndex = 0;
+		if( friendActivityList.size() > 50 )
+			startIndex = friendActivityList.size() - 50;
+		
+		return friendActivityList.subList(startIndex, startIndex+50);
 	}
 
 }

@@ -149,7 +149,4 @@ public class UserActivity implements Comparable<UserActivity>
 	{
 		return this.getDate().compareTo(o.getDate());
 	}
-
-
-	
 }

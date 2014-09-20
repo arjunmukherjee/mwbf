@@ -416,20 +416,15 @@ public class DbConnection
 	 * @param friendIdList
 	 * @return
 	 */
-	public static List<?> queryGetFriendsActivities(List<String> friendIdList) 
+	public static List<?> queryGetFriendsActivities(String _friendId) 
 	{
 		// creating session object
 		Session session = getSession();
 		
-		String playersStr = StringUtils.join(friendIdList, "','");
-		
-		String hql = "FROM UserActivity UA WHERE UA.user in :userId";
+		String hql = "FROM UserActivity UA WHERE UA.user = :friendId";
         Query query = session.createQuery(hql);
-        query.setString("userId", playersStr);
+        query.setString("friendId", _friendId);
         
-       return executeListQuery(query, session);
+        return executeListQuery(query, session);
 	}
-
-	
-
 }
