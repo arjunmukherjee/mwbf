@@ -1,6 +1,10 @@
 package com.MWBFServer.Activity;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,11 +14,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Users.User;
 
 @Entity
 @Table (name="USER_ACTIVITY")
-public class UserActivity 
+public class UserActivity implements Comparable<UserActivity>
 {
 	private long id;
 	private User user;
@@ -105,9 +110,46 @@ public class UserActivity
 		this.points = _points;
 	}
 
+	/**
+	 * Construct a notification string from an activity object.
+	 * Ex : Radha ran 5mi on Sep 18
+	 * @return
+	 */
+	public String constructNotificationString()
+	{
+ 		StringBuilder actString = new StringBuilder();
+ 		String exerciseUnitsStr = Double.toString(this.exerciseUnits);
+ 		
+ 		// If the exercise amount is 5.0, then change it to 5
+ 		// If it is 5.6, leave it as 5.6
+ 		int exerciseUnitsInt = (int) this.exerciseUnits;
+ 		if (this.exerciseUnits == exerciseUnitsInt)
+ 			exerciseUnitsStr = Integer.toString(exerciseUnitsInt);
+ 		
+ 		actString.append(this.user.getFirstName());
+ 		actString.append(" ");
+ 		actString.append(DataCache.m_activitiesHash.get(this.activityId).getPastVerb());
+ 		actString.append(" ");
+ 		actString.append(exerciseUnitsStr);
+ 		actString.append(DataCache.m_activitiesHash.get(this.activityId).getMeasurementUnitShort());
+ 		actString.append(" on ");
+ 		actString.append(new SimpleDateFormat("MMM d").format(this.date));
+ 		
+ 		return actString.toString();
+	}
+	
 	@Override
 	public String toString()
 	{
 		return "User : [" + user.getId() + "], Activity [" + activityId + "], Units [" + exerciseUnits + "], Date [" + date.toString() + "]";
 	}
+
+	@Override
+	public int compareTo(UserActivity o) 
+	{
+		return this.getDate().compareTo(o.getDate());
+	}
+
+
+	
 }

@@ -3,6 +3,7 @@ package com.MWBFServer.Utils;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,10 +40,6 @@ public class Utils
 	 */
 	public static void addUsers()
 	{
-		User p1 = new User("arjunmuk@gmail.com", "password", "Arjun", "Mukherjee");
-		User p2 = new User("sowmya.shantharam@gmail.com", "password", "Sowmya", "Shantharam");
-		addUser(p1);
-		addUser(p2);
 	}
 	
 	public static Boolean addUser(User _user)
@@ -564,6 +561,28 @@ public class Utils
 			success = false;
 		
 		return success;
+	}
+
+	/**
+	 * Get the friends activities for each user
+	 * @param friendsList
+	 * @return
+	 */
+	public static List<String> getUserFriendsActivities(List<Friends> friendsList) 
+	{
+		List<String> friendIdList = new ArrayList<String>();
+		for (Friends friend : friendsList)
+			friendIdList.add(friend.getFriend().getId());
+		
+		// Get the list of activities and sort them by time
+		List<UserActivity> activityList = (List<UserActivity>) DbConnection.queryGetFriendsActivities(friendIdList);
+		Collections.sort(activityList);
+		
+		List<String> friendActivityList = new ArrayList<String>();
+		for (UserActivity activity : activityList)
+			friendActivityList.add(activity.constructNotificationString());
+		
+		return friendActivityList;
 	}
 
 }

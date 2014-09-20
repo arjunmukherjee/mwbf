@@ -6,12 +6,16 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.criterion.Order;
 
+import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Challenges.Challenge;
+import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
 
 @SuppressWarnings("deprecation")
@@ -404,6 +408,26 @@ public class DbConnection
 		hql += " and activity_date > '" + _startDate + "' and activity_date < '" + _endDate + "' order by activity_date limit 50";
 				
 		return  createQueryAndExecute(hql);
+	}
+
+	/**
+	 * Get a list of all the user's friend's activities.
+	 * 
+	 * @param friendIdList
+	 * @return
+	 */
+	public static List<?> queryGetFriendsActivities(List<String> friendIdList) 
+	{
+		// creating session object
+		Session session = getSession();
+		
+		String playersStr = StringUtils.join(friendIdList, "','");
+		
+		String hql = "FROM UserActivity UA WHERE UA.user in :userId";
+        Query query = session.createQuery(hql);
+        query.setString("userId", playersStr);
+        
+       return executeListQuery(query, session);
 	}
 
 	
