@@ -465,11 +465,13 @@ public class UserActions
 				Gson gson = new Gson();
 			 
 				// Look up the users friends
+                log.info("Before Utils.getUserFriendsList(user)");
 				List<Friends> friendsList = Utils.getUserFriendsList(user);
-				
+                log.info("### After Utils.getUserFriendsList(user)");
 				// Look up the friends activities
+                log.info("Before Utils.getUserFriendsActivities(friendsList)");
 				List<String> activityList = Utils.getUserFriendsActivities(friendsList);
-				
+                log.info("### After Utils.getUserFriendsActivities(friendsList)");
 				// Null out the user Object and the password fields
 				if ( activityList != null )
 					returnStr = gson.toJson(activityList);
