@@ -468,6 +468,7 @@ public class UserActions
                 log.info("Before Utils.getUserFriendsList(user)");
 				List<Friends> friendsList = Utils.getUserFriendsList(user);
                 log.info("### After Utils.getUserFriendsList(user)");
+                log.info("### friendList count = " + friendsList.size());
 				// Look up the friends activities
                 log.info("Before Utils.getUserFriendsActivities(friendsList)");
 				List<String> activityList = Utils.getUserFriendsActivities(friendsList);
