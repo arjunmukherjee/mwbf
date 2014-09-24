@@ -468,7 +468,7 @@ public class UserActions
 				List<Friends> friendsList = Utils.getUserFriendsList(user);
 				
 				// Look up the friends activities
-				List<String> activityList = Utils.getUserFriendsActivities(friendsList);
+				List<String> activityList = Utils.getUserFriendsActivities(friendsList, user);
 				
 				// Null out the user Object and the password fields
 				if ( activityList != null )
