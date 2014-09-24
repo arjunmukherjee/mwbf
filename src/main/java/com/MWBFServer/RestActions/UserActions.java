@@ -658,7 +658,7 @@ public class UserActions
 				
 				Gson gson = new Gson();
 			 
-				// Look up the users friends
+				// Look up the users challenges
 				List<DBReturnChallenge> challengeList = Utils.getChallenges(user);
 				
 				// Convert the List to a Json representation
