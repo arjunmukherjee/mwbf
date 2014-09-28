@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Response;
 
+import com.MWBFServer.Dto.FeedItem;
 import org.apache.log4j.Logger;
 
 import com.MWBFServer.Activity.Activities;
@@ -216,7 +217,7 @@ public class Utils
 	
 	/**
 	 * Deletes all the activities for a given user.
-	 * @param user
+	 * @param _user
 	 * @return Boolean
 	 */
 	public static Boolean deleteAllActivitiesForUser(User _user) 
@@ -545,7 +546,7 @@ public class Utils
 	/**
 	 * First find the challenge object.
 	 * Delete the challenge object.
-	 * @param challengeId
+	 * @param _challengeId
 	 * @return
 	 */
 	public static boolean deleteChallenge(String _challengeId) 
@@ -568,7 +569,7 @@ public class Utils
 	 * @param _user 
 	 * @return
 	 */
-	public static List<String> getUserFriendsActivities(List<Friends> friendsList, User _user) 
+	public static List<String> getUserFriendsActivities(List<Friends> friendsList, User _user)
 	{
 		// TODO : Highly inefficient
 		
@@ -585,13 +586,13 @@ public class Utils
 		
 		// Get the list of activities and sort them by time
 		Collections.sort(activityList);
-		
+
 		// Convert the activities to string
 		// TODO : Might be better to return the activity object as json instead
 		List<String> friendActivityList = new ArrayList<String>();
 		for (UserActivity activity : activityList)
 			friendActivityList.add(activity.constructNotificationString());
-		
+
 		// Return only the last 50 items
 		int startIndex = 0;
 		if( friendActivityList.size() > Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
@@ -599,5 +600,56 @@ public class Utils
 		
 		return friendActivityList.subList(startIndex, startIndex + Constants.MAX_NUMBER_OF_MESSAGE_FEEDS);
 	}
+
+    /**
+     * Get the friends activities for each user
+     * @param friendsList
+     * @param _user
+     * @return
+     */
+    public static List<FeedItem> getUserFeedItems(List<Friends> friendsList, User _user)
+    {
+        // TODO : Highly inefficient
+
+        List<UserActivity> activityList = new ArrayList<UserActivity>();
+        for (Friends friend : friendsList)
+        {
+            List<UserActivity> friendActivityList = (List<UserActivity>) DbConnection.queryGetFriendsActivities(friend.getFriend().getId());
+            activityList.addAll(friendActivityList);
+        }
+
+        // Get the users activity feeds
+        List<UserActivity> userActivityList = (List<UserActivity>) DbConnection.queryGetFriendsActivities(_user.getId());
+        activityList.addAll(userActivityList);
+
+        // Get the list of activities and sort them by time
+        Collections.sort(activityList);
+
+        // Populate feed item list
+        List<FeedItem> feedItemList = new ArrayList<FeedItem>();
+        for (UserActivity activity : activityList) {
+            // Populate FeedItem object
+            FeedItem item = new FeedItem();
+            item.setActivityDate(activity.getDate());
+            item.setActivityName(activity.getActivityId());
+            item.setActivityUnit(DataCache.m_activitiesHash.get(activity.getActivityId()).getMeasurementUnitShort());
+            item.setActivityValue(activity.getExerciseUnits());
+            item.setFirstName(activity.getUser().getFirstName());
+            item.setLastName(activity.getUser().getLastName());
+            item.setUserId(activity.getUser().getId());
+            item.setPoints(activity.getPoints());
+            item.setFeedPrettyString(activity.constructNotificationString());
+            // Add to feeItemList
+            feedItemList.add(item);
+        }
+
+
+        // Return only the last 50 items
+        int startIndex = 0;
+        if( feedItemList.size() > Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
+            startIndex = feedItemList.size() - Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
+
+        return feedItemList.subList(startIndex, startIndex + Constants.MAX_NUMBER_OF_MESSAGE_FEEDS);
+    }
 
 }

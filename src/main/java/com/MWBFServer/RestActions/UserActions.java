@@ -11,6 +11,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.MWBFServer.Dto.FeedItem;
 import com.google.gson.JsonSyntaxException;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONException;
@@ -484,6 +485,52 @@ public class UserActions
 		
 		return Utils.buildResponse(returnStr);
 	}
+
+    @POST
+    @Path("/friends/feedItems")
+    @Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUserFeedItems(String _incomingData)
+    {
+        String returnStr = "{\"success\":0,\"message\":\"Unable to find your friends.\"}";
+        //TODO: Fix this method
+        JSONObject userData = null;
+        try
+        {
+            userData = new JSONObject(_incomingData);
+            String userId = userData.optString("user_id");
+            User user = m_existingUsersHash.get(userId);
+            if ( user == null )
+            {
+                log.warn("Unable to find logged in user (something's wrong) [" + userId + "].");
+                returnStr = "{\"success\":0,\"message\":\"Unable to find logged in user (something's wrong).\"}";
+            }
+            else
+            {
+                log.info("Fetching all friends activities for UserId["+ user.getId() +"]");
+
+                Gson gson = new Gson();
+
+                // Look up the users friends
+                List<Friends> friendsList = Utils.getUserFriendsList(user);
+
+                // Look up the friends activities
+                List<FeedItem> activityList = Utils.getUserFeedItems(friendsList, user);
+
+                // Null out the user Object and the password fields
+                if ( activityList != null )
+                    returnStr = gson.toJson(activityList);
+                else
+                    returnStr = "{\"success\":0,\"message\":\"Unable to find any activities for friends.\"}";
+            }
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+
+        return Utils.buildResponse(returnStr);
+    }
 	
 	@POST
 	@Path("/addFriend")
