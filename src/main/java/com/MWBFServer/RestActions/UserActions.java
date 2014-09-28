@@ -486,7 +486,7 @@ public class UserActions
 		return Utils.buildResponse(returnStr);
 	}
 
-    @GET
+    @POST
     @Path("/friends/feed")
     @Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
     @Produces(MediaType.APPLICATION_JSON)
