@@ -1,10 +1,7 @@
 package com.MWBFServer.Activity;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -85,9 +82,9 @@ public class UserActivity implements Comparable<UserActivity>
 	{
 		return date;
 	}
-	public void setDate(Date m_date) 
+	public void setDate(Date _date) 
 	{
-		this.date = m_date;
+		this.date = _date;
 	}
 	
 	@Column (name="EXERCISE_UNITS")
@@ -145,8 +142,8 @@ public class UserActivity implements Comparable<UserActivity>
 	}
 
 	@Override
-	public int compareTo(UserActivity o) 
+	public int compareTo(UserActivity _o) 
 	{
-		return this.getDate().compareTo(o.getDate());
+		return this.getDate().compareTo(_o.getDate());
 	}
 }

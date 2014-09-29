@@ -493,7 +493,6 @@ public class UserActions
     public Response getUserFeedItems(String _incomingData)
     {
         String returnStr = "{\"success\":0,\"message\":\"Unable to find your friends.\"}";
-        //TODO: Fix this method
         JSONObject userData = null;
         try
         {
@@ -517,7 +516,6 @@ public class UserActions
                 // Look up the friends activities
                 List<FeedItem> activityList = Utils.getUserFeedItems(friendsList, user);
 
-                // Null out the user Object and the password fields
                 if ( activityList != null )
                     returnStr = gson.toJson(activityList);
                 else
@@ -680,7 +678,6 @@ public class UserActions
 		return Utils.buildResponse(returnStr);
 	}
 
-	
 	@POST
 	@Path("/challenge/getAll")
 	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
