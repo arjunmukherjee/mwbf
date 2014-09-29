@@ -13,9 +13,9 @@ public class DataCache
 {
 	private static DataCache singleInstance;
 	
-	public static final Map<String,Activities> m_activitiesHash = new HashMap<>();
-	public static final Map<String,User> m_usersHash = new HashMap<>();
-	public static final Map<User,List<Friends>> m_friendsHash = new HashMap<>();
+	public static final Map<String,Activities> m_activitiesHash = new HashMap<String,Activities>();
+	public static final Map<String,User> m_usersHash = new HashMap<String,User>();
+	public static final Map<User,List<Friends>> m_friendsHash = new HashMap<User,List<Friends>>();
 	
 	static
 	{
