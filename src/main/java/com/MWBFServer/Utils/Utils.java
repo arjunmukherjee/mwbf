@@ -76,6 +76,29 @@ public class Utils
 	}
 	
 	/**
+	 * Add a set of activities to the hash map.
+	 * Run --> Run Activity Object
+	 * @param mActivitieshash
+	 */
+	public static void loadActivities(Map<String, Activities> _mActivitieshash) 
+	{
+		List<Activities> activitiesList =  (List<Activities>) DbConnection.queryGetActivityList();
+		for (Activities activity : activitiesList)
+			_mActivitieshash.put(activity.getActivityName(), activity);
+	}
+	
+	/**
+     * Load all of a users friends into the hash
+     * User1 --> Friend1, Friend2..
+     * @param _mUserfriendshash
+     */
+	public static void loadFriends(Map<User, List<Friends>> _mUserfriendshash) 
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	
+	/**
 	 * Lookup up all the activities for the user.
 	 * Aggregate it by Activity
 	 */
@@ -203,18 +226,6 @@ public class Utils
 		return rb;
 	}
 
-	/**
-	 * Add a set of activities to the hash map.
-	 * Run --> Run Activity Object
-	 * @param mActivitieshash
-	 */
-	public static void loadActivities(Map<String, Activities> mActivitieshash) 
-	{
-		List<Activities> activitiesList =  (List<Activities>) DbConnection.queryGetActivityList();
-		for (Activities activity : activitiesList)
-			mActivitieshash.put(activity.getActivityName(), activity);
-	}
-	
 	/**
 	 * Deletes all the activities for a given user.
 	 * @param _user
@@ -651,5 +662,8 @@ public class Utils
 
         return feedItemList.subList(startIndex, startIndex + Constants.MAX_NUMBER_OF_MESSAGE_FEEDS);
     }
+
+    
+    
 
 }
