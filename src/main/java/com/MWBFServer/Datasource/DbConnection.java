@@ -6,16 +6,12 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.criterion.Order;
 
-import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Challenges.Challenge;
-import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
 
 @SuppressWarnings("deprecation")
