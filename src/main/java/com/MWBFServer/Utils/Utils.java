@@ -3,6 +3,7 @@ package com.MWBFServer.Utils;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 import javax.ws.rs.core.Response;
 
 import com.MWBFServer.Dto.FeedItem;
+import com.MWBFServer.Dto.WeeklyComparisons;
+
 import org.apache.log4j.Logger;
 
 import com.MWBFServer.Activity.Activities;
@@ -63,8 +66,11 @@ public class Utils
 	 * Load all the users from the Database into the validUsers hashSet.
 	 * User lookup becomes fast.
 	 */
+	@SuppressWarnings("unchecked")
 	public static void loadUsers(Set<User> _validUsers, Map<String,User> _existingUsers)
 	{
+		log.info("Loading USERS into CACHE.");
+		
 		List<User> userList = (List<User>) DbConnection.queryGetUsers();
 		for (User user : userList)
 		{
@@ -80,8 +86,11 @@ public class Utils
 	 * Run --> Run Activity Object
 	 * @param mActivitieshash
 	 */
+	@SuppressWarnings("unchecked")
 	public static void loadActivities(Map<String, Activities> _mActivitieshash) 
 	{
+		log.info("Loading MWBF ACTIVITIES into CACHE.");
+		
 		List<Activities> activitiesList =  (List<Activities>) DbConnection.queryGetActivityList();
 		for (Activities activity : activitiesList)
 			_mActivitieshash.put(activity.getActivityName(), activity);
@@ -92,10 +101,14 @@ public class Utils
      * User1 --> Friend1, Friend2..
      * @param _mUserfriendshash
      */
+	@SuppressWarnings("unchecked")
 	public static void loadFriends(Map<User, List<Friends>> _mUserfriendshash) 
 	{
-		// TODO Auto-generated method stub
+		log.info("Loading FRIENDS into CACHE.");
 		
+		// Iterate through each of the users and load up their friends
+		for (User user : DataCache.m_usersHash.values())
+			DataCache.m_friendsHash.put(user, (List<Friends>) DbConnection.queryGetFriendsList(user));
 	}
 	
 	/**
@@ -243,7 +256,7 @@ public class Utils
 	 */
 	public static List<Friends> getUserFriendsList(User _user) 
 	{
-		return (List<Friends>) DbConnection.queryGetFriendsList(_user);
+		return DataCache.m_friendsHash.get(_user);
 	}
 	
 	/**
@@ -261,7 +274,15 @@ public class Utils
 		friendsList.add(userObj);
 		friendsList.add(friendObj);
 		
-		return DbConnection.saveList(friendsList);
+		// Add the friend to the cache
+		boolean returnVal = false;
+		if ( DbConnection.saveList(friendsList) )
+		{
+			DataCache.m_friendsHash.get(_user).add(friendObj);
+			returnVal = true;
+		}
+		
+		return returnVal;
 	}
 
 	/**
@@ -638,7 +659,8 @@ public class Utils
 
         // Populate feed item list
         List<FeedItem> feedItemList = new ArrayList<FeedItem>();
-        for (UserActivity activity : activityList) {
+        for (UserActivity activity : activityList) 
+        {
             // Populate FeedItem object
             FeedItem item = new FeedItem();
             item.setActivityDate(activity.getDate());
@@ -657,13 +679,72 @@ public class Utils
 
         // Return only the last 50 items
         int startIndex = 0;
+        int endIndex = Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
         if( feedItemList.size() > Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
             startIndex = feedItemList.size() - Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
 
-        return feedItemList.subList(startIndex, startIndex + Constants.MAX_NUMBER_OF_MESSAGE_FEEDS);
+        if( feedItemList.size() < Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
+        	endIndex = feedItemList.size();
+        
+        return feedItemList.subList(startIndex, startIndex + endIndex);
     }
+    
+    /**
+     * Get the friends stats (friends average, leader)
+     * @param friendsList
+     * @param _user
+     * @return
+     */
+    public static WeeklyComparisons getFriendStats(User _user)
+    {
+    	// Calculate the start and the end of the current week
+    	Date date = new Date();
+    	Calendar c = Calendar.getInstance();
+    	c.setTime(date);
+    	int dayOfWeek = c.get(Calendar.DAY_OF_WEEK) - c.getFirstDayOfWeek();
+    	c.add(Calendar.DAY_OF_MONTH, -dayOfWeek);
 
-    
-    
+    	Date weekStart = c.getTime();
+    	// we do not need the same day a week after, that's why use 6, not 7
+    	c.add(Calendar.DAY_OF_MONTH, 6); 
+    	Date weekEnd = c.getTime();
+    	
+    	SimpleDateFormat df = new SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH);
+    	
+    	
+    	Double friendsPointsTotal = 0.0;
+    	Double leaderPoints = 0.0;
+    	
+    	// Get the friends activities for the week
+    	for (Friends friend : DataCache.m_friendsHash.get(_user))
+    	{
+    		List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(friend.getFriend(), df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
+    		
+    		Double friendPoints = 0.0;
+    		for (UserActivity ua : activityList)
+    			friendPoints = friendPoints + ua.getPoints();
+    		
+    		if (friendPoints > leaderPoints)
+    			leaderPoints = friendPoints;
+    		
+    		friendsPointsTotal = friendsPointsTotal + friendPoints;
+    	}
+    	
+    	// Calculate the average across all the friends
+    	Double friendsPointsAverage = friendsPointsTotal / DataCache.m_friendsHash.get(_user).size();
+    	
+    	// Get the users activity for the week
+    	List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(_user, df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
+		Double userPoints = 0.0;
+		for (UserActivity ua : activityList)
+			userPoints = userPoints + ua.getPoints();
+		
+		// Round off the points to a single precision
+		userPoints = round(userPoints,1);
+		friendsPointsAverage = round(friendsPointsAverage,1);
+		leaderPoints = round (leaderPoints,1);
+		
+		return new WeeklyComparisons(userPoints, friendsPointsAverage, leaderPoints);
+    }
 
 }

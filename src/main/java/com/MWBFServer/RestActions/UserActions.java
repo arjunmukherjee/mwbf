@@ -12,7 +12,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.MWBFServer.Dto.FeedItem;
+import com.MWBFServer.Dto.WeeklyComparisons;
 import com.google.gson.JsonSyntaxException;
+
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -124,11 +126,15 @@ public class UserActions
 				List<UserActivityByTime> allTimeHighList = Utils.getAllTimeHighs(user);
 				if ( allTimeHighList != null && allTimeHighList.size() > 0 )
 					returnStr = gson.toJson(allTimeHighList);
+				
+				// TODO : ARJUN
+				gson.toJson(Utils.getFriendStats(user));
 			}
 		}
 		
 		return Utils.buildResponse(returnStr);
 	}
+	
 	
 	@POST
 	@Path("/add")
@@ -529,6 +535,47 @@ public class UserActions
 
         return Utils.buildResponse(returnStr);
     }
+    
+    @POST
+	@Path("/weeklyComparisons")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response compareUserEffortToFriends(String _incomingData)
+	{
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+		
+		String email = userData.optString("user_id").trim();
+		
+		//  First check if the user exists, if not, then register the user
+		String returnStr = null;
+		if ( (email == null) || (email.length() <= 1)  )
+			returnStr =   "{\"success\":0,\"message\":\"Unable to get weekly comparison stats for the user\"}";
+		else
+		{
+			User user = m_existingUsersHash.get(email);
+			if ( user != null ) 
+			{
+				// Get the users personal stats
+				Gson gson = new Gson();
+				 
+				// Look up the users personal stats
+				log.info("Getting the users weekly comparison stats.");
+				WeeklyComparisons wk = Utils.getFriendStats(user);
+				if ( wk != null  )
+					returnStr = gson.toJson(wk);
+			}
+		}
+		
+		return Utils.buildResponse(returnStr);
+	}
 	
 	@POST
 	@Path("/addFriend")

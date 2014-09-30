@@ -138,7 +138,7 @@ public class UserActivity implements Comparable<UserActivity>
 	@Override
 	public String toString()
 	{
-		return "User : [" + user.getId() + "], Activity [" + activityId + "], Units [" + exerciseUnits + "], Date [" + date.toString() + "]";
+		return "User : [" + user.getId() + "], Activity [" + activityId + "], Units [" + exerciseUnits + "], Points [" + points + "], Date [" + date.toString() + "]";
 	}
 
 	@Override

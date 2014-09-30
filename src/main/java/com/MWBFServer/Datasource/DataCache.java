@@ -11,6 +11,10 @@ import com.MWBFServer.Utils.Utils;
 
 public class DataCache 
 {
+	// TODO : 
+	// 1. Get other classes to use this cache.
+	// 2. Remove static for the member variables
+	
 	private static DataCache singleInstance;
 	
 	public static final Map<String,Activities> m_activitiesHash = new HashMap<String,Activities>();
