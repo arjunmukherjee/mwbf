@@ -716,6 +716,7 @@ public class Utils
     	Double leaderPoints = 0.0;
     	
     	// Get the friends activities for the week
+    	int activeFriendsCount = 0;
     	for (Friends friend : DataCache.m_friendsHash.get(_user))
     	{
     		List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(friend.getFriend(), df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
@@ -728,21 +729,21 @@ public class Utils
     			leaderPoints = friendPoints;
     		
     		friendsPointsTotal = friendsPointsTotal + friendPoints;
+    		
+    		// Look for active friends
+    		if ( friendPoints != 0.0 )
+    			activeFriendsCount++;
     	}
     	
+    	// Calculate the average across all the active friends
+    	Double friendsPointsAverage = friendsPointsTotal / activeFriendsCount;
+		
     	// Get the users activity for the week
     	List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(_user, df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
 		Double userPoints = 0.0;
-		int activeFriendsCount = 0;
 		for (UserActivity ua : activityList)
-		{
 			userPoints = userPoints + ua.getPoints();
-			activeFriendsCount++;
-		}
-		
-		// Calculate the average across all the active friends
-    	Double friendsPointsAverage = friendsPointsTotal / activeFriendsCount;
-		
+			
 		// Round off the points to a single precision
 		userPoints = round(userPoints,1);
 		friendsPointsAverage = round(friendsPointsAverage,1);
