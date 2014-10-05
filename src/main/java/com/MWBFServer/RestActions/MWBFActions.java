@@ -55,9 +55,8 @@ public class MWBFActions
 	public Response test()
 	{
 		String returnStr = null;
-		log.info("Test Test.");
+		log.info("TEST SERVICE.");
 		
-	
 		returnStr =   "{\"success\":1,\"message\":\"Test successful.\"}";
 
 		return Utils.buildResponse(returnStr);

@@ -16,6 +16,10 @@
     	<url-pattern>/mwbf/*</url-pattern>
   	</servlet-mapping>
     
+    <listener>
+       <listener-class>com.MWBFServer.Services.BonusContextListener</listener-class>
+    </listener>
+    
     <session-config>
         <session-timeout>
             30
