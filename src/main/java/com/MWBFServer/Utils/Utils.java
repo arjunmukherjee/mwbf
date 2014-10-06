@@ -748,7 +748,9 @@ public class Utils
 		friendsPointsAverage = round(friendsPointsAverage,1);
 		leaderPoints = round (leaderPoints,1);
 		
-		return new WeeklyComparisons(userPoints, friendsPointsAverage, leaderPoints);
+		WeeklyComparisons wkComp = new WeeklyComparisons(userPoints, friendsPointsAverage, leaderPoints);
+		
+		return wkComp;
     }
 
 }

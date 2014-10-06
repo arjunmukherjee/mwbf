@@ -92,7 +92,19 @@ public class BonusContextListener implements ServletContextListener
 			}
 		};
 		
-		// TODO : Schedule to run every Saturday (Need to figure this out)
-		scheduledExecutorService.scheduleAtFixedRate(task, 1, 7, TimeUnit.DAYS);
+		// Calculate the time between Now and Saturday 10pm
+		Calendar with = Calendar.getInstance();
+	    with.setTime(new Date());
+
+	    int day = with.get(Calendar.DAY_OF_WEEK);
+	    int hour = with.get(Calendar.HOUR_OF_DAY);
+	    int currentHourInWeek = day*24 + hour;
+	    int hoursUntilSaturdayAtTen = 7*24 + 22;
+	    int delayInHours = hoursUntilSaturdayAtTen - currentHourInWeek;
+
+	    log.info("Starting bonus check in [" + delayInHours + "] hours [Saturday 10pm].");
+	
+	 	// Scheduled to run every Saturday at 10pm
+		scheduledExecutorService.scheduleAtFixedRate(task, delayInHours, 24*7, TimeUnit.HOURS);
 	}
 }

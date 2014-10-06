@@ -28,4 +28,10 @@ public class WeeklyComparisons
 		return leaderPoints;
 	}
 	
+	@Override
+	public String toString()
+	{
+		return "UserPts ["+userPoints+"], FriendsPts["+friendsPointsAverage+"], LeaderPts["+leaderPoints+"]";
+	}
+	
 }
