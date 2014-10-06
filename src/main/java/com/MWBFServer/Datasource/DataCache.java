@@ -1,5 +1,6 @@
 package com.MWBFServer.Datasource;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,15 +40,30 @@ public class DataCache
 	private DataCache(){ }
 	
 	/**
-	 * Returns the single cache instance (@NotThreadSafe)
+	 * Returns the single cache instance (@ThreadSafe DCL)
 	 * @return
 	 */
 	public static DataCache getInstance()
 	{
 		if (singleInstance == null)
-			singleInstance = new DataCache();
+		{
+			synchronized(DataCache.class)
+			{
+				if (singleInstance == null)
+					singleInstance = new DataCache();
+			}
+		}
 		
 		return singleInstance;
+	}
+	
+	/**
+	 * Returns a copy of the list of the users
+	 * @return
+	 */
+	public List<User> getUsers()
+	{
+		return (new ArrayList<User>(m_usersHash.values()));
 	}
 
 }

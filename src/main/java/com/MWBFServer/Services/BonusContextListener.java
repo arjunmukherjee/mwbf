@@ -1,8 +1,14 @@
 package com.MWBFServer.Services;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletContextEvent;
@@ -10,20 +16,17 @@ import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
 
+import com.MWBFServer.Activity.UserActivity;
+import com.MWBFServer.Datasource.DataCache;
+import com.MWBFServer.Users.User;
+import com.MWBFServer.Utils.Constants;
+import com.MWBFServer.Utils.Utils;
+
 public class BonusContextListener implements ServletContextListener 
 {
 	private static final Logger log = Logger.getLogger(BonusContextListener.class);
 	
-	private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() 
-	{
-		@Override
-		public Thread newThread(Runnable runnable) 
-		{
-			Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-			//thread.setDaemon(true);
-			return thread;
-		}
-	});
+	private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 	
 	
 	@Override
@@ -51,10 +54,45 @@ public class BonusContextListener implements ServletContextListener
 			public void run() 
 			{
 				log.info("Checking for Cross Training bonus.");
+				
+				// Calculate the start and the end of the current week
+		    	Calendar c = Calendar.getInstance();
+		    	c.setTime(new Date());
+		    	int dayOfWeek = c.get(Calendar.DAY_OF_WEEK) - c.getFirstDayOfWeek();
+		    	c.add(Calendar.DAY_OF_MONTH, -dayOfWeek);
+
+		    	Date weekStart = c.getTime();
+		    	// we do not need the same day a week after, that's why use 6, not 7
+		    	c.add(Calendar.DAY_OF_MONTH, 6); 
+		    	Date weekEnd = c.getTime();
+		    	SimpleDateFormat df = new SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH);
+		    	
+				for(User user : DataCache.getInstance().getUsers())
+				{
+					Set<String> activitySet = new HashSet<String>();
+					List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(user, df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
+					if ( ( activityList != null ) && ( activityList.size() >= Constants.EXERCISES_FOR_CROSS_TRAINING_BONUS ) )
+					{
+						for (UserActivity ua : activityList)
+							activitySet.add(ua.getActivityId());
+						
+						if ( activitySet.size() >= Constants.EXERCISES_FOR_CROSS_TRAINING_BONUS )
+						{
+							log.info("User [" + user.getFirstName() + "] is eligile for a cross training bonus this week.");
+							
+							/* TODO
+							UserActivity bonusActivity = new UserActivity(user,"CR-TR Bonus",df.format(weekEnd)+" 11:59:59 PM","1");
+							List<UserActivity> bonusActList = new ArrayList<UserActivity>();
+							bonusActList.add(bonusActivity);
+							Utils.logActivity(bonusActList);
+							*/
+						}
+					}
+				}
 			}
 		};
 		
-		// TODO : Schedule to run every Saturday at 9pm
-		scheduledExecutorService.scheduleAtFixedRate(task, 1, 30, TimeUnit.SECONDS);
+		// TODO : Schedule to run every Saturday (Need to figure this out)
+		scheduledExecutorService.scheduleAtFixedRate(task, 1, 7, TimeUnit.DAYS);
 	}
 }

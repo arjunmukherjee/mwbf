@@ -711,7 +711,6 @@ public class Utils
     	
     	SimpleDateFormat df = new SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH);
     	
-    	
     	Double friendsPointsTotal = 0.0;
     	Double leaderPoints = 0.0;
     	
