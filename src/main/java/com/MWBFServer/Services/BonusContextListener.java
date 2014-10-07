@@ -1,6 +1,7 @@
 package com.MWBFServer.Services;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -16,6 +17,7 @@ import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
 
+import com.MWBFServer.Activity.BonusEnum;
 import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Users.User;
@@ -40,14 +42,13 @@ public class BonusContextListener implements ServletContextListener
 	@Override
 	public void contextInitialized(ServletContextEvent arg0) 
 	{
-		// TODO Implement logic to check for bonus points
+		// Logic to check for bonus points
 		// 1. Iterate through each user
 		// 2. Check their logged activities for the week
 		// 3. If the number of distinct activity types are greater then 4
 		// 4. Insert a bonus row for cross training into their activities
 		// 5. Think about not interfering with clients, i.e. clients should not have to hard-code a "bonus" ignore.
 		
-		log.info("BonusService started.");
 		Runnable task = new Runnable()
 		{
 			@Override
@@ -80,18 +81,19 @@ public class BonusContextListener implements ServletContextListener
 						{
 							log.info("User [" + user.getFirstName() + "] is eligile for a cross training bonus this week.");
 							
-							/* TODO
-							UserActivity bonusActivity = new UserActivity(user,"CR-TR Bonus",df.format(weekEnd)+" 11:59:59 PM","1");
+							UserActivity bonusActivity = new UserActivity(user,BonusEnum.CrossTrainingBonus.toString(),df.format(weekEnd)+" 11:59:59 PM","1");
+							bonusActivity.setPoints(BonusEnum.CrossTrainingBonus.getValue());
+							log.info("Bonus ["+bonusActivity.toString()+"]");
 							List<UserActivity> bonusActList = new ArrayList<UserActivity>();
 							bonusActList.add(bonusActivity);
 							Utils.logActivity(bonusActList);
-							*/
 						}
 					}
 				}
 			}
 		};
 		
+		// TODO : Account for Time Zones
 		// Calculate the time between Now and Saturday 10pm
 		Calendar with = Calendar.getInstance();
 	    with.setTime(new Date());
@@ -102,7 +104,11 @@ public class BonusContextListener implements ServletContextListener
 	    int hoursUntilSaturdayAtTen = 7*24 + 22;
 	    int delayInHours = hoursUntilSaturdayAtTen - currentHourInWeek;
 
-	    log.info("Starting bonus check in [" + delayInHours + "] hours [Saturday 10pm].");
+	    // Account for the check running at Saturday 11pm
+	    if ( delayInHours < 0 )
+	    	delayInHours = 24*7 - (Math.abs(delayInHours));
+	    
+	    log.info("Starting Bonus Service in [" + delayInHours + "] hours [Saturday 10pm].");
 	
 	 	// Scheduled to run every Saturday at 10pm
 		scheduledExecutorService.scheduleAtFixedRate(task, delayInHours, 24*7, TimeUnit.HOURS);

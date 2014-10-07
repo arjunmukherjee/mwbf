@@ -18,6 +18,24 @@ public class Activities
 	private double pointsPerUnit;
 	private double wholeUnit;
 	
+	
+	protected Activities(){}
+	
+	/**
+	 * Copy constructor.
+	 * @param _activity
+	 */
+	public Activities(Activities _activity) 
+	{
+		id = _activity.id;
+		activityName = _activity.activityName;
+		pastVerb = _activity.pastVerb;
+		measurementUnit = _activity.measurementUnit;
+		measurementUnitShort = _activity.measurementUnitShort;
+		pointsPerUnit = _activity.pointsPerUnit;
+		wholeUnit = _activity.wholeUnit;
+	}
+	
 	@Id @GeneratedValue
 	@Column (name="ID")
 	public long getId() 

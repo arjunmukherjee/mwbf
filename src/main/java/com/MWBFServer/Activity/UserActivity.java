@@ -10,9 +10,11 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Users.User;
+import com.MWBFServer.Utils.Constants;
 
 @Entity
 @Table (name="USER_ACTIVITY")
@@ -38,7 +40,7 @@ public class UserActivity implements Comparable<UserActivity>
 	{
 		user = _user;
 		activityId = _activity;
-		date = new Date();		// TODO
+		date = new Date();		
 		exerciseUnits = Double.parseDouble(_exerciseUnits);
 		points = 0;
 	}
@@ -115,24 +117,49 @@ public class UserActivity implements Comparable<UserActivity>
 	public String constructNotificationString()
 	{
  		StringBuilder actString = new StringBuilder();
- 		String exerciseUnitsStr = Double.toString(this.exerciseUnits);
- 		
- 		// If the exercise amount is 5.0, then change it to 5
- 		// If it is 5.6, leave it as 5.6
- 		int exerciseUnitsInt = (int) this.exerciseUnits;
- 		if (this.exerciseUnits == exerciseUnitsInt)
- 			exerciseUnitsStr = Integer.toString(exerciseUnitsInt);
- 		
  		actString.append(this.user.getFirstName());
  		actString.append(" ");
- 		actString.append(DataCache.m_activitiesHash.get(this.activityId).getPastVerb());
- 		actString.append(" ");
- 		actString.append(exerciseUnitsStr);
- 		actString.append(DataCache.m_activitiesHash.get(this.activityId).getMeasurementUnitShort());
- 		actString.append(" on ");
- 		actString.append(new SimpleDateFormat("MMM d").format(this.date));
+ 		
+ 		// Bonus activities do not have the info below
+ 		if ( !isBonusActivity() )
+ 		{
+	 		String exerciseUnitsStr = Double.toString(this.exerciseUnits);
+	 		
+	 		// If the exercise amount is 5.0, then change it to 5
+	 		// If it is 5.6, leave it as 5.6
+	 		int exerciseUnitsInt = (int) this.exerciseUnits;
+	 		if (this.exerciseUnits == exerciseUnitsInt)
+	 			exerciseUnitsStr = Integer.toString(exerciseUnitsInt);
+	 		
+	 		
+	 		actString.append(DataCache.m_activitiesHash.get(this.activityId).getPastVerb());
+	 		actString.append(" ");
+	 		actString.append(exerciseUnitsStr);
+	 		actString.append(DataCache.m_activitiesHash.get(this.activityId).getMeasurementUnitShort());
+	 		actString.append(" on ");
+	 		actString.append(new SimpleDateFormat("MMM d").format(this.date));
+ 		}
+ 		else
+ 		{
+ 			actString.append("earned a ");
+ 			actString.append(this.activityId);
+ 			actString.append(" this week.");
+ 		}
  		
  		return actString.toString();
+	}
+	
+	/**
+	 * Check if an activity is a Bonus activity or a regular activity
+	 * @return
+	 */
+	@Transient
+	public boolean isBonusActivity()
+	{
+		if ( this.activityId.contains( Constants.BONUS_ACTIVITY_IDENTIFIER ) )
+			return true;
+		else
+			return false;
 	}
 	
 	@Override

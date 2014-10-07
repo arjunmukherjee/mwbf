@@ -255,14 +255,6 @@ public class UserActions
             return Utils.buildResponse(returnStr);
         }
 		
-		// Multiply the activity's points * the number of exercise units and then store in db
-		for (UserActivity ua : newActivityList)
-		{
-			Double points = m_activitiesHash.get(ua.getActivityId()).getPointsPerUnit() * ua.getExerciseUnits();
-			points = Utils.round(points, 1);
-			ua.setPoints(points);
-		}
-		
 		// If successful, add to the local cache
 		if ( Utils.logActivity(newActivityList) )
 			returnStr =   "{\"success\":1,\"message\":\"Activity logged.\"}";

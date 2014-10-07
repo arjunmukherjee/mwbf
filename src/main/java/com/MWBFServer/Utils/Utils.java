@@ -53,12 +53,26 @@ public class Utils
 	
 	/**
 	 * Log the users activities.
-	 * Update the users personal stats.
 	 * @param _userActivityList
 	 * @return
 	 */
 	public static Boolean logActivity(List<UserActivity> _userActivityList)
 	{
+		// TODO : Save activity to local cache
+		
+		// Multiply the activity's points * the number of exercise units and then store in db
+		for (UserActivity ua : _userActivityList)
+		{
+			Activities act = DataCache.getInstance().getActivity(ua.getActivityId());
+			// Will get used while persisting bonus activities
+			if ( act != null )
+			{
+				Double points = act.getPointsPerUnit() * ua.getExerciseUnits();
+				points = Utils.round(points, 1);
+				ua.setPoints(points);
+			}
+		}
+
 		return DbConnection.saveList(_userActivityList);
 	}
 	
@@ -665,14 +679,18 @@ public class Utils
             FeedItem item = new FeedItem();
             item.setActivityDate(activity.getDate());
             item.setActivityName(activity.getActivityId());
-            item.setActivityUnit(DataCache.m_activitiesHash.get(activity.getActivityId()).getMeasurementUnitShort());
+            
+            if ( !activity.isBonusActivity() )
+            	item.setActivityUnit(DataCache.m_activitiesHash.get(activity.getActivityId()).getMeasurementUnitShort());
+            
             item.setActivityValue(activity.getExerciseUnits());
             item.setFirstName(activity.getUser().getFirstName());
             item.setLastName(activity.getUser().getLastName());
             item.setUserId(activity.getUser().getId());
             item.setPoints(activity.getPoints());
             item.setFeedPrettyString(activity.constructNotificationString());
-            // Add to feeItemList
+            
+            // Add to feedItemList
             feedItemList.add(item);
         }
 

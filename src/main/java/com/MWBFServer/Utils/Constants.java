@@ -7,4 +7,7 @@ public final class Constants
 	
 	// The minimum number of exercises per week the user must do in order to get the cross training bonus
 	public static int EXERCISES_FOR_CROSS_TRAINING_BONUS = 4;
+	
+	// The string used to identify a bonus activity
+	public static String BONUS_ACTIVITY_IDENTIFIER = "Bonus";
 }

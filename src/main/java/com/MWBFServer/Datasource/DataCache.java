@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
@@ -17,6 +18,7 @@ public class DataCache
 	// 2. Remove static for the member variables
 	
 	private static DataCache singleInstance;
+	
 	
 	public static final Map<String,Activities> m_activitiesHash = new HashMap<String,Activities>();
 	public static final Map<String,User> m_usersHash = new HashMap<String,User>();
@@ -49,11 +51,10 @@ public class DataCache
 		{
 			synchronized(DataCache.class)
 			{
-				if (singleInstance == null)
+				if ( singleInstance == null )
 					singleInstance = new DataCache();
 			}
 		}
-		
 		return singleInstance;
 	}
 	
@@ -64,6 +65,19 @@ public class DataCache
 	public List<User> getUsers()
 	{
 		return (new ArrayList<User>(m_usersHash.values()));
+	}
+	
+	/**
+	 * Returns an activity
+	 * @return
+	 */
+	public Activities getActivity(String _activityId)
+	{
+		Activities act = m_activitiesHash.get(_activityId);
+		if (act != null)
+			return new Activities(act);
+		else
+			return null;
 	}
 
 }
