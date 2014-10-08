@@ -541,43 +541,6 @@ public class Utils
 		return success;
 	}
 
-	/**
-	 * Get the friends activities for each user
-	 * @param friendsList
-	 * @param _user 
-	 * @return
-	 */
-	public static List<String> getUserFriendsActivities(List<Friends> friendsList, User _user)
-	{
-		// TODO : Highly inefficient
-		
-		List<UserActivity> activityList = new ArrayList<UserActivity>();
-		for (Friends friend : friendsList)
-		{
-			List<UserActivity> friendActivityList = (List<UserActivity>) DbConnection.queryGetFriendsActivities(friend.getFriend().getId());
-			activityList.addAll(friendActivityList);
-		}
-		
-		// Get the users activity feeds
-		List<UserActivity> userActivityList = (List<UserActivity>) DbConnection.queryGetFriendsActivities(_user.getId());
-		activityList.addAll(userActivityList);
-		
-		// Get the list of activities and sort them by time
-		Collections.sort(activityList);
-
-		// Convert the activities to string
-		// TODO : Might be better to return the activity object as json instead
-		List<String> friendActivityList = new ArrayList<String>();
-		for (UserActivity activity : activityList)
-			friendActivityList.add(activity.constructNotificationString());
-
-		// Return only the last 50 items
-		int startIndex = 0;
-		if( friendActivityList.size() > Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
-			startIndex = friendActivityList.size() - Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
-		
-		return friendActivityList.subList(startIndex, startIndex + Constants.MAX_NUMBER_OF_MESSAGE_FEEDS);
-	}
 
     /**
      * Get the friends activities for each user

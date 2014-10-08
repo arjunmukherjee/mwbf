@@ -421,52 +421,7 @@ public class UserActions
 		return Utils.buildResponse(returnStr);
 	}
 	
-	@POST
-	@Path("/friends/activities")
-	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getUserFriendsActivities(String _incomingData)
-	{
-		String returnStr = "{\"success\":0,\"message\":\"Unable to find your friends.\"}";
-		//TODO: Fix this method
-		JSONObject userData = null;
-		try 
-		{
-			userData = new JSONObject(_incomingData);
-			String userId = userData.optString("user_id");
-			User user = m_cache.getUser(userId);
-			if ( user == null )
-			{
-				log.warn("Unable to find logged in user (something's wrong) [" + userId + "].");
-				returnStr = "{\"success\":0,\"message\":\"Unable to find logged in user (something's wrong).\"}";
-			}
-			else
-			{
-				log.info("Fetching all friends activities for UserId["+ user.getId() +"]");
-				
-				Gson gson = new Gson();
-			 
-				// Look up the users friends
-				List<Friends> friendsList = m_cache.getFriends(user);
-				
-				// Look up the friends activities
-				List<String> activityList = Utils.getUserFriendsActivities(friendsList, user);
-				
-				// Null out the user Object and the password fields
-				if ( activityList != null )
-					returnStr = gson.toJson(activityList);
-				else
-					returnStr = "{\"success\":0,\"message\":\"Unable to find any activities for friends.\"}";
-			}
-		}
-		catch (JSONException e) 
-		{
-			e.printStackTrace();
-		}
-		
-		return Utils.buildResponse(returnStr);
-	}
-
+	
     @POST
     @Path("/friends/feed")
     @Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
