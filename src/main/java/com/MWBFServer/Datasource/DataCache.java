@@ -108,6 +108,7 @@ public class DataCache
 	 */
 	public List<User> getUsers()
 	{
+		// TODO : INCORRECT - only creates a shallow copy, need to clone for a deep copy (using JOS)
 		return (new ArrayList<User>(m_usersHash.values()));
 	}
 	
@@ -139,6 +140,7 @@ public class DataCache
 	 */
 	public List<Friends> getFriends(User _user)
 	{
+		// TODO : INCORRECT - only creates a shallow copy, need to clone for a deep copy (using JOS)
 		return (new ArrayList<Friends>(m_friendsHash.get(_user)));
 	}
 	
@@ -170,6 +172,7 @@ public class DataCache
 	 */
 	public List<Activities> getActivities()
 	{
+		// TODO : INCORRECT - only creates a shallow copy, need to clone for a deep copy (using JOS)
 		return (new ArrayList<Activities>(m_activitiesHash.values()));
 	}
 
