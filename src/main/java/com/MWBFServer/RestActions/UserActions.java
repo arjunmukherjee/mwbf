@@ -1,11 +1,7 @@
 package com.MWBFServer.RestActions;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -21,6 +17,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.MWBFServer.Activity.*;
 import com.MWBFServer.Challenges.Challenge;
+import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Users.*;
@@ -32,15 +29,7 @@ import com.google.gson.reflect.TypeToken;
 public class UserActions
 {
 	private static final Logger log = Logger.getLogger(UserActions.class);
-	private static final Set<User> m_validUsersSet = new HashSet<User>();
-	private static final Map<String,User> m_existingUsersHash = new HashMap<String,User>();
-	
-	static
-	{
-		// Load all the users into the cache
-		Utils.loadUsers(m_validUsersSet, m_existingUsersHash);
-	}
-	
+	private static final DataCache m_cache = DataCache.getInstance();
 	
 	@POST
 	@Path("/fbLogin")
@@ -72,7 +61,7 @@ public class UserActions
 		else
 		{
 			String name = firstName + " " + lastName;
-			User user = m_existingUsersHash.get(email);
+			User user = m_cache.getUser(email);
 			if ( user != null ) 
 				returnStr =   "{\"success\":1,\"message\":\"Welcome "+name+" !\"}";
 			else
@@ -111,7 +100,7 @@ public class UserActions
 			returnStr =   "{\"success\":0,\"message\":\"Unable to get all time high for the user\"}";
 		else
 		{
-			User user = m_existingUsersHash.get(email);
+			User user = m_cache.getUser(email);
 			if ( user != null ) 
 			{
 				// Get the users personal stats
@@ -157,7 +146,7 @@ public class UserActions
 		
 		String returnStr = null;
 		// First check if the email address is already registered
-		if ( m_existingUsersHash.containsKey(newUser.getEmail()) )
+		if ( m_cache.getUser(newUser.getEmail()) != null )
 		{
 			log.warn("Email is already registered.");
 			returnStr =   "{\"success\":0,\"message\":\"Email is already registered.\"}";
@@ -192,7 +181,7 @@ public class UserActions
 		
 		String returnStr = null;
 		// First check if the email address is already registered
-		if ( m_existingUsersHash.containsKey(newUser.getEmail()) )
+		if ( m_cache.getUser(newUser.getEmail()) != null )
 		{
 			log.warn("Email is already registered.");
 			returnStr =   "{\"success\":0,\"message\":\"Email is already registered.\"}";
@@ -215,8 +204,7 @@ public class UserActions
 		if ( Utils.addUser(newUser) )
 		{
 			returnStr =   "{\"success\":1,\"message\":\"Welcome !\"}";
-			m_validUsersSet.add(newUser);
-			m_existingUsersHash.put(newUser.getEmail(),newUser);
+			m_cache.addUser(newUser);
 		}
 		else
 		{
@@ -283,7 +271,7 @@ public class UserActions
 		String fromDate = userData.optString("from_date");
 		String toDate = userData.optString("to_date");
 		
-		User user = m_existingUsersHash.get(userData.optString("user_id"));
+		User user = m_cache.getUser(userData.optString("user_id"));
 		if ( user == null )
 		{
 			log.warn("Unable to find user to look up activity");
@@ -326,7 +314,7 @@ public class UserActions
 		String fromDate = userData.optString("from_date");
 		String toDate = userData.optString("to_date");
 		
-		User user = m_existingUsersHash.get(userData.optString("user_id"));
+		User user = m_cache.getUser(userData.optString("user_id"));
 		if ( user == null )
 		{
 			log.warn("Unable to find user to look up activity");
@@ -366,9 +354,8 @@ public class UserActions
 		}
 		log.info("Deleting all activities for user [" + userData.optString("user_id") + "]");
 		
-		User user = m_existingUsersHash.get(userData.optString("user_id"));
-		
 		String returnStr = null;
+		User user = m_cache.getUser(userData.optString("user_id"));
 		if ( user == null )
 		{
 			log.warn("Unable to find user to look up activity");
@@ -399,7 +386,7 @@ public class UserActions
 		{
 			userData = new JSONObject(_incomingData);
 			String userId = userData.optString("user_id");
-			User user = m_existingUsersHash.get(userId);
+			User user = m_cache.getUser(userId);
 			if ( user == null )
 			{
 				log.warn("Unable to find logged in user (something's wrong) [" + userId + "].");
@@ -412,7 +399,7 @@ public class UserActions
 				Gson gson = new Gson();
 			 
 				// Look up the users friends
-				List<Friends> friendsList = Utils.getUserFriendsList(user);
+				List<Friends> friendsList = m_cache.getFriends(user);
 				
 				// Null out the user Object and the password fields
 				if ( friendsList != null )
@@ -447,7 +434,7 @@ public class UserActions
 		{
 			userData = new JSONObject(_incomingData);
 			String userId = userData.optString("user_id");
-			User user = m_existingUsersHash.get(userId);
+			User user = m_cache.getUser(userId);
 			if ( user == null )
 			{
 				log.warn("Unable to find logged in user (something's wrong) [" + userId + "].");
@@ -460,7 +447,7 @@ public class UserActions
 				Gson gson = new Gson();
 			 
 				// Look up the users friends
-				List<Friends> friendsList = Utils.getUserFriendsList(user);
+				List<Friends> friendsList = m_cache.getFriends(user);
 				
 				// Look up the friends activities
 				List<String> activityList = Utils.getUserFriendsActivities(friendsList, user);
@@ -492,7 +479,7 @@ public class UserActions
         {
             userData = new JSONObject(_incomingData);
             String userId = userData.optString("user_id");
-            User user = m_existingUsersHash.get(userId);
+            User user = m_cache.getUser(userId);
             if ( user == null )
             {
                 log.warn("Unable to find logged in user (something's wrong) [" + userId + "].");
@@ -505,7 +492,7 @@ public class UserActions
                 Gson gson = new Gson();
 
                 // Look up the users friends
-                List<Friends> friendsList = Utils.getUserFriendsList(user);
+                List<Friends> friendsList = m_cache.getFriends(user);
 
                 // Look up the friends activities
                 List<FeedItem> activityList = Utils.getUserFeedItems(friendsList, user);
@@ -548,7 +535,7 @@ public class UserActions
 			returnStr =   "{\"success\":0,\"message\":\"Unable to get weekly comparison stats for the user\"}";
 		else
 		{
-			User user = m_existingUsersHash.get(email);
+			User user = m_cache.getUser(email);
 			if ( user != null ) 
 			{
 				// Get the users personal stats
@@ -578,11 +565,11 @@ public class UserActions
 		{
 			userData = new JSONObject(_incomingData);
 			
-			User user = m_existingUsersHash.get(userData.optString("user_id"));
-			User friend = m_existingUsersHash.get(userData.optString("friend_user_id"));
+			User user = m_cache.getUser(userData.optString("user_id"));
+			User friend = m_cache.getUser(userData.optString("friend_user_id"));
 			if ( user == null || friend == null )
 			{
-				log.warn("Unable to find user or friend to add.");
+				log.warn("Unable to find the user or the friend to add.");
 				returnStr = "{\"success\":0,\"message\":\"Unable to find the user or the friend in the system (something's wrong).\"}";
 			}
 			else
@@ -620,7 +607,7 @@ public class UserActions
 		{
 			userData = new JSONObject(_incomingData);
 			
-			User user = m_existingUsersHash.get(userData.optString("user_id"));
+			User user = m_cache.getUser(userData.optString("user_id"));
 			if ( user == null )
 			{
 				log.warn("Unable to find your friend [" + userData.optString("user_id") + "]. Please ask them to join us.");
@@ -654,7 +641,7 @@ public class UserActions
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			User user = m_existingUsersHash.get(userData.optString("user_id"));
+			User user = m_cache.getUser(userData.optString("user_id"));
 			
 			Challenge newChallenge = gson.fromJson(_incomingData, Challenge.class);
 			newChallenge.setCreator(user);
@@ -725,7 +712,7 @@ public class UserActions
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			User user = m_existingUsersHash.get(userData.optString("user_id"));
+			User user = m_cache.getUser(userData.optString("user_id"));
 			if ( user == null )
 			{
 				log.warn("Unable to find user.");

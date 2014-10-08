@@ -55,7 +55,21 @@ public class User implements Serializable
 		memberSince = new Date();
 	}
 
-	
+	/**
+	 * Copy constructor
+	 * @param user
+	 */
+	public User(User _user) 
+	{
+		this.id = _user.id;
+		this.email = _user.email;
+		this.memberSince = _user.memberSince;
+		this.fbProfileId = _user.fbProfileId;
+		this.firstName = _user.firstName;
+		this.lastName = _user.lastName;
+		this.userName = _user.userName;
+	}
+
 	@Id
 	@Column (name="ID")
 	public String getId() 

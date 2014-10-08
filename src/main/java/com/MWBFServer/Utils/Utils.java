@@ -76,25 +76,6 @@ public class Utils
 	}
 	
 	/**
-	 * Load all the users from the Database into the validUsers hashSet.
-	 * User lookup becomes fast.
-	 */
-	@SuppressWarnings("unchecked")
-	public static void loadUsers(Set<User> _validUsers, Map<String,User> _existingUsers)
-	{
-		log.info("Loading USERS into CACHE.");
-		
-		List<User> userList = (List<User>) DbConnection.queryGetUsers();
-		for (User user : userList)
-		{
-			if ( _validUsers != null )
-				_validUsers.add(user);
-			
-			_existingUsers.put(user.getEmail(),user);
-		}
-	}
-	
-	/**
 	 * Lookup up all the activities for the user.
 	 * Aggregate it by Activity
 	 */
@@ -230,16 +211,6 @@ public class Utils
 	public static Boolean deleteAllActivitiesForUser(User _user) 
 	{
 		return DbConnection.deleteAllActivitiesForUser(_user);
-	}
-	
-	/**
-	 * Get a list of all of the users friends.
-	 * @param _user
-	 * @return
-	 */
-	public static List<Friends> getUserFriendsList(User _user) 
-	{
-		return m_cache.getFriends(_user);
 	}
 	
 	/**
@@ -405,7 +376,7 @@ public class Utils
 		 		String activityUnits = activityParts[4];
 		 		String userId = activityParts[6].substring(1,activityParts[6].length()-2);
 		 		
-		 		User user = DataCache.m_usersHash.get(userId);
+		 		User user = m_cache.getUser(userId);
 		 		StringBuilder actString = new StringBuilder();
 		 		actString.append(user.getFirstName());
 		 		actString.append(" ");

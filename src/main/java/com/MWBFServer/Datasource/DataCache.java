@@ -10,33 +10,44 @@ import org.apache.log4j.Logger;
 import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
-import com.MWBFServer.Utils.Utils;
 
 public class DataCache 
 {
-	// TODO : 
-	// 1. Get other classes to use this cache.
-	// 2. Remove static for the member variables
-	
 	private static DataCache singleInstance;
-	
-	
-	private static final Map<String,Activities> m_activitiesHash = new HashMap<String,Activities>();
-	public static final Map<String,User> m_usersHash = new HashMap<String,User>();
-	private final static Map<User,List<Friends>> m_friendsHash = new HashMap<User,List<Friends>>();
-	
 	private static final Logger log = Logger.getLogger(DataCache.class);
 	
-	static
+	private static final Map<String,Activities> m_activitiesHash = new HashMap<String,Activities>();
+	private static final Map<String,User> m_usersHash = new HashMap<String,User>();
+	private static final Map<User,List<Friends>> m_friendsHash = new HashMap<User,List<Friends>>();
+	
+	
+	/**
+	 * Load all the data into the cache
+	 */
+	public void loadData()
 	{
 		// Load all the users into the cache
-		Utils.loadUsers(null, m_usersHash);
-		
+		loadUsers();
+
 		// Load all the MWBF activities into the cache
 		loadActivities();
-		
+
 		// Load all user's friends into the cache
 		loadFriends();
+	}
+	
+	/**
+	 * Load all the users from the Database into the validUsers hashSet.
+	 * User lookup becomes fast.
+	 */
+	@SuppressWarnings("unchecked")
+	public static void loadUsers()
+	{
+		log.info("Loading USERS into CACHE.");
+		
+		List<User> userList = (List<User>) DbConnection.queryGetUsers();
+		for (User user : userList)
+			m_usersHash.put(user.getEmail(),user);
 	}
 	
 	/**
@@ -101,6 +112,28 @@ public class DataCache
 	}
 	
 	/**
+	 * Returns an activity
+	 * @return
+	 */
+	public User getUser(String _userId)
+	{
+		User user = m_usersHash.get(_userId);
+		if (user != null)
+			return new User(user);
+		else
+			return null;
+	}
+	
+	/**
+	 * Adds a user to the cache
+	 * @return
+	 */
+	public void addUser(User _user)
+	{
+		m_usersHash.put(_user.getEmail(),_user);
+	}
+	
+	/**
 	 * Returns a copy of the list of the user's friends
 	 * @return
 	 */
@@ -110,7 +143,7 @@ public class DataCache
 	}
 	
 	/**
-	 * Returns a copy of the list of the user's friends
+	 * Adds a friend to the user's friends list
 	 * @return
 	 */
 	public void addFriend(User _user, Friends _friend)
