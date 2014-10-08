@@ -163,5 +163,14 @@ public class DataCache
 		else
 			return null;
 	}
+	
+	/**
+	 * Returns a copy of the list of all valid activities
+	 * @return
+	 */
+	public List<Activities> getActivities()
+	{
+		return (new ArrayList<Activities>(m_activitiesHash.values()));
+	}
 
 }

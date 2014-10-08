@@ -1,7 +1,5 @@
 package com.MWBFServer.RestActions;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -13,7 +11,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 
-import com.MWBFServer.Activity.Activities;
+import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Utils.Utils;
 import com.google.gson.Gson;
 
@@ -22,8 +20,6 @@ import com.google.gson.Gson;
 public class MWBFActions 
 {
 	private static final Logger log = Logger.getLogger(MWBFActions.class);
-	private static List<Activities> m_activitiesList = new ArrayList<Activities>();
-	
 	
 	@POST
 	@Path("/activities")
@@ -33,18 +29,9 @@ public class MWBFActions
 	{
 		log.info("Fetching All MWBF Activities.");
 		
-		// First check the list is empty,
-		// If it is look up all activities
-		if ( m_activitiesList.isEmpty() )
-			m_activitiesList = Utils.getActivityList();
-		
-		String returnStr = null;
 		Gson gson = new Gson();
-		if ( m_activitiesList != null )
-			returnStr = gson.toJson(m_activitiesList);
-		else
-			returnStr =   "{\"success\":0,\"message\":\"Unable to get list of activities.\"}";
-
+		String returnStr = gson.toJson(DataCache.getInstance().getActivities());
+	
 		return Utils.buildResponse(returnStr);
 	}
 	

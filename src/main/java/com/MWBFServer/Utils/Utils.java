@@ -185,14 +185,6 @@ public class Utils
 	}
 	
 	/**
-	 * Get a list of all the valid activities
-	 */
-	public static List<Activities> getActivityList()
-	{
-		return (List<Activities>) DbConnection.queryGetActivityList();
-	}
-	
-	/**
 	 * Build an HttpResponse string to be sent back to the requester.
 	 * @param _responseString
 	 * @return
