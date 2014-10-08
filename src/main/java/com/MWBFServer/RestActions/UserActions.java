@@ -34,15 +34,11 @@ public class UserActions
 	private static final Logger log = Logger.getLogger(UserActions.class);
 	private static final Set<User> m_validUsersSet = new HashSet<User>();
 	private static final Map<String,User> m_existingUsersHash = new HashMap<String,User>();
-	private static final Map<String,Activities> m_activitiesHash = new HashMap<String,Activities>();
 	
 	static
 	{
 		// Load all the users into the cache
 		Utils.loadUsers(m_validUsersSet, m_existingUsersHash);
-		
-		// Load all the MWBF activities into the cache
-		Utils.loadActivities(m_activitiesHash);
 	}
 	
 	

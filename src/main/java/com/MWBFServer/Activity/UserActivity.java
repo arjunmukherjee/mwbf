@@ -120,6 +120,8 @@ public class UserActivity implements Comparable<UserActivity>
  		actString.append(this.user.getFirstName());
  		actString.append(" ");
  		
+ 		DataCache cache = DataCache.getInstance();
+ 		
  		// Bonus activities do not have the info below
  		if ( !isBonusActivity() )
  		{
@@ -132,10 +134,10 @@ public class UserActivity implements Comparable<UserActivity>
 	 			exerciseUnitsStr = Integer.toString(exerciseUnitsInt);
 	 		
 	 		
-	 		actString.append(DataCache.m_activitiesHash.get(this.activityId).getPastVerb());
+	 		actString.append(cache.getActivity(this.activityId).getPastVerb());
 	 		actString.append(" ");
 	 		actString.append(exerciseUnitsStr);
-	 		actString.append(DataCache.m_activitiesHash.get(this.activityId).getMeasurementUnitShort());
+	 		actString.append(cache.getActivity(this.activityId).getMeasurementUnitShort());
 	 		actString.append(" on ");
 	 		actString.append(new SimpleDateFormat("MMM d").format(this.date));
  		}
