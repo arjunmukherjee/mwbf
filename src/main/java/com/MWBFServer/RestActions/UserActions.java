@@ -570,7 +570,7 @@ public class UserActions
 			}
 			else
 			{
-				log.warn("Found friend with id[" + user.getId() + "].");
+				log.info("Found friend with id[" + user.getId() + "].");
 				
 				Gson gson = new Gson();
 				returnStr = gson.toJson(user);
