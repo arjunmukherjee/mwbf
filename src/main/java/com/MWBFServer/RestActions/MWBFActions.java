@@ -30,7 +30,7 @@ public class MWBFActions
 		log.info("Fetching All MWBF Activities.");
 		
 		Gson gson = new Gson();
-		String returnStr = gson.toJson(DataCache.getInstance().getActivities());
+		String returnStr = gson.toJson(DataCache.getInstance().getMWBFActivities());
 	
 		return Utils.buildResponse(returnStr);
 	}

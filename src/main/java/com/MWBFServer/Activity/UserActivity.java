@@ -1,5 +1,6 @@
 package com.MWBFServer.Activity;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -18,8 +19,10 @@ import com.MWBFServer.Utils.Constants;
 
 @Entity
 @Table (name="USER_ACTIVITY")
-public class UserActivity implements Comparable<UserActivity>
+public class UserActivity implements Comparable<UserActivity>, Serializable
 {
+	private static final long serialVersionUID = 8072074771603090386L;
+
 	private long id;
 	private User user;
 	private String activityId;

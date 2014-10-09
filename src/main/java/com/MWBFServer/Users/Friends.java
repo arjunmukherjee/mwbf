@@ -1,5 +1,7 @@
 package com.MWBFServer.Users;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,8 +13,10 @@ import javax.persistence.Table;
 
 @Entity
 @Table (name="USER_FRIENDS")
-public class Friends 
+public class Friends implements Serializable
 {
+	private static final long serialVersionUID = -100900228898101351L;
+	
 	private long id;
 	private User user;
 	private User friend;

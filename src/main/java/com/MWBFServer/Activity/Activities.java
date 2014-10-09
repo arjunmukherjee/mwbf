@@ -1,5 +1,7 @@
 package com.MWBFServer.Activity;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -8,8 +10,10 @@ import javax.persistence.Table;
 
 @Entity
 @Table (name="MWBF_ACTIVITIES")
-public class Activities 
+public class Activities implements Serializable
 {
+	private static final long serialVersionUID = -749006219075703015L;
+	
 	private long id;
 	private String activityName;
 	private String pastVerb;

@@ -1,5 +1,10 @@
 package com.MWBFServer.Datasource;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,17 +13,19 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.MWBFServer.Activity.Activities;
+import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
 
 public class DataCache 
 {
-	private static DataCache singleInstance;
+	private static DataCache m_cacheInstance;
 	private static final Logger log = Logger.getLogger(DataCache.class);
 	
-	private static final Map<String,Activities> m_activitiesHash = new HashMap<String,Activities>();
+	private static final Map<String,Activities> m_MWBFActivitiesHash = new HashMap<String,Activities>();
 	private static final Map<String,User> m_usersHash = new HashMap<String,User>();
 	private static final Map<User,List<Friends>> m_friendsHash = new HashMap<User,List<Friends>>();
+	private static final Map<User,List<UserActivity>> m_userActivitiesHash = new HashMap<User,List<UserActivity>>();
 	
 	/**
 	 * Singleton class, to cache the data in memory for quick access
@@ -34,15 +41,15 @@ public class DataCache
 	 */
 	public static DataCache getInstance()
 	{
-		if (singleInstance == null)
+		if (m_cacheInstance == null)
 		{
 			synchronized(DataCache.class)
 			{
-				if ( singleInstance == null )
-					singleInstance = new DataCache();
+				if ( m_cacheInstance == null )
+					m_cacheInstance = new DataCache();
 			}
 		}
-		return singleInstance;
+		return m_cacheInstance;
 	}
 	
 	
@@ -55,10 +62,13 @@ public class DataCache
 		loadUsers();
 
 		// Load all the MWBF activities into the cache
-		loadActivities();
+		loadMWBFActivities();
 
 		// Load all user's friends into the cache
 		loadFriends();
+		
+		// Load all the user's activities into the cache
+		loadUserActivities();
 	}
 	
 	/**
@@ -76,18 +86,30 @@ public class DataCache
 	}
 	
 	/**
+	 * Load all the user's activities from the Database into the hash.
+	 */
+	@SuppressWarnings("unchecked")
+	private void loadUserActivities()
+	{
+		// TODO : Too much data here. Will soon become unmanageable
+		log.info("Loading USER-ACTIVITIES into CACHE.");
+		for (User user : m_usersHash.values())
+            m_userActivitiesHash.put(user, (List<UserActivity>) DbConnection.queryGetUserActivity(user));
+    }
+	
+	/**
 	 * Add a set of activities to the hash map.
 	 * Run --> Run Activity Object
 	 * @param mActivitieshash
 	 */
 	@SuppressWarnings("unchecked")
-	private void loadActivities() 
+	private void loadMWBFActivities() 
 	{
 		log.info("Loading MWBF ACTIVITIES into CACHE.");
 		
 		List<Activities> activitiesList =  (List<Activities>) DbConnection.queryGetActivityList();
 		for (Activities activity : activitiesList)
-			m_activitiesHash.put(activity.getActivityName(), activity);
+			m_MWBFActivitiesHash.put(activity.getActivityName(), activity);
 	}
 	
 	/**
@@ -110,10 +132,10 @@ public class DataCache
 	 * Returns a copy of the list of the users
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public List<User> getUsers()
 	{
-		// TODO : INCORRECT - only creates a shallow copy, need to clone for a deep copy (using JOS)
-		return (new ArrayList<User>(m_usersHash.values()));
+		return (List<User>) copyCollection(new ArrayList<User>(m_usersHash.values()));
 	}
 	
 	/**
@@ -142,10 +164,10 @@ public class DataCache
 	 * Returns a copy of the list of the user's friends
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public List<Friends> getFriends(User _user)
 	{
-		// TODO : INCORRECT - only creates a shallow copy, need to clone for a deep copy (using JOS)
-		return (new ArrayList<Friends>(m_friendsHash.get(_user)));
+		return (List<Friends>) copyCollection(new ArrayList<Friends>(m_friendsHash.get(_user)));
 	}
 	
 	/**
@@ -163,7 +185,7 @@ public class DataCache
 	 */
 	public Activities getActivity(String _activityId)
 	{
-		Activities act = m_activitiesHash.get(_activityId);
+		Activities act = m_MWBFActivitiesHash.get(_activityId);
 		if (act != null)
 			return new Activities(act);
 		else
@@ -174,10 +196,62 @@ public class DataCache
 	 * Returns a copy of the list of all valid activities
 	 * @return
 	 */
-	public List<Activities> getActivities()
+	@SuppressWarnings("unchecked")
+	public List<Activities> getMWBFActivities()
 	{
-		// TODO : INCORRECT - only creates a shallow copy, need to clone for a deep copy (using JOS)
-		return (new ArrayList<Activities>(m_activitiesHash.values()));
+		return (List<Activities>) copyCollection(new ArrayList<Activities>(m_MWBFActivitiesHash.values()));
+	}
+	
+	/**
+	 * Returns a copy of the list of the user's activities
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<UserActivity> getUserActivities(User _user)
+	{
+		return (List<UserActivity>) copyCollection(new ArrayList<UserActivity>(m_userActivitiesHash.get(_user)));
+	}
+	
+	/**
+	 * Adds a logged activity to the user's activity list
+	 * @return
+	 */
+	public void addUserActivity(User _user, UserActivity _ua)
+	{
+		m_userActivitiesHash.get(_user).add(_ua);
+	}
+	
+	/**
+	 * Return a deep copy of the arrayList (using JOS)
+	 * @param _collectionToCopy
+	 * @return
+	 */
+	public List<?> copyCollection(List<?> _collectionToCopy)
+	{
+		Object obj = null;
+        try 
+        {
+            // Write the object out to a byte array
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(bos);
+            out.writeObject(_collectionToCopy);
+            out.flush();
+            out.close();
+
+            // Make an input stream from the byte array and read
+            // a copy of the object back in.
+            ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bos.toByteArray()));
+            obj = in.readObject();
+        }
+        catch(IOException e) 
+        {
+            e.printStackTrace();
+        }
+        catch(ClassNotFoundException cnfe) 
+        {
+            cnfe.printStackTrace();
+        }
+        return (List<?>) obj;
 	}
 
 }
