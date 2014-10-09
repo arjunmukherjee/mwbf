@@ -603,12 +603,11 @@ public class Utils
     }
     
     /**
-     * Get the friends stats (friends average, leader)
-     * @param friendsList
+     * Get the stats (friends average, leader) for the week
      * @param _user
      * @return
      */
-    public static WeeklyComparisons getFriendStats(User _user)
+    public static WeeklyComparisons getWeeklyStats(User _user)
     {
     	// Calculate the start and the end of the current week
     	Date date = new Date();

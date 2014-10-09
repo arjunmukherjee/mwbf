@@ -112,8 +112,8 @@ public class UserActions
 				if ( allTimeHighList != null && allTimeHighList.size() > 0 )
 					returnStr = gson.toJson(allTimeHighList);
 				
-				// TODO : ARJUN
-				gson.toJson(Utils.getFriendStats(user));
+				// TODO : Add the stats in this call, so no need to make two rest calls
+				//gson.toJson(Utils.getWeeklyStats(user));
 			}
 		}
 		
@@ -498,7 +498,7 @@ public class UserActions
 				 
 				// Look up the users personal stats
 				log.info("Getting the users weekly comparison stats.");
-				WeeklyComparisons wk = Utils.getFriendStats(user);
+				WeeklyComparisons wk = Utils.getWeeklyStats(user);
 				if ( wk != null  )
 					returnStr = gson.toJson(wk);
 			}
