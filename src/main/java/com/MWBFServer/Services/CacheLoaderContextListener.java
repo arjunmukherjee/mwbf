@@ -9,7 +9,7 @@ import com.MWBFServer.Datasource.DataCache;
 
 public class CacheLoaderContextListener implements ServletContextListener 
 {
-	private static final Logger log = Logger.getLogger(BonusContextListener.class);
+	private static final Logger log = Logger.getLogger(CacheLoaderContextListener.class);
 	
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) 
