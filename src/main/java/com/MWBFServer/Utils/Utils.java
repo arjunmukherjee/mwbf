@@ -555,12 +555,12 @@ public class Utils
         List<UserActivity> activityList = new ArrayList<UserActivity>();
         for (Friends friend : friendsList)
         {
-            List<UserActivity> friendActivityList = (List<UserActivity>) DbConnection.queryGetFriendsActivities(friend.getFriend().getId());
+            List<UserActivity> friendActivityList = (List<UserActivity>) DbConnection.queryGetUserActivity(friend.getFriend());
             activityList.addAll(friendActivityList);
         }
 
         // Get the users activity feeds
-        List<UserActivity> userActivityList = (List<UserActivity>) DbConnection.queryGetFriendsActivities(_user.getId());
+        List<UserActivity> userActivityList = (List<UserActivity>) DbConnection.queryGetUserActivity(_user);
         activityList.addAll(userActivityList);
 
         // Get the list of activities and sort them by time

@@ -117,24 +117,8 @@ public class DbConnection
         return executeListQuery(query, session);
 	}
 	
-	/**
-	 * Returns a list of UserActivities aggregated by activity.
-	 * @param _user
-	 * @return
-	 */
-	public static List<?> queryGetUserActivity(User _user)
-	{
-		// creating session object
-		Session session = getSession();
-       	
-		String hql = "FROM UserActivity UA WHERE UA.user = :userId";
-        Query query = session.createQuery(hql);
-        query.setString("userId", _user.getId());
-      
-        return executeListQuery(query, session);
-	}
 	
-/**
+	/**
 	 * Returns a list of UserActivities aggregated by time
 	 * @param _user
 	 * @param _fromDate
@@ -405,22 +389,21 @@ public class DbConnection
 				
 		return  createQueryAndExecute(hql);
 	}
-
+	
 	/**
-	 * Get a list of all the user's friend's activities.
-	 * 
-	 * @param friendIdList
+	 * Returns a list of UserActivities aggregated by activity.
+	 * @param _user
 	 * @return
 	 */
-	public static List<?> queryGetFriendsActivities(String _friendId) 
+	public static List<?> queryGetUserActivity(User _user)
 	{
 		// creating session object
 		Session session = getSession();
-		
-		String hql = "FROM UserActivity UA WHERE UA.user = :friendId";
+       	
+		String hql = "FROM UserActivity UA WHERE UA.user = :userId";
         Query query = session.createQuery(hql);
-        query.setString("friendId", _friendId);
-        
+        query.setString("userId", _user.getId());
+      
         return executeListQuery(query, session);
 	}
 }
