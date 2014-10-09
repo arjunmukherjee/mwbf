@@ -20,70 +20,13 @@ public class DataCache
 	private static final Map<String,User> m_usersHash = new HashMap<String,User>();
 	private static final Map<User,List<Friends>> m_friendsHash = new HashMap<User,List<Friends>>();
 	
-	
-	/**
-	 * Load all the data into the cache
-	 */
-	public void loadData()
-	{
-		// Load all the users into the cache
-		loadUsers();
-
-		// Load all the MWBF activities into the cache
-		loadActivities();
-
-		// Load all user's friends into the cache
-		loadFriends();
-	}
-	
-	/**
-	 * Load all the users from the Database into the validUsers hashSet.
-	 * User lookup becomes fast.
-	 */
-	@SuppressWarnings("unchecked")
-	public static void loadUsers()
-	{
-		log.info("Loading USERS into CACHE.");
-		
-		List<User> userList = (List<User>) DbConnection.queryGetUsers();
-		for (User user : userList)
-			m_usersHash.put(user.getEmail(),user);
-	}
-	
-	/**
-	 * Add a set of activities to the hash map.
-	 * Run --> Run Activity Object
-	 * @param mActivitieshash
-	 */
-	@SuppressWarnings("unchecked")
-	public static void loadActivities() 
-	{
-		log.info("Loading MWBF ACTIVITIES into CACHE.");
-		
-		List<Activities> activitiesList =  (List<Activities>) DbConnection.queryGetActivityList();
-		for (Activities activity : activitiesList)
-			m_activitiesHash.put(activity.getActivityName(), activity);
-	}
-	
-	/**
-     * Load all of a users friends into the hash
-     * User1 --> Friend1, Friend2..
-     * @param _mUserfriendshash
-     */
-	@SuppressWarnings("unchecked")
-	public static void loadFriends() 
-	{
-		log.info("Loading FRIENDS into CACHE.");
-		
-		// Iterate through each of the users and load up their friends
-		for (User user : m_usersHash.values())
-			m_friendsHash.put(user, (List<Friends>) DbConnection.queryGetFriendsList(user));
-	}
-	
 	/**
 	 * Singleton class, to cache the data in memory for quick access
 	 */
-	private DataCache(){ }
+	private DataCache()
+	{ 
+		loadData();
+	}
 	
 	/**
 	 * Returns the single cache instance (@ThreadSafe DCL)
@@ -101,6 +44,67 @@ public class DataCache
 		}
 		return singleInstance;
 	}
+	
+	
+	/**
+	 * Load all the data into the cache
+	 */
+	private void loadData()
+	{
+		// Load all the users into the cache
+		loadUsers();
+
+		// Load all the MWBF activities into the cache
+		loadActivities();
+
+		// Load all user's friends into the cache
+		loadFriends();
+	}
+	
+	/**
+	 * Load all the users from the Database into the validUsers hashSet.
+	 * User lookup becomes fast.
+	 */
+	@SuppressWarnings("unchecked")
+	private void loadUsers()
+	{
+		log.info("Loading USERS into CACHE.");
+		
+		List<User> userList = (List<User>) DbConnection.queryGetUsers();
+		for (User user : userList)
+			m_usersHash.put(user.getEmail(),user);
+	}
+	
+	/**
+	 * Add a set of activities to the hash map.
+	 * Run --> Run Activity Object
+	 * @param mActivitieshash
+	 */
+	@SuppressWarnings("unchecked")
+	private void loadActivities() 
+	{
+		log.info("Loading MWBF ACTIVITIES into CACHE.");
+		
+		List<Activities> activitiesList =  (List<Activities>) DbConnection.queryGetActivityList();
+		for (Activities activity : activitiesList)
+			m_activitiesHash.put(activity.getActivityName(), activity);
+	}
+	
+	/**
+     * Load all of a users friends into the hash
+     * User1 --> Friend1, Friend2..
+     * @param _mUserfriendshash
+     */
+	@SuppressWarnings("unchecked")
+	private void loadFriends() 
+	{
+		log.info("Loading FRIENDS into CACHE.");
+		
+		// Iterate through each of the users and load up their friends
+		for (User user : m_usersHash.values())
+			m_friendsHash.put(user, (List<Friends>) DbConnection.queryGetFriendsList(user));
+	}
+	
 	
 	/**
 	 * Returns a copy of the list of the users

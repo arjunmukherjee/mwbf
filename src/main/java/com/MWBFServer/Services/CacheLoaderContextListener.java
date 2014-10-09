@@ -21,6 +21,8 @@ public class CacheLoaderContextListener implements ServletContextListener
 	public void contextInitialized(ServletContextEvent arg0) 
 	{
 		log.info("Starting Cache Loader.");
-		DataCache.getInstance().loadData();
+		
+		// Will init the single instance, which will in turn load the cache
+		DataCache.getInstance();
 	}
 }
