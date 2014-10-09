@@ -18,9 +18,6 @@ import javax.ws.rs.core.Response;
 
 import com.MWBFServer.Dto.FeedItem;
 import com.MWBFServer.Dto.WeeklyComparisons;
-
-import org.apache.log4j.Logger;
-
 import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Challenges.Challenge;
@@ -37,7 +34,6 @@ import com.google.gson.JsonParser;
 
 public class Utils 
 {
-	private static final Logger log = Logger.getLogger(Utils.class);
 	private static final DataCache m_cache = DataCache.getInstance();
 	
 	/**
@@ -57,8 +53,6 @@ public class Utils
 	 */
 	public static Boolean logActivity(List<UserActivity> _userActivityList)
 	{
-		// TODO : Save activity to local cache
-		
 		// Multiply the activity's points * the number of exercise units and then store in db
 		for (UserActivity ua : _userActivityList)
 		{
@@ -72,13 +66,24 @@ public class Utils
 			}
 		}
 
-		return DbConnection.saveList(_userActivityList);
+		// Save activity to DB
+		boolean result = DbConnection.saveList(_userActivityList);
+		
+		// If DB save was successful, then save to local cache
+		if ( result )
+		{
+			for (UserActivity ua : _userActivityList)
+				m_cache.addUserActivity(ua);
+		}
+		
+		return result;
 	}
 	
 	/**
 	 * Lookup up all the activities for the user.
 	 * Aggregate it by Activity
 	 */
+	@SuppressWarnings("unchecked")
 	public static List<UserActivity> getUserActivitiesByActivityForDateRange(User _user, String _fromDate, String _toDate)
 	{
 		Date fromDate = null,toDate = null;
@@ -527,6 +532,7 @@ public class Utils
 	 * @param _challengeId
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public static boolean deleteChallenge(String _challengeId) 
 	{
 		List<Challenge> challengeList = (List<Challenge>) DbConnection.queryGetChallenge(_challengeId);
@@ -548,6 +554,7 @@ public class Utils
      * @param _user
      * @return
      */
+	@SuppressWarnings("unchecked")
     public static List<FeedItem> getUserFeedItems(List<Friends> friendsList, User _user)
     {
         // TODO : Highly inefficient

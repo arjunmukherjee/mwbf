@@ -214,11 +214,11 @@ public class DataCache
 	
 	/**
 	 * Adds a logged activity to the user's activity list
-	 * @return
+	 * @param _ua (UserActivity)
 	 */
-	public void addUserActivity(User _user, UserActivity _ua)
+	public void addUserActivity(UserActivity _ua)
 	{
-		m_userActivitiesHash.get(_user).add(_ua);
+		m_userActivitiesHash.get(_ua.getUser()).add(_ua);
 	}
 	
 	/**
