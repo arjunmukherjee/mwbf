@@ -20,18 +20,7 @@ public class CacheLoaderContextListener implements ServletContextListener
 	@Override
 	public void contextInitialized(ServletContextEvent arg0) 
 	{
-		Runnable task = new Runnable()
-		{
-			@Override
-			public void run() 
-			{
-				log.info("Starting Cache Loader.");
-				DataCache.getInstance().loadData();
-			}
-		};
-		
-		Thread t = new Thread(task);
-		t.setDaemon(true);
-		t.start();		
+		log.info("Starting Cache Loader.");
+		DataCache.getInstance().loadData();
 	}
 }
