@@ -218,7 +218,11 @@ public class DataCache
 	 */
 	public void addUserActivity(UserActivity _ua)
 	{
-		m_userActivitiesHash.get(_ua.getUser()).add(_ua);
+		User user = getUser(_ua.getUser().getId());
+		if (user == null)
+			log.warn("Unable to find user [" + _ua.toString() + "] to cache activity.");
+		else
+			m_userActivitiesHash.get(user).add(_ua);
 	}
 	
 	/**
