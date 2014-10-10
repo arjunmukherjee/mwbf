@@ -137,10 +137,10 @@ public class UserActivity implements Comparable<UserActivity>, Serializable
 	 			exerciseUnitsStr = Integer.toString(exerciseUnitsInt);
 	 		
 	 		
-	 		actString.append(cache.getActivity(this.activityId).getPastVerb());
+	 		actString.append(cache.getMWBFActivity(this.activityId).getPastVerb());
 	 		actString.append(" ");
 	 		actString.append(exerciseUnitsStr);
-	 		actString.append(cache.getActivity(this.activityId).getMeasurementUnitShort());
+	 		actString.append(cache.getMWBFActivity(this.activityId).getMeasurementUnitShort());
 	 		actString.append(" on ");
 	 		actString.append(new SimpleDateFormat("MMM d").format(this.date));
  		}

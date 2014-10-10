@@ -56,7 +56,7 @@ public class Utils
 		// Multiply the activity's points * the number of exercise units and then store in db
 		for (UserActivity ua : _userActivityList)
 		{
-			Activities act = m_cache.getActivity(ua.getActivityId());
+			Activities act = m_cache.getMWBFActivity(ua.getActivityId());
 			// Will get used while persisting bonus activities
 			if ( act != null )
 			{
@@ -225,14 +225,11 @@ public class Utils
 		friendsList.add(friendObj);
 		
 		// Add the friend to the cache
-		boolean returnVal = false;
-		if ( DbConnection.saveList(friendsList) )
-		{
+		boolean result = DbConnection.saveList(friendsList);
+		if ( result )
 			m_cache.addFriend(_user, friendObj);
-			returnVal = true;
-		}
 		
-		return returnVal;
+		return result;
 	}
 
 	/**
@@ -376,11 +373,11 @@ public class Utils
 		 		StringBuilder actString = new StringBuilder();
 		 		actString.append(user.getFirstName());
 		 		actString.append(" ");
-		 		actString.append(m_cache.getActivity(activityId).getPastVerb());
+		 		actString.append(m_cache.getMWBFActivity(activityId).getPastVerb());
 		 		actString.append(" ");
 		 		actString.append(activityUnits);
 		 		actString.append(" ");
-		 		actString.append(m_cache.getActivity(activityId).getMeasurementUnitShort());
+		 		actString.append(m_cache.getMWBFActivity(activityId).getMeasurementUnitShort());
 		 		actString.append(" on ");
 		 		actString.append(activityDate);
 		 		messageList.add(actString.toString());
@@ -581,7 +578,7 @@ public class Utils
             item.setActivityName(activity.getActivityId());
             
             if ( !activity.isBonusActivity() )
-            	item.setActivityUnit(m_cache.getActivity(activity.getActivityId()).getMeasurementUnitShort());
+            	item.setActivityUnit(m_cache.getMWBFActivity(activity.getActivityId()).getMeasurementUnitShort());
             
             item.setActivityValue(activity.getExerciseUnits());
             item.setFirstName(activity.getUser().getFirstName());

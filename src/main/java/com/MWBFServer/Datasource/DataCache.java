@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 
 import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
+import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
 
@@ -26,6 +27,7 @@ public class DataCache
 	private static final Map<String,User> m_usersHash = new HashMap<String,User>();
 	private static final Map<User,List<Friends>> m_friendsHash = new HashMap<User,List<Friends>>();
 	private static final Map<User,List<UserActivity>> m_userActivitiesHash = new HashMap<User,List<UserActivity>>();
+	private static final Map<User,List<Challenge>> m_userChallengesHash = new HashMap<User,List<Challenge>>();
 	
 	/**
 	 * Singleton class, to cache the data in memory for quick access
@@ -69,6 +71,9 @@ public class DataCache
 		
 		// Load all the user's activities into the cache
 		loadUserActivities();
+		
+		// Load all the user's challenges into the cache
+		loadUserChallenges();
 	}
 	
 	/**
@@ -92,6 +97,7 @@ public class DataCache
 	private void loadUserActivities()
 	{
 		// TODO : Too much data here. Will soon become unmanageable
+		// Optimization 1 : Load only current year
 		log.info("Loading USER-ACTIVITIES into CACHE.");
 		for (User user : m_usersHash.values())
             m_userActivitiesHash.put(user, (List<UserActivity>) DbConnection.queryGetUserActivity(user));
@@ -105,7 +111,7 @@ public class DataCache
 	@SuppressWarnings("unchecked")
 	private void loadMWBFActivities() 
 	{
-		log.info("Loading MWBF ACTIVITIES into CACHE.");
+		log.info("Loading MWBF-ACTIVITIES into CACHE.");
 		
 		List<Activities> activitiesList =  (List<Activities>) DbConnection.queryGetActivityList();
 		for (Activities activity : activitiesList)
@@ -120,12 +126,24 @@ public class DataCache
 	@SuppressWarnings("unchecked")
 	private void loadFriends() 
 	{
-		log.info("Loading FRIENDS into CACHE.");
+		log.info("Loading USER-FRIENDS into CACHE.");
 		
 		// Iterate through each of the users and load up their friends
 		for (User user : m_usersHash.values())
 			m_friendsHash.put(user, (List<Friends>) DbConnection.queryGetFriendsList(user));
 	}
+	
+	/**
+	 * Load all the user's challenges from the Database into the hash.
+	 */
+	@SuppressWarnings("unchecked")
+	private void loadUserChallenges()
+	{
+		// TODO : Complete this
+		log.info("Loading USER-CHALLENGES into CACHE.");
+		for (User user : m_usersHash.values())
+            m_userChallengesHash.put(user, (List<Challenge>) DbConnection.queryGetChallenges(user));
+    }
 	
 	
 	/**
@@ -183,7 +201,7 @@ public class DataCache
 	 * Returns an activity
 	 * @return
 	 */
-	public Activities getActivity(String _activityId)
+	public Activities getMWBFActivity(String _activityId)
 	{
 		Activities act = m_MWBFActivitiesHash.get(_activityId);
 		if (act != null)
@@ -223,6 +241,16 @@ public class DataCache
 			log.warn("Unable to find user [" + _ua.toString() + "] to cache activity.");
 		else
 			m_userActivitiesHash.get(user).add(_ua);
+	}
+	
+	/**
+	 * Returns a copy of the list of the user's challenges
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Challenge> getUserChallenges(User _user)
+	{
+		return (List<Challenge>) copyCollection(new ArrayList<Challenge>(m_userChallengesHash.get(_user)));
 	}
 	
 	/**
