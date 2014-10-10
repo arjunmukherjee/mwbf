@@ -83,7 +83,6 @@ public class Utils
 	 * Lookup up all the activities for the user.
 	 * Aggregate it by Activity
 	 */
-	@SuppressWarnings("unchecked")
 	public static List<UserActivity> getUserActivitiesByActivityForDateRange(User _user, String _fromDate, String _toDate)
 	{
 		Date fromDate = null,toDate = null;
@@ -97,7 +96,7 @@ public class Utils
 			e.printStackTrace();
 		}
 		
-		List<UserActivity> activityList =  (List<UserActivity>) DbConnection.queryGetUserActivity(_user);
+		List<UserActivity> activityList =  m_cache.getUserActivities(_user);
 		Map<String,UserActivity> activityHash = new HashMap<String,UserActivity>();
 		
 		// Aggregate the activities (units and points)
@@ -554,20 +553,19 @@ public class Utils
      * @param _user
      * @return
      */
-	@SuppressWarnings("unchecked")
-    public static List<FeedItem> getUserFeedItems(List<Friends> friendsList, User _user)
+	public static List<FeedItem> getUserFeedItems(List<Friends> friendsList, User _user)
     {
         // TODO : Highly inefficient
 
         List<UserActivity> activityList = new ArrayList<UserActivity>();
         for (Friends friend : friendsList)
         {
-            List<UserActivity> friendActivityList = (List<UserActivity>) DbConnection.queryGetUserActivity(friend.getFriend());
+        	List<UserActivity> friendActivityList = m_cache.getUserActivities(friend.getFriend());
             activityList.addAll(friendActivityList);
         }
 
         // Get the users activity feeds
-        List<UserActivity> userActivityList = (List<UserActivity>) DbConnection.queryGetUserActivity(_user);
+        List<UserActivity> userActivityList = m_cache.getUserActivities(_user);
         activityList.addAll(userActivityList);
 
         // Get the list of activities and sort them by time
