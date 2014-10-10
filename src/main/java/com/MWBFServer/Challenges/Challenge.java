@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -112,6 +113,6 @@ public class Challenge
 	@Override
 	public String toString()
 	{
-		return "Name["+name+"], StartDate["+startDate.toString()+"], EndDate["+endDate.toString()+"], NumberOfPlayers["+playersSet.size()+"], NumberOfActivities["+activitySet.size()+"], Creator[" + creator.getEmail() + "]";
+		return "Id ["+id+"], Name["+name+"], StartDate["+startDate.toString()+"], EndDate["+endDate.toString()+"], NumberOfPlayers["+playersSet.toString()+"], NumberOfActivities["+activitySet.toString()+"], Creator[" + creator.getEmail() + "]";
 	}
 }

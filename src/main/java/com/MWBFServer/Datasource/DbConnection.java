@@ -236,6 +236,16 @@ public class DbConnection
 		return createQueryAndExecute(hql);
 	}
 	
+	public static List<?> queryGetChallengesHQL() 
+	{
+		// creating session object
+		Session session = getSession();
+
+	    Query query = session.createQuery("FROM Challenge as n LEFT JOIN FETCH n.playersSet LEFT JOIN FETCH n.activitySet");
+	
+		return executeListQuery(query, session);
+	}
+	
 	/**
 	 * Returns a Challenge.
 	 * @param challenge_id

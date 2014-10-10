@@ -172,6 +172,6 @@ public class User implements Serializable
 	@Override
 	public String toString()
 	{
-		return "User : UserId[" + getId() + "], Email[" + getEmail() + "], UserName[" + getUserName() + "]";
+		return "User : Name [" + getFirstName() + " " + getLastName() + "] ,UserId[" + getId() + "], Email[" + getEmail() + "], UserName[" + getUserName() + "]";
 	}
 }

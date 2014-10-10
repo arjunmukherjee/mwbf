@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -135,14 +136,31 @@ public class DataCache
 	
 	/**
 	 * Load all the user's challenges from the Database into the hash.
+	 * UserX --> Challenge1, Challenge2
 	 */
 	@SuppressWarnings("unchecked")
 	private void loadUserChallenges()
 	{
-		// TODO : Complete this
 		log.info("Loading USER-CHALLENGES into CACHE.");
-		for (User user : m_usersHash.values())
-            m_userChallengesHash.put(user, (List<Challenge>) DbConnection.queryGetChallenges(user));
+	
+		List<Challenge> listCh = (List<Challenge>) DbConnection.queryGetChallengesHQL();
+		for (Challenge ch : listCh)
+		{
+			for (String userId : ch.getPlayersSet())
+			{
+				User user = getUser(userId);
+				if ( m_userChallengesHash.containsKey(user) )
+					m_userChallengesHash.get(user).add(ch);
+				else
+				{
+					List<Challenge> challengeList = new ArrayList<Challenge>();
+					challengeList.add(ch);
+					m_userChallengesHash.put(user, challengeList);
+				}
+			}
+		}
+		//for (Entry<User, List<Challenge>> e : m_userChallengesHash.entrySet())
+		//	log.info("User [" + e.getKey().toString() + "], Challenge ["+e.getValue().toString()+"]");
     }
 	
 	
@@ -237,6 +255,7 @@ public class DataCache
 	public void addUserActivity(UserActivity _ua)
 	{
 		User user = getUser(_ua.getUser().getId());
+		_ua.setUser(user);
 		if (user == null)
 			log.warn("Unable to find user [" + _ua.toString() + "] to cache activity.");
 		else
