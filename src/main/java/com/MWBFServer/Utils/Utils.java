@@ -239,7 +239,11 @@ public class Utils
 	 */
 	public static boolean addChallenge(Challenge _newChallenge) 
 	{
-		return DbConnection.saveObj(_newChallenge);
+		boolean result = DbConnection.saveObj(_newChallenge);
+		if ( result )
+			m_cache.addChallenge(_newChallenge);
+		
+		return result;
 	}
 	
 	/**

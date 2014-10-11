@@ -145,32 +145,8 @@ public class DataCache
 	
 		List<Challenge> listCh = (List<Challenge>) DbConnection.queryGetChallengesHQL();
 		for (Challenge ch : listCh)
-		{
-			for (String userId : ch.getPlayersSet())
-			{
-				User user = getUser(userId);
-				if ( m_userChallengesHash.containsKey(user) )
-				{
-					boolean challengeAdded = false;
-					List<Challenge> challengeList = m_userChallengesHash.get(user);
-					for (Challenge challenge : challengeList)
-					{
-						if (challenge.getId() == ch.getId())
-							challengeAdded = true;
-					}
-					
-					if ( !challengeAdded )
-						m_userChallengesHash.get(user).add(ch);
-				}
-				else
-				{
-					List<Challenge> challengeList = new ArrayList<Challenge>();
-					challengeList.add(ch);
-					m_userChallengesHash.put(user, challengeList);
-				}
-			}
-		}
-    }
+			addChallengeToPlayers(ch);
+	}
 	
 	
 	/**
@@ -311,6 +287,47 @@ public class DataCache
 	{
 		return (List<Challenge>) copyCollection(new ArrayList<Challenge>(m_userChallengesHash.get(_user)));
 	}
+	
+	/**
+	 * Add a challenge to the cache
+	 * @param _ch (Challenge)
+	 */
+	public void addChallenge(Challenge _ch)
+	{
+		addChallengeToPlayers(_ch);
+	}
+	
+	/**
+	 * For each player in the challenge add the challenge to their list of challenges (if it does not already exist)
+	 * @param _ch
+	 */
+	private void addChallengeToPlayers(Challenge _ch)
+	{
+		for (String userId : _ch.getPlayersSet())
+		{
+			User user = getUser(userId);
+			if ( m_userChallengesHash.containsKey(user) )
+			{
+				boolean challengeAdded = false;
+				List<Challenge> challengeList = m_userChallengesHash.get(user);
+				for (Challenge challenge : challengeList)
+				{
+					if (challenge.getId() == _ch.getId())
+						challengeAdded = true;
+				}
+				
+				if ( !challengeAdded )
+					m_userChallengesHash.get(user).add(_ch);
+			}
+			else
+			{
+				List<Challenge> challengeList = new ArrayList<Challenge>();
+				challengeList.add(_ch);
+				m_userChallengesHash.put(user, challengeList);
+			}
+		}
+	}
+	
 	
 	/**
 	 * Return a deep copy of the arrayList (using JOS)
