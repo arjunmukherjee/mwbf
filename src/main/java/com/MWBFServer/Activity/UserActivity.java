@@ -39,7 +39,23 @@ public class UserActivity implements Comparable<UserActivity>, Serializable
 	 * @param _date
 	 * @param _activityValue
 	 */
-	public UserActivity(User _user, String _activity, String _date, String _exerciseUnits)
+	public UserActivity(User _user, String _activity, Date _date, String _exerciseUnits)
+	{
+		user = _user;
+		activityId = _activity;
+		date = _date;		
+		exerciseUnits = Double.parseDouble(_exerciseUnits);
+		points = 0;
+	}
+	
+	/**
+	 * 
+	 * @param _user
+	 * @param _activity
+	 * @param _date
+	 * @param _activityValue
+	 */
+	public UserActivity(User _user, String _activity, String _exerciseUnits)
 	{
 		user = _user;
 		activityId = _activity;

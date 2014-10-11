@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
+
 import com.MWBFServer.Dto.FeedItem;
 import com.MWBFServer.Dto.WeeklyComparisons;
 import com.MWBFServer.Activity.Activities;
@@ -25,6 +27,7 @@ import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Datasource.DbConnection;
+import com.MWBFServer.RestActions.UserActions;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
 import com.google.gson.Gson;
@@ -34,6 +37,7 @@ import com.google.gson.JsonParser;
 
 public class Utils 
 {
+	private static final Logger log = Logger.getLogger(Utils.class);
 	private static final DataCache m_cache = DataCache.getInstance();
 	
 	/**
@@ -388,6 +392,86 @@ public class Utils
 	 
 	 	return returnList;
 	}
+
+	
+	/**
+	 * Get a list of all the challenges the user is in
+	 * @param _user
+	 * @return
+	 */
+	public static List<DBReturnChallenge> getChallengesV1(User _user) 
+	{
+		// TODO : 
+		// 1. Redundant code between feeds and this method
+		// 2. Get activities from the cache
+		
+		List<Challenge> challengeList = m_cache.getUserChallenges(_user);
+		
+		Map<String,DBReturnChallenge> challengeMap = new HashMap<String,DBReturnChallenge>();
+		
+		Gson gson = new Gson();
+		JsonParser parser = new JsonParser();
+		
+		// Construct a unique map of the challengeReturn objects
+		for(Challenge challenge : challengeList )
+	    {
+			List<UserActivity> userActivityFeedList = new ArrayList<UserActivity>();
+			
+	    	DBReturnChallenge ch = new DBReturnChallenge(challenge.getName(),challenge.getStartDate(),challenge.getEndDate(),null,challenge.getActivitySet());
+			ch.setCreatorId(challenge.getCreator().getId());
+			ch.setPlayersPointsSet(constructPlayerPointsSet(challenge.getPlayersSet(),ch.getStartDate(),ch.getEndDate(),challenge.getActivitySet()));
+	    	
+			List<?> userActivityList = DbConnection.queryUserActivitiesPerChallenge(challenge.getPlayersSet(),challenge.getActivitySet(),ch.getStartDate(),ch.getEndDate());
+	    	List<String> messageList = new ArrayList<String>();
+	    	String userActivityStr = gson.toJson(userActivityList);
+	    	JsonArray jArray = parser.parse(userActivityStr).getAsJsonArray();
+		 	for(JsonElement obj : jArray )
+		    {
+		 		String[] activityParts = obj.toString().split(",");
+		 		String activityId = activityParts[1].substring(1,activityParts[1].length()-1);
+		 		String activityDateStr = activityParts[2].substring(1);
+		 		String activityUnits = activityParts[4];
+		 		String userId = activityParts[6].substring(1,activityParts[6].length()-2);
+		 		User user = m_cache.getUser(userId);
+		 		
+		 		Date activityDate = null;
+				try 
+				{
+					activityDate = new SimpleDateFormat("MMMM d", Locale.ENGLISH).parse(activityDateStr);
+			    } 
+				catch (ParseException e)
+				{
+					e.printStackTrace();
+				}
+		 		
+		 		UserActivity ua = new UserActivity( user,activityId,activityDate,activityUnits);
+		 		
+		 		// Get the users activity feeds
+		        userActivityFeedList.add(ua);
+		    }
+		 	
+		 	// Get the list of activities and sort them by time
+	        Collections.sort(userActivityFeedList);
+	        
+	        for (UserActivity ua : userActivityFeedList)
+	        	messageList.add(ua.constructNotificationString());
+	        
+	        // Return only the last 50 items
+	        int startIndex = 0;
+	        int endIndex = Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
+	        if( messageList.size() > Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
+	            startIndex = messageList.size() - Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
+
+	        if( messageList.size() < Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
+	        	endIndex = messageList.size();
+	        
+	      	ch.setMessagesList(messageList.subList(startIndex, startIndex + endIndex));
+		 	challengeMap.put(Long.toString(challenge.getId()), ch);
+	    }
+	    
+	  	return new ArrayList<DBReturnChallenge>(challengeMap.values());
+	}
+
 	
 	private static Set<String> constructPlayerPointsSet(Set<String> _players, Date _fromDate, Date _toDate, Set<String> _activitySet)
 	{

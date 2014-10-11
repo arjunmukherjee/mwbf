@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -150,7 +149,18 @@ public class DataCache
 			{
 				User user = getUser(userId);
 				if ( m_userChallengesHash.containsKey(user) )
-					m_userChallengesHash.get(user).add(ch);
+				{
+					boolean challengeAdded = false;
+					List<Challenge> challengeList = m_userChallengesHash.get(user);
+					for (Challenge challenge : challengeList)
+					{
+						if (challenge.getId() == ch.getId())
+							challengeAdded = true;
+					}
+					
+					if ( !challengeAdded )
+						m_userChallengesHash.get(user).add(ch);
+				}
 				else
 				{
 					List<Challenge> challengeList = new ArrayList<Challenge>();
@@ -159,8 +169,6 @@ public class DataCache
 				}
 			}
 		}
-		//for (Entry<User, List<Challenge>> e : m_userChallengesHash.entrySet())
-		//	log.info("User [" + e.getKey().toString() + "], Challenge ["+e.getValue().toString()+"]");
     }
 	
 	

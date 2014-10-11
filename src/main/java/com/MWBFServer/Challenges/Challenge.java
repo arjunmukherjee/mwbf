@@ -1,5 +1,6 @@
 package com.MWBFServer.Challenges;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,8 +19,10 @@ import com.MWBFServer.Users.User;
 
 @Entity
 @Table (name="MWBF_CHALLENGES")
-public class Challenge 
+public class Challenge implements Serializable
 {
+	private static final long serialVersionUID = 4920633576979574822L;
+	
 	private long id;
 	private User creator;
 	private String name;

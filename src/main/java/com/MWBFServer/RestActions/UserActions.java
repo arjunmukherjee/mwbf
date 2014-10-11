@@ -680,7 +680,7 @@ public class UserActions
 				Gson gson = new Gson();
 			 
 				// Look up the users challenges
-				List<DBReturnChallenge> challengeList = Utils.getChallenges(user);
+				List<DBReturnChallenge> challengeList = Utils.getChallengesV1(user);
 				
 				// Convert the List to a Json representation
 				if ( challengeList != null )
@@ -693,7 +693,7 @@ public class UserActions
 		{
 			e.printStackTrace();
 		}
-		
+	
 		return Utils.buildResponse(returnStr);
 	}
 }

@@ -3,6 +3,7 @@ package com.MWBFServer.Datasource;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -388,14 +389,14 @@ public class DbConnection
 	 * @param endDate
 	 * @return
 	 */
-	public static List<?> queryUserActivitiesPerChallenge(HashSet<String> _playersSet, HashSet<String> _activitiesSet, Date _startDate, Date _endDate) 
+	public static List<?> queryUserActivitiesPerChallenge(Set<String> _playersSet, Set<String> _activitiesSet, Date _startDate, Date _endDate) 
 	{
 		String playersStr = StringUtils.join(_playersSet, "','");
 		String activityStr = StringUtils.join(_activitiesSet, "','");
 		
 		String hql = "select * from user_activity where user_id in ('"+ playersStr +"')";
 		hql += " and activity_id in ('" + activityStr + "')";
-		hql += " and activity_date > '" + _startDate + "' and activity_date < '" + _endDate + "' order by activity_date limit 50";
+		hql += " and activity_date > '" + _startDate + "' and activity_date < '" + _endDate + "' order by activity_date";
 				
 		return  createQueryAndExecute(hql);
 	}

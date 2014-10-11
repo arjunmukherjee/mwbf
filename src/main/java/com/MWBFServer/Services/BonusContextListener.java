@@ -81,7 +81,7 @@ public class BonusContextListener implements ServletContextListener
 						{
 							log.info("User [" + user.getFirstName() + "] is eligile for a cross training bonus this week.");
 							
-							UserActivity bonusActivity = new UserActivity(user,BonusEnum.CrossTrainingBonus.toString(),df.format(weekEnd)+" 11:59:59 PM","1");
+							UserActivity bonusActivity = new UserActivity(user,BonusEnum.CrossTrainingBonus.toString(),"1");
 							bonusActivity.setPoints(BonusEnum.CrossTrainingBonus.getValue());
 							log.info("Bonus ["+bonusActivity.toString()+"]");
 							List<UserActivity> bonusActList = new ArrayList<UserActivity>();
