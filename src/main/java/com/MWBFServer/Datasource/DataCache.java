@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,7 +98,7 @@ public class DataCache
 	private void loadUserActivities()
 	{
 		// TODO : Too much data here. Will soon become unmanageable
-		// Optimization 1 : Load only current year
+		// TODO : Optimization 1 : Load only current year
 		log.info("Loading USER-ACTIVITIES into CACHE.");
 		for (User user : m_usersHash.values())
             m_userActivitiesHash.put(user, (List<UserActivity>) DbConnection.queryGetUserActivity(user));
@@ -253,6 +254,37 @@ public class DataCache
 	@SuppressWarnings("unchecked")
 	public List<UserActivity> getUserActivities(User _user)
 	{
+		return (List<UserActivity>) copyCollection(new ArrayList<UserActivity>(m_userActivitiesHash.get(_user)));
+	}
+	
+	/**
+	 * List of all user activities between a specific date range.
+	 * 
+	 * @param _user
+	 * @param _fromDate
+	 * @param _toDate
+	 * @return List(UserActivity)
+	 */
+	@SuppressWarnings("unchecked")
+	public List<UserActivity> getUserActivitiesFilterByDate(User _user, Date _fromDate, Date _toDate)
+	{
+		// TODO : Implement this
+		return (List<UserActivity>) copyCollection(new ArrayList<UserActivity>(m_userActivitiesHash.get(_user)));
+	}
+	
+	/**
+	 * List of specific user activities between a specific date range.
+	 * 
+	 * @param _user
+	 * @param _fromDate
+	 * @param _toDate
+	 * @param _activity
+	 * @return List(UserActivity)
+	 */
+	@SuppressWarnings("unchecked")
+	public List<UserActivity> getUserActivitiesFilterByDateAndActivity(User _user, Date _fromDate, Date _toDate, String _activity)
+	{
+		// TODO : Implement this
 		return (List<UserActivity>) copyCollection(new ArrayList<UserActivity>(m_userActivitiesHash.get(_user)));
 	}
 	

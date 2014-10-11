@@ -33,6 +33,7 @@ public class DBReturnClasses
 	
 	public static class DBReturnChallenge 
 	{
+		@SuppressWarnings("unused")
 		private long id;
 		private String name;
 		private String creatorId;

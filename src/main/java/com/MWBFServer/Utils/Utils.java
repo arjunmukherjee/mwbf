@@ -16,8 +16,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Response;
 
-import org.apache.log4j.Logger;
-
 import com.MWBFServer.Dto.FeedItem;
 import com.MWBFServer.Dto.WeeklyComparisons;
 import com.MWBFServer.Activity.Activities;
@@ -27,7 +25,6 @@ import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Datasource.DbConnection;
-import com.MWBFServer.RestActions.UserActions;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
 import com.google.gson.Gson;
@@ -37,7 +34,6 @@ import com.google.gson.JsonParser;
 
 public class Utils 
 {
-	private static final Logger log = Logger.getLogger(Utils.class);
 	private static final DataCache m_cache = DataCache.getInstance();
 	
 	/**
