@@ -13,6 +13,7 @@ import org.hibernate.cfg.Configuration;
 
 import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Users.User;
+import com.MWBFServer.Utils.Utils.TimeAggregateBy;
 
 @SuppressWarnings("deprecation")
 public class DbConnection 
@@ -369,11 +370,11 @@ public class DbConnection
 	 * Retrieve the users all time bestDay, bestMonth and bestYear
 	 * @param _user
 	 */
-	public static List<?> queryGetAllTimeHighs(User _user, String _aggregateBy)
+	public static List<?> queryGetAllTimeHighs(User _user, TimeAggregateBy _aggUnit)
 	{
-		String hql = "SELECT colA, SUM(colB) FROM (SELECT date_trunc('" + _aggregateBy + "',UA.activity_date) colA,SUM(UA.points) colB";
+		String hql = "SELECT colA, SUM(colB) FROM (SELECT date_trunc('" + _aggUnit.name() + "',UA.activity_date) colA,SUM(UA.points) colB";
 		hql += " FROM user_activity UA WHERE UA.user_id = '" + _user.getId() + "'";
-		hql += " GROUP BY UA.activity_date ORDER BY date_trunc('" + _aggregateBy + "',UA.activity_date))sub GROUP BY colA";
+		hql += " GROUP BY UA.activity_date ORDER BY date_trunc('" + _aggUnit.name() + "',UA.activity_date))sub GROUP BY colA";
 				
 		return createQueryAndExecute(hql);
 	}

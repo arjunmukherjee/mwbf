@@ -15,10 +15,12 @@
         <property name="connection.username">u92dgfi63o5e95</property>
         <property name="connection.password">p5t7v64gog9dpj8r9p908866tmk</property>
         
-        <!-- <property name="hibernate.connection.url">jdbc:postgresql://localhost:5433/mwbf</property> -->
-        <!-- <property name="connection.username">postgres</property> -->
-        <!-- <property name="connection.password">password</property> -->
-
+        <!-- 
+        <property name="hibernate.connection.url">jdbc:postgresql://localhost:5433/mwbf</property>
+        <property name="connection.username">postgres</property>
+        <property name="connection.password">password</property>
+		 -->
+		 
 		<!-- JDBC connection pool (use the built-in) -->
         <property name="connection.pool_size">1</property>
 

@@ -1,5 +1,6 @@
 package com.MWBFServer.Utils;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Response;
+
+import org.apache.log4j.Logger;
 
 import com.MWBFServer.Dto.FeedItem;
 import com.MWBFServer.Dto.WeeklyComparisons;
@@ -34,6 +37,7 @@ import com.google.gson.JsonParser;
 
 public class Utils 
 {
+	private static final Logger log = Logger.getLogger(Utils.class);
 	private static final DataCache m_cache = DataCache.getInstance();
 	
 	/**
@@ -513,46 +517,38 @@ public class Utils
 	 */
 	public static List<UserActivityByTime> getAllTimeHighs(User _user) 
 	{
-	    List<UserActivityByTime> returnListDay = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, "day"), "day");
+	    List<UserActivityByTime> returnListDay = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, TimeAggregateBy.day), TimeAggregateBy.day);
 	    
-	    UserActivityByTime bestDay;
-	    UserActivityByTime bestMonth;
-	    UserActivityByTime bestYear;
 	    List<UserActivityByTime> returnList = new ArrayList<UserActivityByTime>();
 	    
 	    if ( (returnListDay != null) && (returnListDay.size() > 0) )
 	    {
-		    bestDay = returnListDay.get(0);
-		    for (UserActivityByTime uat : returnListDay)
-		    {
-		    	if (uat.getPoints() > bestDay.getPoints())
-		    		bestDay = uat;
-		    }
-		    List<UserActivityByTime> returnListMonth = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, "month"), "month");
-		    bestMonth = returnListMonth.get(0);
-		    for (UserActivityByTime uat : returnListMonth)
-		    {
-		    	if (uat.getPoints() > bestMonth.getPoints())
-		    		bestMonth = uat;
-		    }
+		    List<UserActivityByTime> returnListWeek = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, TimeAggregateBy.week), TimeAggregateBy.week);
+		    List<UserActivityByTime> returnListMonth = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, TimeAggregateBy.month), TimeAggregateBy.month);
+		    List<UserActivityByTime> returnListYear = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, TimeAggregateBy.year), TimeAggregateBy.year);
 		    
-		    List<UserActivityByTime> returnListYear = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, "year"), "year");
-		    bestYear = returnListYear.get(0);
-		    for (UserActivityByTime uat : returnListYear)
-		    {
-		    	if (uat.getPoints() > bestYear.getPoints())
-		    		bestYear = uat;
-		    }
-		    
-		    returnList.add(bestDay);
-		    returnList.add(bestMonth);
-		    returnList.add(bestYear);
+		    returnList.add(getBestUserAcitivityByPoints(returnListDay));
+		    returnList.add(getBestUserAcitivityByPoints(returnListWeek));
+		    returnList.add(getBestUserAcitivityByPoints(returnListMonth));
+		    returnList.add(getBestUserAcitivityByPoints(returnListYear));
 	    }
 	    
 		return returnList;
 	}
 	
-	private static List<UserActivityByTime> convertToObjectArray(List<?> resultsList, String _dateAggregateBy)
+	private static UserActivityByTime getBestUserAcitivityByPoints(List<UserActivityByTime> _activityArray)
+	{
+		UserActivityByTime best = _activityArray.get(0);
+		for (UserActivityByTime uat : _activityArray)
+	    {
+	    	if (uat.getPoints() > best.getPoints())
+	    		best = uat;
+	    }
+		
+		return best;
+	}
+	
+	private static List<UserActivityByTime> convertToObjectArray(List<?> resultsList, TimeAggregateBy _aggUnit)
 	{
 		List<UserActivityByTime> returnList = new ArrayList<UserActivityByTime>();
 		
@@ -562,25 +558,47 @@ public class Utils
 		JsonParser parser = new JsonParser();
 	    JsonArray jArray = parser.parse(returnStrDay).getAsJsonArray();
 		
-		for(JsonElement obj : jArray )
+	    for(JsonElement obj : jArray )
 	    {
 			String[] dateParts = obj.toString().split(",");
-	    	String date = dateParts[0].substring(2);
+	    	String dateStr = dateParts[0].substring(2);
 	    	String year = dateParts[1].split(" ")[1].trim();
 	    	
-	    	if (_dateAggregateBy.equals("month"))
-	    		date = date.substring(0, 3);
-	    	else if (_dateAggregateBy.equals("year"))
-	    		date = year;
+	    	if ( _aggUnit == TimeAggregateBy.month )
+	    		dateStr = dateStr.substring(0, 3);
+	    	else if (_aggUnit == TimeAggregateBy.year)
+	    		dateStr = year;
 	    	
-	    	if (!_dateAggregateBy.equals("year"))
-	    		date = date + "," + year;
+	    	if ( _aggUnit != TimeAggregateBy.year )
+	    		dateStr = dateStr + "," + year;
 	    	
-	    	date.trim();
+	    	dateStr.trim();
+	    	
+	    	// If 'week' then add 5 days
+	    	if (_aggUnit == TimeAggregateBy.week)
+	    	{
+	    		Date startDate = null;
+				try 
+				{
+					// TODO : DB Week is Mon-Mon (Need to change that to Sun - Sat)
+					startDate = new SimpleDateFormat("MMM d,yyyy", Locale.ENGLISH).parse(dateStr);
+					DateFormat dateFormat= new SimpleDateFormat("MMM d,yyyy");
+
+					Calendar c = Calendar.getInstance();    
+					c.setTime(startDate);
+					c.add(Calendar.DATE, 6);
+					
+					dateStr = dateStr + "-" + dateFormat.format(c.getTime());
+			   } 
+				catch (ParseException e)
+				{
+					e.printStackTrace();
+				}
+	    	}
 	    	
 	    	Double points = Double.valueOf(dateParts[2].substring(0, dateParts[2].length()-1));
 	    	points = round(points,1);
-	    	UserActivityByTime uat = new UserActivityByTime(date, points);
+	    	UserActivityByTime uat = new UserActivityByTime(dateStr, points);
 	 
 	    	returnList.add(uat);
 	    }
@@ -749,6 +767,11 @@ public class Utils
 		WeeklyComparisons wkComp = new WeeklyComparisons(userPoints, friendsPointsAverage, leaderPoints);
 		
 		return wkComp;
+    }
+    
+    public static enum TimeAggregateBy
+    {
+    	hour,day,week,month,year;
     }
 
 }
