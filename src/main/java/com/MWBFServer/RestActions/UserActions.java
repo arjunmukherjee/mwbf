@@ -17,6 +17,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.MWBFServer.Activity.*;
 import com.MWBFServer.Challenges.Challenge;
+import com.MWBFServer.Datasource.DBReturnClasses.LeaderActivityByTime;
 import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
@@ -94,7 +95,7 @@ public class UserActions
 		
 		String email = userData.optString("user_id").trim();
 		
-		//  First check if the user exists, if not, then register the user
+		//  First check if the user exists
 		String returnStr = null;
 		if ( (email == null) || (email.length() <= 1)  )
 			returnStr =   "{\"success\":0,\"message\":\"Unable to get all time high for the user\"}";
@@ -111,6 +112,50 @@ public class UserActions
 				List<UserActivityByTime> allTimeHighList = Utils.getAllTimeHighs(user);
 				if ( allTimeHighList != null && allTimeHighList.size() > 0 )
 					returnStr = gson.toJson(allTimeHighList);
+				
+				// TODO : Add the stats in this call, so no need to make two rest calls
+				//gson.toJson(Utils.getWeeklyStats(user));
+			}
+		}
+		
+		return Utils.buildResponse(returnStr);
+	}
+	
+	
+	@POST
+	@Path("/leaderAllTimeHighs")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getLeaderStats(String _incomingData)
+	{
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+		
+		String email = userData.optString("user_id").trim();
+		
+		//  First check if the user exists
+		String returnStr = null;
+		if ( (email == null) || (email.length() <= 1)  )
+			returnStr =   "{\"success\":0,\"message\":\"V1 : Unable to get all time high for the user\"}";
+		else
+		{
+			User user = m_cache.getUser(email);
+			if ( user != null ) 
+			{
+				Gson gson = new Gson();
+				 
+				// Look up the user's friends stats
+				log.info("Getting the all time high stats for the user's friends.");
+				List<LeaderActivityByTime> allTimeHighListFriends = Utils.getLeaderAllTimeHighs(user);
+				if ( allTimeHighListFriends != null && allTimeHighListFriends.size() > 0 )
+					returnStr = gson.toJson(allTimeHighListFriends);
 				
 				// TODO : Add the stats in this call, so no need to make two rest calls
 				//gson.toJson(Utils.getWeeklyStats(user));

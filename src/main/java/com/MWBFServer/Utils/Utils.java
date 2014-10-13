@@ -25,6 +25,7 @@ import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
+import com.MWBFServer.Datasource.DBReturnClasses.LeaderActivityByTime;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Datasource.DbConnection;
@@ -517,10 +518,9 @@ public class Utils
 	 */
 	public static List<UserActivityByTime> getAllTimeHighs(User _user) 
 	{
-	    List<UserActivityByTime> returnListDay = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, TimeAggregateBy.day), TimeAggregateBy.day);
-	    
 	    List<UserActivityByTime> returnList = new ArrayList<UserActivityByTime>();
 	    
+	    List<UserActivityByTime> returnListDay = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, TimeAggregateBy.day), TimeAggregateBy.day);
 	    if ( (returnListDay != null) && (returnListDay.size() > 0) )
 	    {
 		    List<UserActivityByTime> returnListWeek = convertToObjectArray(DbConnection.queryGetAllTimeHighs(_user, TimeAggregateBy.week), TimeAggregateBy.week);
@@ -534,6 +534,129 @@ public class Utils
 	    }
 	    
 		return returnList;
+	}
+	
+	/**
+	 * Get the leader stats for the user's friends
+	 * @param _user
+	 * @return
+	 */
+	public static List<LeaderActivityByTime> getLeaderAllTimeHighs(User _user) 
+	{
+	    
+	    List<LeaderActivityByTime> returnList = new ArrayList<LeaderActivityByTime>();
+	    
+	    List<Friends> friendList = m_cache.getFriends(_user);
+	    UserActivityByTime bestDayLeader = null;
+	    UserActivityByTime bestWeekLeader = null;
+	    UserActivityByTime bestMonthLeader = null;
+	    UserActivityByTime bestYearLeader = null;
+	    User leaderDay = null;
+	    User leaderWeek = null;
+	    User leaderMonth = null;
+	    User leaderYear = null;
+	    for (Friends friend : friendList)
+	    {
+	    	List<UserActivityByTime> friendActivitiesByDay = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.day), TimeAggregateBy.day);
+	    	if ( (friendActivitiesByDay != null) && (friendActivitiesByDay.size() > 0) )
+		    {
+		        List<UserActivityByTime> friendActivitiesByWeek = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.week), TimeAggregateBy.week);
+			    List<UserActivityByTime> friendActivitiesByMonth = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.month), TimeAggregateBy.month);
+			    List<UserActivityByTime> friendActivitiesByYear = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.year), TimeAggregateBy.year);
+			    
+			    UserActivityByTime friendBestDay = getBestUserAcitivityByPoints(friendActivitiesByDay);
+			    if (bestDayLeader == null)
+			    {
+			    	bestDayLeader = friendBestDay;
+			    	leaderDay = friend.getFriend();
+			    }
+			    else
+			    {
+			    	if (friendBestDay.getPoints() >= bestDayLeader.getPoints() )
+			    	{
+			    		bestDayLeader = friendBestDay;
+			    		leaderDay = friend.getFriend();
+			    	}
+			    }
+			    
+			    UserActivityByTime friendBestWeek = getBestUserAcitivityByPoints(friendActivitiesByWeek);
+			    if (bestWeekLeader == null)
+			    {
+			    	bestWeekLeader = friendBestWeek;
+			    	leaderWeek = friend.getFriend();
+			    }
+			    else
+			    {
+			    	if (friendBestWeek.getPoints() >= bestWeekLeader.getPoints() )
+			    	{
+			    		bestWeekLeader = friendBestWeek;
+			    		leaderWeek = friend.getFriend();
+			    	}
+			    }
+			    
+			    UserActivityByTime friendBestMonth = getBestUserAcitivityByPoints(friendActivitiesByMonth);
+			    if (bestMonthLeader == null)
+			    {
+			    	bestMonthLeader = friendBestMonth;
+			    	leaderMonth = friend.getFriend();
+			    }
+			    else
+			    {
+			    	if (friendBestMonth.getPoints() >= bestMonthLeader.getPoints() )
+			    	{
+			    		bestMonthLeader = friendBestMonth;
+			    		leaderMonth = friend.getFriend();
+			    	}
+			    }
+			    
+			    UserActivityByTime friendBestYear = getBestUserAcitivityByPoints(friendActivitiesByYear);
+			    if (bestYearLeader == null)
+			    {
+			    	bestYearLeader = friendBestYear;
+			    	leaderYear = friend.getFriend();
+			    }
+			    else
+			    {
+			    	if (friendBestYear.getPoints() >= bestYearLeader.getPoints() )
+			    	{
+			    		bestYearLeader = friendBestYear;
+			    		leaderYear = friend.getFriend();
+			    	}
+			    }
+		    }
+	    	else
+		    	log.info("No activities found for Friend ["+friend.getFriend().getId()+"]");
+	    }
+	    
+	    LeaderActivityByTime dayLeaderObj = null;
+	    if (leaderDay != null )
+	    {
+	    	dayLeaderObj = new LeaderActivityByTime(leaderDay,bestDayLeader.getDate(),bestDayLeader.getPoints(),TimeAggregateBy.day);
+	    	returnList.add(dayLeaderObj);
+	    }
+	    
+	    LeaderActivityByTime weekLeaderObj = null;
+	    if (leaderWeek != null )
+	    {
+	    	weekLeaderObj = new LeaderActivityByTime(leaderWeek,bestWeekLeader.getDate(),bestWeekLeader.getPoints(),TimeAggregateBy.week);
+	    	returnList.add(weekLeaderObj);
+	    }
+	    
+	    LeaderActivityByTime monthLeaderObj = null;
+	    if (leaderMonth != null )
+	    {
+	    	monthLeaderObj = new LeaderActivityByTime(leaderMonth,bestMonthLeader.getDate(),bestMonthLeader.getPoints(),TimeAggregateBy.month);
+	    	returnList.add(monthLeaderObj);
+	    }
+	    
+	    LeaderActivityByTime yearLeaderObj = null;
+	    if (leaderYear != null )
+	    {
+	    	yearLeaderObj = new LeaderActivityByTime(leaderYear,bestYearLeader.getDate(),bestYearLeader.getPoints(),TimeAggregateBy.year);
+	    	returnList.add(yearLeaderObj);
+	    }
+	    
+	   return returnList;
 	}
 	
 	private static UserActivityByTime getBestUserAcitivityByPoints(List<UserActivityByTime> _activityArray)

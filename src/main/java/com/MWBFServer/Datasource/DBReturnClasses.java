@@ -6,6 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.MWBFServer.Users.User;
+import com.MWBFServer.Utils.Utils.TimeAggregateBy;
+
 
 public class DBReturnClasses 
 {
@@ -25,9 +28,47 @@ public class DBReturnClasses
 			return points;
 		}
 		
+		public String getDate()
+		{
+			return date;
+		}
+		
 		public String toString()
 		{
 			return "Points["+points+"], Date["+date+"]";
+		}
+	}
+	
+	public static class LeaderActivityByTime
+	{
+		private String date;
+		private TimeAggregateBy aggUnit;
+		private double points;
+		private User user;
+		
+		/**
+		 * 
+		 * @param _user
+		 * @param _date
+		 * @param _points
+		 * @param _aggUnit
+		 */
+		public LeaderActivityByTime(User _user,String _date, Double _points, TimeAggregateBy _aggUnit )
+		{
+			user = _user;
+			points = _points;
+			date = _date;
+			aggUnit = _aggUnit;
+		}
+		
+		public double getPoints()
+		{
+			return points;
+		}
+		
+		public String toString()
+		{
+			return "User[" + user.getId() + "],Points["+points+"], Date["+date+"], AggregatedBy [" + aggUnit.name() + "]";
 		}
 	}
 	
