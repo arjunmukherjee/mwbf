@@ -241,7 +241,11 @@ public class DataCache
 	@SuppressWarnings("unchecked")
 	public List<UserActivity> getUserActivities(User _user)
 	{
-		return (List<UserActivity>) copyCollection(new ArrayList<UserActivity>(m_userActivitiesHash.get(_user)));
+		List<UserActivity> userActivityList = m_userActivitiesHash.get(_user);
+		if ( ( userActivityList != null ) && ( userActivityList.size() > 0 ) )
+			return (List<UserActivity>) copyCollection(new ArrayList<UserActivity>(userActivityList));
+		else
+			return null;
 	}
 	
 	/**

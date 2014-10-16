@@ -104,30 +104,34 @@ public class Utils
 		List<UserActivity> activityList =  m_cache.getUserActivities(_user);
 		Map<String,UserActivity> activityHash = new HashMap<String,UserActivity>();
 		
+		List<UserActivity> returnList = null;
 		// Aggregate the activities (units and points)
-		for (UserActivity ua : activityList)
+		if ( ( activityList != null ) && ( activityList.size() > 0 ) )
 		{
-			// TODO : Very inefficient goes through the whole list to figure out correct date range.
-			// Ensure the activity is within the specified date
-			if ( ua.getDate().after(fromDate) && ua.getDate().before(toDate) )
+			for (UserActivity ua : activityList)
 			{
-				String activity = ua.getActivityId();
-				if (activityHash.containsKey(activity))
+				// TODO : Very inefficient goes through the whole list to figure out correct date range.
+				// Ensure the activity is within the specified date
+				if ( ua.getDate().after(fromDate) && ua.getDate().before(toDate) )
 				{
-					UserActivity uaTemp = activityHash.get(activity);
-					uaTemp.setExerciseUnits(ua.getExerciseUnits() + uaTemp.getExerciseUnits());
-					uaTemp.setPoints(ua.getPoints() + uaTemp.getPoints());
-					activityHash.put(activity, uaTemp);
+					String activity = ua.getActivityId();
+					if (activityHash.containsKey(activity))
+					{
+						UserActivity uaTemp = activityHash.get(activity);
+						uaTemp.setExerciseUnits(ua.getExerciseUnits() + uaTemp.getExerciseUnits());
+						uaTemp.setPoints(ua.getPoints() + uaTemp.getPoints());
+						activityHash.put(activity, uaTemp);
+					}
+					else
+						activityHash.put(activity, ua);
 				}
-				else
-					activityHash.put(activity, ua);
 			}
+			
+			returnList = new ArrayList<UserActivity>();
+			for (UserActivity ua : activityHash.values())
+				returnList.add(ua);
 		}
 		
-		List<UserActivity> returnList = new ArrayList<UserActivity>();
-		for (UserActivity ua : activityHash.values())
-			returnList.add(ua);
-			
 		return returnList;
 	}
 	
@@ -792,7 +796,9 @@ public class Utils
         for (Friends friend : friendsList)
         {
         	List<UserActivity> friendActivityList = m_cache.getUserActivities(friend.getFriend());
-            activityList.addAll(friendActivityList);
+        	
+        	if ( ( friendActivityList != null ) && ( friendActivityList.size() > 0 ) )
+        		activityList.addAll(friendActivityList);
         }
 
         // Get the users activity feeds
@@ -873,17 +879,20 @@ public class Utils
 	    		List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(friend.getFriend(), df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
 	    		
 	    		Double friendPoints = 0.0;
-	    		for (UserActivity ua : activityList)
-	    			friendPoints = friendPoints + ua.getPoints();
+	    		if ( ( activityList != null) && ( activityList.size() > 0 ) )
+	    		{
+	    			for (UserActivity ua : activityList)
+	    				friendPoints = friendPoints + ua.getPoints();
 	    		
-	    		if (friendPoints > leaderPoints)
-	    			leaderPoints = friendPoints;
-	    		
-	    		friendsPointsTotal = friendsPointsTotal + friendPoints;
-	    		
-	    		// Look for active friends
-	    		if ( friendPoints != 0.0 )
-	    			activeFriendsCount++;
+		    		if (friendPoints > leaderPoints)
+		    			leaderPoints = friendPoints;
+		    		
+		    		friendsPointsTotal = friendsPointsTotal + friendPoints;
+		    		
+		    		// Look for active friends
+		    		if ( friendPoints != 0.0 )
+		    			activeFriendsCount++;
+	    		}
 	    	}
 	    	
 	    	// Calculate the average across all the active friends
@@ -902,6 +911,7 @@ public class Utils
 			
 			wkComp = new WeeklyComparisons(userPoints, friendsPointsAverage, leaderPoints);
 	    }
+    	
 		return wkComp;
     }
     
