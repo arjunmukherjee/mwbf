@@ -200,6 +200,14 @@ public class DataCache
 	 */
 	public void addFriend(User _user, Friends _friend)
 	{
+		List<Friends> friendsList = m_friendsHash.get(_user);
+		if (friendsList == null)
+		{
+			friendsList = new ArrayList<Friends>();
+			friendsList.add(_friend);
+			m_friendsHash.put(_user, friendsList);
+		}
+		else
 		m_friendsHash.get(_user).add(_friend);
 	}
 	
@@ -278,7 +286,17 @@ public class DataCache
 		if (user == null)
 			log.warn("Unable to find user [" + _ua.toString() + "] to cache activity.");
 		else
-			m_userActivitiesHash.get(user).add(_ua);
+		{
+			List<UserActivity> userActivityList = m_userActivitiesHash.get(user);
+			if ( userActivityList == null) 
+			{
+				userActivityList = new ArrayList<UserActivity>();
+				userActivityList.add(_ua);
+				m_userActivitiesHash.put(user, userActivityList);
+			}
+			else
+				m_userActivitiesHash.get(user).add(_ua);
+		}
 	}
 	
 	/**
