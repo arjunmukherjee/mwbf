@@ -409,72 +409,78 @@ public class Utils
 		// TODO : 
 		// 1. Redundant code between feeds and this method
 		// 2. Get activities from the cache
-		
+		Map<String,DBReturnChallenge> challengeMap = null;
 		List<Challenge> challengeList = m_cache.getUserChallenges(_user);
-		
-		Map<String,DBReturnChallenge> challengeMap = new HashMap<String,DBReturnChallenge>();
-		
-		Gson gson = new Gson();
-		JsonParser parser = new JsonParser();
-		
-		// Construct a unique map of the challengeReturn objects
-		for(Challenge challenge : challengeList )
-	    {
-			List<UserActivity> userActivityFeedList = new ArrayList<UserActivity>();
-			
-	    	DBReturnChallenge ch = new DBReturnChallenge(challenge.getName(),challenge.getStartDate(),challenge.getEndDate(),null,challenge.getActivitySet());
-			ch.setCreatorId(challenge.getCreator().getId());
-			ch.setPlayersPointsSet(constructPlayerPointsSet(challenge.getPlayersSet(),ch.getStartDate(),ch.getEndDate(),challenge.getActivitySet()));
-	    	
-			List<?> userActivityList = DbConnection.queryUserActivitiesPerChallenge(challenge.getPlayersSet(),challenge.getActivitySet(),ch.getStartDate(),ch.getEndDate());
-	    	List<String> messageList = new ArrayList<String>();
-	    	String userActivityStr = gson.toJson(userActivityList);
-	    	JsonArray jArray = parser.parse(userActivityStr).getAsJsonArray();
-		 	for(JsonElement obj : jArray )
-		    {
-		 		String[] activityParts = obj.toString().split(",");
-		 		String activityId = activityParts[1].substring(1,activityParts[1].length()-1);
-		 		String activityDateStr = activityParts[2].substring(1);
-		 		String activityUnits = activityParts[4];
-		 		String userId = activityParts[6].substring(1,activityParts[6].length()-2);
-		 		User user = m_cache.getUser(userId);
-		 		
-		 		Date activityDate = null;
-				try 
-				{
-					activityDate = new SimpleDateFormat("MMMM d", Locale.ENGLISH).parse(activityDateStr);
-			    } 
-				catch (ParseException e)
-				{
-					e.printStackTrace();
-				}
-		 		
-		 		UserActivity ua = new UserActivity( user,activityId,activityDate,activityUnits);
-		 		
-		 		// Get the users activity feeds
-		        userActivityFeedList.add(ua);
-		    }
-		 	
-		 	// Get the list of activities and sort them by time
-	        Collections.sort(userActivityFeedList);
-	        
-	        for (UserActivity ua : userActivityFeedList)
-	        	messageList.add(ua.constructNotificationString());
-	        
-	        // Return only the last 50 items
-	        int startIndex = 0;
-	        int endIndex = Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
-	        if( messageList.size() > Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
-	            startIndex = messageList.size() - Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
+		if ( ( challengeList != null ) && ( challengeList.size() > 0 ) )
+		{
 
-	        if( messageList.size() < Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
-	        	endIndex = messageList.size();
-	        
-	      	ch.setMessagesList(messageList.subList(startIndex, startIndex + endIndex));
-		 	challengeMap.put(Long.toString(challenge.getId()), ch);
-	    }
-	    
-	  	return new ArrayList<DBReturnChallenge>(challengeMap.values());
+			challengeMap = new HashMap<String,DBReturnChallenge>();
+
+			Gson gson = new Gson();
+			JsonParser parser = new JsonParser();
+
+			// Construct a unique map of the challengeReturn objects
+			for(Challenge challenge : challengeList )
+			{
+				List<UserActivity> userActivityFeedList = new ArrayList<UserActivity>();
+
+				DBReturnChallenge ch = new DBReturnChallenge(challenge.getName(),challenge.getStartDate(),challenge.getEndDate(),null,challenge.getActivitySet());
+				ch.setCreatorId(challenge.getCreator().getId());
+				ch.setPlayersPointsSet(constructPlayerPointsSet(challenge.getPlayersSet(),ch.getStartDate(),ch.getEndDate(),challenge.getActivitySet()));
+
+				List<?> userActivityList = DbConnection.queryUserActivitiesPerChallenge(challenge.getPlayersSet(),challenge.getActivitySet(),ch.getStartDate(),ch.getEndDate());
+				List<String> messageList = new ArrayList<String>();
+				String userActivityStr = gson.toJson(userActivityList);
+				JsonArray jArray = parser.parse(userActivityStr).getAsJsonArray();
+				for(JsonElement obj : jArray )
+				{
+					String[] activityParts = obj.toString().split(",");
+					String activityId = activityParts[1].substring(1,activityParts[1].length()-1);
+					String activityDateStr = activityParts[2].substring(1);
+					String activityUnits = activityParts[4];
+					String userId = activityParts[6].substring(1,activityParts[6].length()-2);
+					User user = m_cache.getUser(userId);
+
+					Date activityDate = null;
+					try 
+					{
+						activityDate = new SimpleDateFormat("MMMM d", Locale.ENGLISH).parse(activityDateStr);
+					} 
+					catch (ParseException e)
+					{
+						e.printStackTrace();
+					}
+
+					UserActivity ua = new UserActivity( user,activityId,activityDate,activityUnits);
+
+					// Get the users activity feeds
+					userActivityFeedList.add(ua);
+				}
+
+				// Get the list of activities and sort them by time
+				Collections.sort(userActivityFeedList);
+
+				for (UserActivity ua : userActivityFeedList)
+					messageList.add(ua.constructNotificationString());
+
+				// Return only the last 50 items
+				int startIndex = 0;
+				int endIndex = Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
+				if( messageList.size() > Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
+					startIndex = messageList.size() - Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
+
+				if( messageList.size() < Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
+					endIndex = messageList.size();
+
+				ch.setMessagesList(messageList.subList(startIndex, startIndex + endIndex));
+				challengeMap.put(Long.toString(challenge.getId()), ch);
+			}
+		}
+
+		if (challengeMap != null)
+			return new ArrayList<DBReturnChallenge>(challengeMap.values());
+		else
+			return null;
 	}
 
 	
@@ -555,105 +561,108 @@ public class Utils
 	    User leaderWeek = null;
 	    User leaderMonth = null;
 	    User leaderYear = null;
-	    for (Friends friend : friendList)
+	    if ( ( friendList != null ) && ( friendList.size() > 0 ) )
 	    {
-	    	List<UserActivityByTime> friendActivitiesByDay = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.day), TimeAggregateBy.day);
-	    	if ( (friendActivitiesByDay != null) && (friendActivitiesByDay.size() > 0) )
-		    {
-		        List<UserActivityByTime> friendActivitiesByWeek = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.week), TimeAggregateBy.week);
-			    List<UserActivityByTime> friendActivitiesByMonth = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.month), TimeAggregateBy.month);
-			    List<UserActivityByTime> friendActivitiesByYear = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.year), TimeAggregateBy.year);
-			    
-			    UserActivityByTime friendBestDay = getBestUserAcitivityByPoints(friendActivitiesByDay);
-			    if (bestDayLeader == null)
-			    {
-			    	bestDayLeader = friendBestDay;
-			    	leaderDay = friend.getFriend();
-			    }
-			    else
-			    {
-			    	if (friendBestDay.getPoints() >= bestDayLeader.getPoints() )
-			    	{
-			    		bestDayLeader = friendBestDay;
-			    		leaderDay = friend.getFriend();
-			    	}
-			    }
-			    
-			    UserActivityByTime friendBestWeek = getBestUserAcitivityByPoints(friendActivitiesByWeek);
-			    if (bestWeekLeader == null)
-			    {
-			    	bestWeekLeader = friendBestWeek;
-			    	leaderWeek = friend.getFriend();
-			    }
-			    else
-			    {
-			    	if (friendBestWeek.getPoints() >= bestWeekLeader.getPoints() )
-			    	{
-			    		bestWeekLeader = friendBestWeek;
-			    		leaderWeek = friend.getFriend();
-			    	}
-			    }
-			    
-			    UserActivityByTime friendBestMonth = getBestUserAcitivityByPoints(friendActivitiesByMonth);
-			    if (bestMonthLeader == null)
-			    {
-			    	bestMonthLeader = friendBestMonth;
-			    	leaderMonth = friend.getFriend();
-			    }
-			    else
-			    {
-			    	if (friendBestMonth.getPoints() >= bestMonthLeader.getPoints() )
-			    	{
-			    		bestMonthLeader = friendBestMonth;
-			    		leaderMonth = friend.getFriend();
-			    	}
-			    }
-			    
-			    UserActivityByTime friendBestYear = getBestUserAcitivityByPoints(friendActivitiesByYear);
-			    if (bestYearLeader == null)
-			    {
-			    	bestYearLeader = friendBestYear;
-			    	leaderYear = friend.getFriend();
-			    }
-			    else
-			    {
-			    	if (friendBestYear.getPoints() >= bestYearLeader.getPoints() )
-			    	{
-			    		bestYearLeader = friendBestYear;
-			    		leaderYear = friend.getFriend();
-			    	}
-			    }
-		    }
-	    	else
-		    	log.info("No activities found for Friend ["+friend.getFriend().getId()+"]");
-	    }
-	    
-	    LeaderActivityByTime dayLeaderObj = null;
-	    if (leaderDay != null )
-	    {
-	    	dayLeaderObj = new LeaderActivityByTime(leaderDay,bestDayLeader.getDate(),bestDayLeader.getPoints(),TimeAggregateBy.day);
-	    	returnList.add(dayLeaderObj);
-	    }
-	    
-	    LeaderActivityByTime weekLeaderObj = null;
-	    if (leaderWeek != null )
-	    {
-	    	weekLeaderObj = new LeaderActivityByTime(leaderWeek,bestWeekLeader.getDate(),bestWeekLeader.getPoints(),TimeAggregateBy.week);
-	    	returnList.add(weekLeaderObj);
-	    }
-	    
-	    LeaderActivityByTime monthLeaderObj = null;
-	    if (leaderMonth != null )
-	    {
-	    	monthLeaderObj = new LeaderActivityByTime(leaderMonth,bestMonthLeader.getDate(),bestMonthLeader.getPoints(),TimeAggregateBy.month);
-	    	returnList.add(monthLeaderObj);
-	    }
-	    
-	    LeaderActivityByTime yearLeaderObj = null;
-	    if (leaderYear != null )
-	    {
-	    	yearLeaderObj = new LeaderActivityByTime(leaderYear,bestYearLeader.getDate(),bestYearLeader.getPoints(),TimeAggregateBy.year);
-	    	returnList.add(yearLeaderObj);
+	    	for (Friends friend : friendList)
+	    	{
+	    		List<UserActivityByTime> friendActivitiesByDay = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.day), TimeAggregateBy.day);
+	    		if ( (friendActivitiesByDay != null) && (friendActivitiesByDay.size() > 0) )
+	    		{
+	    			List<UserActivityByTime> friendActivitiesByWeek = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.week), TimeAggregateBy.week);
+	    			List<UserActivityByTime> friendActivitiesByMonth = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.month), TimeAggregateBy.month);
+	    			List<UserActivityByTime> friendActivitiesByYear = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.year), TimeAggregateBy.year);
+
+	    			UserActivityByTime friendBestDay = getBestUserAcitivityByPoints(friendActivitiesByDay);
+	    			if (bestDayLeader == null)
+	    			{
+	    				bestDayLeader = friendBestDay;
+	    				leaderDay = friend.getFriend();
+	    			}
+	    			else
+	    			{
+	    				if (friendBestDay.getPoints() >= bestDayLeader.getPoints() )
+	    				{
+	    					bestDayLeader = friendBestDay;
+	    					leaderDay = friend.getFriend();
+	    				}
+	    			}
+
+	    			UserActivityByTime friendBestWeek = getBestUserAcitivityByPoints(friendActivitiesByWeek);
+	    			if (bestWeekLeader == null)
+	    			{
+	    				bestWeekLeader = friendBestWeek;
+	    				leaderWeek = friend.getFriend();
+	    			}
+	    			else
+	    			{
+	    				if (friendBestWeek.getPoints() >= bestWeekLeader.getPoints() )
+	    				{
+	    					bestWeekLeader = friendBestWeek;
+	    					leaderWeek = friend.getFriend();
+	    				}
+	    			}
+
+	    			UserActivityByTime friendBestMonth = getBestUserAcitivityByPoints(friendActivitiesByMonth);
+	    			if (bestMonthLeader == null)
+	    			{
+	    				bestMonthLeader = friendBestMonth;
+	    				leaderMonth = friend.getFriend();
+	    			}
+	    			else
+	    			{
+	    				if (friendBestMonth.getPoints() >= bestMonthLeader.getPoints() )
+	    				{
+	    					bestMonthLeader = friendBestMonth;
+	    					leaderMonth = friend.getFriend();
+	    				}
+	    			}
+
+	    			UserActivityByTime friendBestYear = getBestUserAcitivityByPoints(friendActivitiesByYear);
+	    			if (bestYearLeader == null)
+	    			{
+	    				bestYearLeader = friendBestYear;
+	    				leaderYear = friend.getFriend();
+	    			}
+	    			else
+	    			{
+	    				if (friendBestYear.getPoints() >= bestYearLeader.getPoints() )
+	    				{
+	    					bestYearLeader = friendBestYear;
+	    					leaderYear = friend.getFriend();
+	    				}
+	    			}
+	    		}
+	    		else
+	    			log.info("No activities found for Friend ["+friend.getFriend().getId()+"]");
+	    	}
+
+	    	LeaderActivityByTime dayLeaderObj = null;
+	    	if (leaderDay != null )
+	    	{
+	    		dayLeaderObj = new LeaderActivityByTime(leaderDay,bestDayLeader.getDate(),bestDayLeader.getPoints(),TimeAggregateBy.day);
+	    		returnList.add(dayLeaderObj);
+	    	}
+
+	    	LeaderActivityByTime weekLeaderObj = null;
+	    	if (leaderWeek != null )
+	    	{
+	    		weekLeaderObj = new LeaderActivityByTime(leaderWeek,bestWeekLeader.getDate(),bestWeekLeader.getPoints(),TimeAggregateBy.week);
+	    		returnList.add(weekLeaderObj);
+	    	}
+
+	    	LeaderActivityByTime monthLeaderObj = null;
+	    	if (leaderMonth != null )
+	    	{
+	    		monthLeaderObj = new LeaderActivityByTime(leaderMonth,bestMonthLeader.getDate(),bestMonthLeader.getPoints(),TimeAggregateBy.month);
+	    		returnList.add(monthLeaderObj);
+	    	}
+
+	    	LeaderActivityByTime yearLeaderObj = null;
+	    	if (leaderYear != null )
+	    	{
+	    		yearLeaderObj = new LeaderActivityByTime(leaderYear,bestYearLeader.getDate(),bestYearLeader.getPoints(),TimeAggregateBy.year);
+	    		returnList.add(yearLeaderObj);
+	    	}
 	    }
 	    
 	   return returnList;
@@ -854,41 +863,45 @@ public class Utils
     	Double leaderPoints = 0.0;
     	
     	// Get the friends activities for the week
+    	WeeklyComparisons wkComp = null;
     	int activeFriendsCount = 0;
-    	for (Friends friend : m_cache.getFriends(_user))
+    	List<Friends> friendsList = m_cache.getFriends(_user);
+    	if ( ( friendsList != null ) && ( friendsList.size() > 0 ) )
     	{
-    		List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(friend.getFriend(), df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
-    		
-    		Double friendPoints = 0.0;
-    		for (UserActivity ua : activityList)
-    			friendPoints = friendPoints + ua.getPoints();
-    		
-    		if (friendPoints > leaderPoints)
-    			leaderPoints = friendPoints;
-    		
-    		friendsPointsTotal = friendsPointsTotal + friendPoints;
-    		
-    		// Look for active friends
-    		if ( friendPoints != 0.0 )
-    			activeFriendsCount++;
-    	}
-    	
-    	// Calculate the average across all the active friends
-    	Double friendsPointsAverage = friendsPointsTotal / activeFriendsCount;
-		
-    	// Get the users activity for the week
-    	List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(_user, df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
-		Double userPoints = 0.0;
-		for (UserActivity ua : activityList)
-			userPoints = userPoints + ua.getPoints();
+	    	for (Friends friend : friendsList)
+	    	{
+	    		List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(friend.getFriend(), df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
+	    		
+	    		Double friendPoints = 0.0;
+	    		for (UserActivity ua : activityList)
+	    			friendPoints = friendPoints + ua.getPoints();
+	    		
+	    		if (friendPoints > leaderPoints)
+	    			leaderPoints = friendPoints;
+	    		
+	    		friendsPointsTotal = friendsPointsTotal + friendPoints;
+	    		
+	    		// Look for active friends
+	    		if ( friendPoints != 0.0 )
+	    			activeFriendsCount++;
+	    	}
+	    	
+	    	// Calculate the average across all the active friends
+	    	Double friendsPointsAverage = friendsPointsTotal / activeFriendsCount;
 			
-		// Round off the points to a single precision
-		userPoints = round(userPoints,1);
-		friendsPointsAverage = round(friendsPointsAverage,1);
-		leaderPoints = round (leaderPoints,1);
-		
-		WeeklyComparisons wkComp = new WeeklyComparisons(userPoints, friendsPointsAverage, leaderPoints);
-		
+	    	// Get the users activity for the week
+	    	List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(_user, df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
+			Double userPoints = 0.0;
+			for (UserActivity ua : activityList)
+				userPoints = userPoints + ua.getPoints();
+				
+			// Round off the points to a single precision
+			userPoints = round(userPoints,1);
+			friendsPointsAverage = round(friendsPointsAverage,1);
+			leaderPoints = round (leaderPoints,1);
+			
+			wkComp = new WeeklyComparisons(userPoints, friendsPointsAverage, leaderPoints);
+	    }
 		return wkComp;
     }
     

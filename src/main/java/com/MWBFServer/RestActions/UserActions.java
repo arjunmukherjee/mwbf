@@ -493,9 +493,11 @@ public class UserActions
 
                 // Look up the users friends
                 List<Friends> friendsList = m_cache.getFriends(user);
-
+                List<FeedItem> activityList = null;
+                
                 // Look up the friends activities
-                List<FeedItem> activityList = Utils.getUserFeedItems(friendsList, user);
+                if ( ( friendsList != null ) && ( friendsList.size() > 0 ) )
+                	activityList = Utils.getUserFeedItems(friendsList, user);
 
                 if ( activityList != null )
                     returnStr = gson.toJson(activityList);

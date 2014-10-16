@@ -188,7 +188,10 @@ public class DataCache
 	@SuppressWarnings("unchecked")
 	public List<Friends> getFriends(User _user)
 	{
-		return (List<Friends>) copyCollection(new ArrayList<Friends>(m_friendsHash.get(_user)));
+		if ( ( m_friendsHash.get(_user) != null ) && ( m_friendsHash.get(_user).size() > 0 ) )
+			return (List<Friends>) copyCollection(new ArrayList<Friends>(m_friendsHash.get(_user)));
+		else 
+			return null;
 	}
 	
 	/**
@@ -285,7 +288,11 @@ public class DataCache
 	@SuppressWarnings("unchecked")
 	public List<Challenge> getUserChallenges(User _user)
 	{
-		return (List<Challenge>) copyCollection(new ArrayList<Challenge>(m_userChallengesHash.get(_user)));
+		List<Challenge> challengeList = m_userChallengesHash.get(_user);
+		if ( ( challengeList != null ) && ( challengeList.size() > 0 ) )
+			return (List<Challenge>) copyCollection(new ArrayList<Challenge>(challengeList));
+		else
+			return null;
 	}
 	
 	/**
