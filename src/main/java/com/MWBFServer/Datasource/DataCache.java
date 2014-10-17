@@ -160,10 +160,10 @@ public class DataCache
 	}
 	
 	/**
-	 * Returns an activity
+	 * Returns an user
 	 * @return
 	 */
-	public User getUser(String _userId)
+	public User getUserById(String _userId)
 	{
 		User user = m_usersHash.get(_userId);
 		if (user != null)
@@ -171,6 +171,29 @@ public class DataCache
 		else
 			return null;
 	}
+	
+	/**
+	 * Returns a list of users that have a first or last name that starts with the argument passed in
+	 * @return List(User)
+	 */
+	public List<User> getUserByName(String _name)
+	{
+		List<User> returnList = null;
+		if ( ( _name != null ) && ( _name.length() > 0 ) )
+		{
+			returnList = new ArrayList<User>();
+			_name = _name.toLowerCase();
+			
+			for (User user : m_usersHash.values())
+			{
+				if ( user.getFirstName().toLowerCase().startsWith(_name) || user.getLastName().toLowerCase().startsWith(_name) )
+					returnList.add(user);
+			}
+		}
+		
+		return returnList;
+	}
+	
 	
 	/**
 	 * Adds a user to the cache
@@ -300,7 +323,7 @@ public class DataCache
 	 */
 	public void addUserActivity(UserActivity _ua)
 	{
-		User user = getUser(_ua.getUser().getId());
+		User user = getUserById(_ua.getUser().getId());
 		_ua.setUser(user);
 		if (user == null)
 			log.warn("Unable to find user [" + _ua.toString() + "] to cache activity.");
@@ -349,7 +372,7 @@ public class DataCache
 	{
 		for (String userId : _ch.getPlayersSet())
 		{
-			User user = getUser(userId);
+			User user = getUserById(userId);
 			if ( m_userChallengesHash.containsKey(user) )
 			{
 				boolean challengeAdded = false;

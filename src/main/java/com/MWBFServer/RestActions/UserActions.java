@@ -62,7 +62,7 @@ public class UserActions
 		else
 		{
 			String name = firstName + " " + lastName;
-			User user = m_cache.getUser(email);
+			User user = m_cache.getUserById(email);
 			if ( user != null ) 
 				returnStr =   "{\"success\":1,\"message\":\"Welcome "+name+" !\"}";
 			else
@@ -101,7 +101,7 @@ public class UserActions
 			returnStr =   "{\"success\":0,\"message\":\"Unable to get all time high for the user\"}";
 		else
 		{
-			User user = m_cache.getUser(email);
+			User user = m_cache.getUserById(email);
 			if ( user != null ) 
 			{
 				// Get the users personal stats
@@ -146,7 +146,7 @@ public class UserActions
 			returnStr =   "{\"success\":0,\"message\":\"V1 : Unable to get all time high for the user\"}";
 		else
 		{
-			User user = m_cache.getUser(email);
+			User user = m_cache.getUserById(email);
 			if ( user != null ) 
 			{
 				Gson gson = new Gson();
@@ -191,7 +191,7 @@ public class UserActions
 		
 		String returnStr = null;
 		// First check if the email address is already registered
-		if ( m_cache.getUser(newUser.getEmail()) != null )
+		if ( m_cache.getUserById(newUser.getEmail()) != null )
 		{
 			log.warn("Email is already registered.");
 			returnStr =   "{\"success\":0,\"message\":\"Email is already registered.\"}";
@@ -226,7 +226,7 @@ public class UserActions
 		
 		String returnStr = null;
 		// First check if the email address is already registered
-		if ( m_cache.getUser(newUser.getEmail()) != null )
+		if ( m_cache.getUserById(newUser.getEmail()) != null )
 		{
 			log.warn("Email is already registered.");
 			returnStr =   "{\"success\":0,\"message\":\"Email is already registered.\"}";
@@ -316,7 +316,7 @@ public class UserActions
 		String fromDate = userData.optString("from_date");
 		String toDate = userData.optString("to_date");
 		
-		User user = m_cache.getUser(userData.optString("user_id"));
+		User user = m_cache.getUserById(userData.optString("user_id"));
 		if ( user == null )
 		{
 			log.warn("Unable to find user to look up activity");
@@ -359,7 +359,7 @@ public class UserActions
 		String fromDate = userData.optString("from_date");
 		String toDate = userData.optString("to_date");
 		
-		User user = m_cache.getUser(userData.optString("user_id"));
+		User user = m_cache.getUserById(userData.optString("user_id"));
 		if ( user == null )
 		{
 			log.warn("Unable to find user to look up activity");
@@ -400,7 +400,7 @@ public class UserActions
 		log.info("Deleting all activities for user [" + userData.optString("user_id") + "]");
 		
 		String returnStr = null;
-		User user = m_cache.getUser(userData.optString("user_id"));
+		User user = m_cache.getUserById(userData.optString("user_id"));
 		if ( user == null )
 		{
 			log.warn("Unable to find user to look up activity");
@@ -431,7 +431,7 @@ public class UserActions
 		{
 			userData = new JSONObject(_incomingData);
 			String userId = userData.optString("user_id");
-			User user = m_cache.getUser(userId);
+			User user = m_cache.getUserById(userId);
 			if ( user == null )
 			{
 				log.warn("Unable to find logged in user (something's wrong) [" + userId + "].");
@@ -479,7 +479,7 @@ public class UserActions
         {
             userData = new JSONObject(_incomingData);
             String userId = userData.optString("user_id");
-            User user = m_cache.getUser(userId);
+            User user = m_cache.getUserById(userId);
             if ( user == null )
             {
                 log.warn("Unable to find logged in user (something's wrong) [" + userId + "].");
@@ -537,7 +537,7 @@ public class UserActions
 			returnStr =   "{\"success\":0,\"message\":\"Unable to get weekly comparison stats for the user\"}";
 		else
 		{
-			User user = m_cache.getUser(email);
+			User user = m_cache.getUserById(email);
 			if ( user != null ) 
 			{
 				// Get the users personal stats
@@ -567,8 +567,8 @@ public class UserActions
 		{
 			userData = new JSONObject(_incomingData);
 			
-			User user = m_cache.getUser(userData.optString("user_id"));
-			User friend = m_cache.getUser(userData.optString("friend_user_id"));
+			User user = m_cache.getUserById(userData.optString("user_id"));
+			User friend = m_cache.getUserById(userData.optString("friend_user_id"));
 			if ( user == null || friend == null )
 			{
 				log.warn("Unable to find the user or the friend to add.");
@@ -609,7 +609,7 @@ public class UserActions
 		{
 			userData = new JSONObject(_incomingData);
 			
-			User user = m_cache.getUser(userData.optString("user_id"));
+			User user = m_cache.getUserById(userData.optString("user_id"));
 			if ( user == null )
 			{
 				log.warn("Unable to find your friend [" + userData.optString("user_id") + "]. Please ask them to join us.");
@@ -621,6 +621,60 @@ public class UserActions
 				
 				Gson gson = new Gson();
 				returnStr = gson.toJson(user);
+			}
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+	
+		return Utils.buildResponse(returnStr);
+	}
+	
+	
+	@POST
+	@Path("/v1/findFriends")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response findFriendsV1(String _incomingData)
+	{
+		String returnStr = "{\"success\":0,\"message\":\"Unable to find your friend. Please ask them to join us..\"}";
+		
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+			
+			String userIdentification = userData.optString("userIdentification");
+			
+			// First search by email
+			// If user is not found search by first/last name
+			if ( ( userIdentification != null ) && ( userIdentification.length() > 0 ) )
+			{
+				User user = m_cache.getUserById(userIdentification);
+				if ( user == null )
+				{
+					List<User> usersList = m_cache.getUserByName(userIdentification);
+					if ( ( usersList == null ) || ( usersList.size() < 1 ) )
+					{
+						log.warn("Unable to find your friend [" + userIdentification + "]. Please ask them to join us.");
+						returnStr =   "{\"success\":0,\"message\":\"Unable to find your friend. Please ask them to join us.\"}";
+					}
+					else
+					{
+						log.info("Found friend with User Identification [" + userIdentification + "].");
+						
+						Gson gson = new Gson();
+						returnStr = gson.toJson(usersList);
+					}
+				}
+				else
+				{
+					log.info("Found friend with User Identification [" + userIdentification + "].");
+					
+					Gson gson = new Gson();
+					returnStr = gson.toJson(user);
+				}
 			}
 		}
 		catch (JSONException e) 
@@ -643,7 +697,7 @@ public class UserActions
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			User user = m_cache.getUser(userData.optString("user_id"));
+			User user = m_cache.getUserById(userData.optString("user_id"));
 			
 			Challenge newChallenge = gson.fromJson(_incomingData, Challenge.class);
 			newChallenge.setCreator(user);
@@ -714,7 +768,7 @@ public class UserActions
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			User user = m_cache.getUser(userData.optString("user_id"));
+			User user = m_cache.getUserById(userData.optString("user_id"));
 			if ( user == null )
 			{
 				log.warn("Unable to find user.");

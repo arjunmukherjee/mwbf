@@ -382,7 +382,7 @@ public class Utils
 		 		String activityUnits = activityParts[4];
 		 		String userId = activityParts[6].substring(1,activityParts[6].length()-2);
 		 		
-		 		User user = m_cache.getUser(userId);
+		 		User user = m_cache.getUserById(userId);
 		 		StringBuilder actString = new StringBuilder();
 		 		actString.append(user.getFirstName());
 		 		actString.append(" ");
@@ -443,7 +443,7 @@ public class Utils
 					String activityDateStr = activityParts[2].substring(1);
 					String activityUnits = activityParts[4];
 					String userId = activityParts[6].substring(1,activityParts[6].length()-2);
-					User user = m_cache.getUser(userId);
+					User user = m_cache.getUserById(userId);
 
 					Date activityDate = null;
 					try 
