@@ -200,15 +200,30 @@ public class DataCache
 	 */
 	public void addFriend(User _user, Friends _friend)
 	{
-		List<Friends> friendsList = m_friendsHash.get(_user);
-		if (friendsList == null)
+		List<Friends> usersFriendsList = m_friendsHash.get(_user);
+		
+		// Add the friend to the users friend list
+		if (usersFriendsList == null)
 		{
-			friendsList = new ArrayList<Friends>();
-			friendsList.add(_friend);
-			m_friendsHash.put(_user, friendsList);
+			usersFriendsList = new ArrayList<Friends>();
+			usersFriendsList.add(_friend);
+			m_friendsHash.put(_user, usersFriendsList);
 		}
 		else
-		m_friendsHash.get(_user).add(_friend);
+			m_friendsHash.get(_user).add(_friend);
+		
+		// Add the user to the friend's friendList
+		User friendUser = m_usersHash.get(_friend.getId());
+		List<Friends> friendsFriendsList = m_friendsHash.get(friendUser);
+		Friends friend = new Friends(friendUser,_user);
+		if (friendsFriendsList == null)
+		{
+			friendsFriendsList = new ArrayList<Friends>();
+			friendsFriendsList.add(friend);
+			m_friendsHash.put(friendUser, friendsFriendsList);
+		}
+		else
+			m_friendsHash.get(friendUser).add(friend);
 	}
 	
 	/**
