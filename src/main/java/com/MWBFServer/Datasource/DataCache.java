@@ -18,6 +18,7 @@ import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
+import com.MWBFServer.Utils.Constants;
 
 public class DataCache 
 {
@@ -188,6 +189,9 @@ public class DataCache
 			{
 				if ( user.getFirstName().toLowerCase().startsWith(_name) || user.getLastName().toLowerCase().startsWith(_name) )
 					returnList.add(user);
+				
+				if ( returnList.size() == Constants.MAX_FRIENDS_SEARCH_RESULTS )
+					return returnList;
 			}
 		}
 		

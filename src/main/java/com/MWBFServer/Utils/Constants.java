@@ -10,4 +10,7 @@ public final class Constants
 	
 	// The string used to identify a bonus activity
 	public static String BONUS_ACTIVITY_IDENTIFIER = "Bonus";
+	
+	// The maximum number of search results returned for a free text friend search
+	public static int MAX_FRIENDS_SEARCH_RESULTS = 5;
 }
