@@ -647,6 +647,7 @@ public class UserActions
 			userData = new JSONObject(_incomingData);
 			
 			String userIdentification = userData.optString("userIdentification");
+			userIdentification = userIdentification.toLowerCase();
 			
 			// First search by email
 			// If user is not found search by first/last name
