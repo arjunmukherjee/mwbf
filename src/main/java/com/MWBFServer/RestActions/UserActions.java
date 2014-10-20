@@ -647,12 +647,13 @@ public class UserActions
 			userData = new JSONObject(_incomingData);
 			
 			String userIdentification = userData.optString("userIdentification");
-			userIdentification = userIdentification.toLowerCase();
 			
 			// First search by email
 			// If user is not found search by first/last name
 			if ( ( userIdentification != null ) && ( userIdentification.length() > 0 ) )
 			{
+				userIdentification = userIdentification.toLowerCase();
+				
 				User user = m_cache.getUserById(userIdentification);
 				if ( user == null )
 				{
