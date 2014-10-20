@@ -1,6 +1,7 @@
 package com.MWBFServer.RestActions;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.*;
@@ -670,10 +671,12 @@ public class UserActions
 				}
 				else
 				{
+					List<User> usersList = new ArrayList<User>();
+					usersList.add(user);
 					log.info("Found friend with User Identification [" + userIdentification + "].");
 					
 					Gson gson = new Gson();
-					returnStr = gson.toJson(user);
+					returnStr = gson.toJson(usersList);
 				}
 			}
 		}
