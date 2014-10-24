@@ -9,6 +9,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.MWBFServer.Dto.FeedItem;
+import com.MWBFServer.Dto.FriendsDto;
 import com.MWBFServer.Dto.WeeklyComparisons;
 import com.google.gson.JsonSyntaxException;
 
@@ -447,13 +448,27 @@ public class UserActions
 				// Look up the users friends
 				List<Friends> friendsList = m_cache.getFriends(user);
 				
-				// Null out the user Object and the password fields
-				if ( friendsList != null )
+				List<FriendsDto> friendsDtoList = null;
+				
+				// 1. Null out the user Object and the password fields
+				// 2. Get the stats for each friend
+				// 3. Package into the DTO class
+				if ( friendsList != null && friendsList.size() > 0 )
 				{
-					for (Friends friendPair : friendsList)
-						friendPair.setUser(null);
+					friendsDtoList = new ArrayList<FriendsDto>();
 					
-					returnStr = gson.toJson(friendsList);
+					for (Friends friendPair : friendsList)
+					{
+						friendPair.setUser(null);
+						List<UserActivityByTime> allTimeHighList = Utils.getAllTimeHighs(friendPair.getFriend());
+						
+						int numberOfActiveChallenges = Utils.getNumberOfActiveChallengesForUser(friendPair.getFriend());
+						
+						FriendsDto friendDtoObj = new FriendsDto(friendPair.getFriend(),Utils.getUsersPointsForCurrentWeek(friendPair.getFriend()),numberOfActiveChallenges,allTimeHighList.get(0),allTimeHighList.get(1),allTimeHighList.get(2),allTimeHighList.get(3));
+						friendsDtoList.add(friendDtoObj);
+					}
+					
+					returnStr = gson.toJson(friendsDtoList);
 				}
 				else
 					returnStr = "{\"success\":0,\"message\":\"Unable to find your friends.\"}";
@@ -786,7 +801,7 @@ public class UserActions
 				Gson gson = new Gson();
 			 
 				// Look up the users challenges
-				List<DBReturnChallenge> challengeList = Utils.getChallengesV1(user);
+				List<DBReturnChallenge> challengeList = Utils.getChallenges(user);
 				
 				// Convert the List to a Json representation
 				if ( challengeList != null )

@@ -255,160 +255,13 @@ public class Utils
 		return result;
 	}
 	
+		
 	/**
 	 * Get a list of all the challenges the user is in
 	 * @param _user
 	 * @return
 	 */
 	public static List<DBReturnChallenge> getChallenges(User _user) 
-	{
-		// First get the id for the challenge from the playerSet
-		// Use this id to lookup all players
-		// Use this id to lookup all challenges
-		List<?> challengeList = DbConnection.queryGetChallenges(_user);
-		
-		Gson gson = new Gson();
-		String challengeStr = gson.toJson(challengeList);
-		
-		JsonParser parser = new JsonParser();
-	    JsonArray jArray = parser.parse(challengeStr).getAsJsonArray();
-	    
-	    Map<String,DBReturnChallenge> challengeMap = new HashMap<String,DBReturnChallenge>();
-		
-	    String idList = "999999999999999";
-	    for(JsonElement obj : jArray )
-	    {
-	    	String[] challengeParts = obj.toString().split(",");
-	    	String id = challengeParts[0].substring(1);
-	    	idList = id + "," + idList;
-	    	
-	    	String endDateStr = challengeParts[1].substring(1);
-	    	String endYear = challengeParts[2].split(" ")[1].trim();
-	    	endDateStr = endDateStr + "," + endYear;
-	    	
-	    	String startDateStr = challengeParts[4].substring(1);
-	    	String startYear = challengeParts[5].split(" ")[1].trim();
-	    	startDateStr = startDateStr + "," + startYear;
-	    	
-	    	String name = challengeParts[3].substring(1, challengeParts[3].length()-1);
-	    	String creator = challengeParts[6].substring(1, challengeParts[6].length()-1);
-	    	
-	    	Date endDate = null;
-	    	Date startDate = null;
-			try 
-			{
-				startDate = new SimpleDateFormat("MMMM d,yyyy", Locale.ENGLISH).parse(startDateStr);
-		    	endDate = new SimpleDateFormat("MMMM d,yyyy", Locale.ENGLISH).parse(endDateStr);
-			} 
-			catch (ParseException e)
-			{
-				e.printStackTrace();
-			}
-	    	
-			DBReturnChallenge ch = new DBReturnChallenge(name,startDate,endDate,null,null);
-			ch.setCreatorId(creator);
-	    	challengeMap.put(id, ch);
-	    }
-	    
-	    // Get the players for all the challenges
-	    Map<String,HashSet<String>> playerMap = new HashMap<String,HashSet<String>>();
-	 	List<?> playersList = DbConnection.queryGetChallengePlayers(idList);
-	 	String playersStr = gson.toJson(playersList);
-	 	jArray = parser.parse(playersStr).getAsJsonArray();
-	 	for(JsonElement obj : jArray )
-	    {
-	 		String[] challengeParts = obj.toString().split(",");
-	    	String id = challengeParts[0].substring(1);
-	    	String userId = challengeParts[1].substring(1,challengeParts[1].length()-2);
-	    	
-	    	if (playerMap.containsKey(id))
-	    		playerMap.get(id).add(userId);
-	    	else
-	    	{
-	    		HashSet<String> userIdSet = new HashSet<String>();
-	    		userIdSet.add(userId);
-	    		playerMap.put(id,userIdSet);
-	    	}
-	    }
-	 	
-	 	// Get the activities for all the challenges
-	    Map<String,HashSet<String>> activityMap = new HashMap<String,HashSet<String>>();
-	 	List<?> activityList = DbConnection.queryGetChallengeActivities(idList);
-	 	String activityStr = gson.toJson(activityList);
-	 	jArray = parser.parse(activityStr).getAsJsonArray();
-	 	for(JsonElement obj : jArray )
-	    {
-	 		String[] challengeParts = obj.toString().split(",");
-	    	String id = challengeParts[0].substring(1);
-	    	String activity = challengeParts[1].substring(1,challengeParts[1].length()-2);
-	    	
-	    	if (activityMap.containsKey(id))
-	    		activityMap.get(id).add(activity);
-	    	else
-	    	{
-	    		HashSet<String> activitySet = new HashSet<String>();
-	    		activitySet.add(activity);
-	    		activityMap.put(id,activitySet);
-	    	}
-	    }
-	 	
-	 	// Complete the challenge object
-	 	// Add it to the return list
-	 	List<DBReturnChallenge> returnList = new ArrayList<DBReturnChallenge>();
-	 	for (String id : challengeMap.keySet())
-	 	{
-	 		DBReturnChallenge ch = challengeMap.get(id);
-	 		ch.setId(Long.parseLong(id));
-	 		ch.setPlayersPointsSet(constructPlayerPointsSet(playerMap.get(id),ch.getStartDate(),ch.getEndDate(),activityMap.get(id)));
-	 		ch.setActivitySet(activityMap.get(id));
-
-	 		returnList.add(ch);
-	 	}
-	 	
-	 	// Construct the message board
-	 	// Get the activities for the players between the given dates
-	 	for (String id : challengeMap.keySet())
-	 	{
-	 		DBReturnChallenge ch = challengeMap.get(id);
-	 		List<String> messageList = new ArrayList<String>();
-	 		List<?> userActivityList = DbConnection.queryUserActivitiesPerChallenge(playerMap.get(id),activityMap.get(id),ch.getStartDate(),ch.getEndDate());
-	 		String userActivityStr = gson.toJson(userActivityList);
-		 	jArray = parser.parse(userActivityStr).getAsJsonArray();
-		 	for(JsonElement obj : jArray )
-		    {
-		 		String[] activityParts = obj.toString().split(",");
-		 		String activityId = activityParts[1].substring(1,activityParts[1].length()-1);
-		 		String activityDate = activityParts[2].substring(1);
-		 		String activityUnits = activityParts[4];
-		 		String userId = activityParts[6].substring(1,activityParts[6].length()-2);
-		 		
-		 		User user = m_cache.getUserById(userId);
-		 		StringBuilder actString = new StringBuilder();
-		 		actString.append(user.getFirstName());
-		 		actString.append(" ");
-		 		actString.append(m_cache.getMWBFActivity(activityId).getPastVerb());
-		 		actString.append(" ");
-		 		actString.append(activityUnits);
-		 		actString.append(" ");
-		 		actString.append(m_cache.getMWBFActivity(activityId).getMeasurementUnitShort());
-		 		actString.append(" on ");
-		 		actString.append(activityDate);
-		 		messageList.add(actString.toString());
-		    }
-		 	
-		 	ch.setMessagesList(messageList);
-	 	}
-	 
-	 	return returnList;
-	}
-
-	
-	/**
-	 * Get a list of all the challenges the user is in
-	 * @param _user
-	 * @return
-	 */
-	public static List<DBReturnChallenge> getChallengesV1(User _user) 
 	{
 		// TODO : 
 		// 1. Redundant code between feeds and this method
@@ -843,7 +696,41 @@ public class Utils
         
         return feedItemList.subList(startIndex, startIndex + endIndex);
     }
-    
+
+    /**
+     * Get the users points for the week
+     * @param _user
+     * @return
+     */
+    public static String getUsersPointsForCurrentWeek (User _user)
+    {
+    	// Calculate the start and the end of the current week
+    	Date date = new Date();
+    	Calendar c = Calendar.getInstance();
+    	c.setTime(date);
+    	int dayOfWeek = c.get(Calendar.DAY_OF_WEEK) - c.getFirstDayOfWeek();
+    	c.add(Calendar.DAY_OF_MONTH, -dayOfWeek);
+
+    	Date weekStart = c.getTime();
+    	// we do not need the same day a week after, that's why use 6, not 7
+    	c.add(Calendar.DAY_OF_MONTH, 6); 
+    	Date weekEnd = c.getTime();
+    	
+    	SimpleDateFormat df = new SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH);
+    	
+    	// Get the users activity for the week
+	    List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(_user, df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
+		Double userPoints = 0.0;
+		for (UserActivity ua : activityList)
+			userPoints = userPoints + ua.getPoints();
+				
+		// Round off the points to a single precision
+		userPoints = round(userPoints,1);
+			
+		return Double.toString(userPoints);
+    }
+	
+	
     /**
      * Get the stats (friends average, leader) for the week
      * @param _user
@@ -898,11 +785,8 @@ public class Utils
 	    	// Calculate the average across all the active friends
 	    	Double friendsPointsAverage = friendsPointsTotal / activeFriendsCount;
 			
-	    	// Get the users activity for the week
-	    	List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(_user, df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
-			Double userPoints = 0.0;
-			for (UserActivity ua : activityList)
-				userPoints = userPoints + ua.getPoints();
+	    	// Get the users points for the week
+	    	Double userPoints = Double.parseDouble(getUsersPointsForCurrentWeek(_user));
 				
 			// Round off the points to a single precision
 			userPoints = round(userPoints,1);
@@ -915,9 +799,31 @@ public class Utils
 		return wkComp;
     }
     
-    public static enum TimeAggregateBy
+    /**
+     * Returns the number of active challenges the user is currently a part of
+     * @param _user
+     * @return int
+     */
+    public static int getNumberOfActiveChallengesForUser(User _user) 
+	{
+		List<Challenge> challengeList = m_cache.getUserChallenges(_user);
+    	int numberOfActiveChallenges = 0;
+    	
+    	Date today = new Date();
+    	
+    	for (Challenge challenge : challengeList)
+    	{
+    		// Check if the start date is in the past and the end date is in the future
+    		// TODO : if the start date is equal to today or endDate is equal to today
+    		if ( challenge.getStartDate().before(today) && challenge.getEndDate().after(today) )
+    			numberOfActiveChallenges++;
+    	}
+    	
+		return numberOfActiveChallenges;
+	}
+
+	public static enum TimeAggregateBy
     {
     	hour,day,week,month,year;
     }
-
 }
