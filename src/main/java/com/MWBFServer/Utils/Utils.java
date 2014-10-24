@@ -811,12 +811,15 @@ public class Utils
     	
     	Date today = new Date();
     	
-    	for (Challenge challenge : challengeList)
+    	if (challengeList != null && challengeList.size() > 0)
     	{
-    		// Check if the start date is in the past and the end date is in the future
-    		// TODO : if the start date is equal to today or endDate is equal to today
-    		if ( challenge.getStartDate().before(today) && challenge.getEndDate().after(today) )
-    			numberOfActiveChallenges++;
+	    	for (Challenge challenge : challengeList)
+	    	{
+	    		// Check if the start date is in the past and the end date is in the future
+	    		// TODO : if the start date is equal to today or endDate is equal to today
+	    		if ( challenge.getStartDate().before(today) && challenge.getEndDate().after(today) )
+	    			numberOfActiveChallenges++;
+	    	}
     	}
     	
 		return numberOfActiveChallenges;
