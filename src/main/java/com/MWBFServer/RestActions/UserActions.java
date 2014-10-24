@@ -462,9 +462,16 @@ public class UserActions
 						friendPair.setUser(null);
 						List<UserActivityByTime> allTimeHighList = Utils.getAllTimeHighs(friendPair.getFriend());
 						
+						UserActivityByTime emptyUserActivity = new UserActivityByTime("--", 0.0);
+						
 						int numberOfActiveChallenges = Utils.getNumberOfActiveChallengesForUser(friendPair.getFriend());
 						
-						FriendsDto friendDtoObj = new FriendsDto(friendPair.getFriend(),Utils.getUsersPointsForCurrentWeek(friendPair.getFriend()),numberOfActiveChallenges,allTimeHighList.get(0),allTimeHighList.get(1),allTimeHighList.get(2),allTimeHighList.get(3));
+						FriendsDto friendDtoObj = null;
+						if ( ( allTimeHighList != null ) && ( allTimeHighList.size() > 2 )  )
+							friendDtoObj = new FriendsDto(friendPair.getFriend(),Utils.getUsersPointsForCurrentWeek(friendPair.getFriend()),numberOfActiveChallenges,allTimeHighList.get(0),allTimeHighList.get(1),allTimeHighList.get(2),allTimeHighList.get(3));
+						else
+							friendDtoObj = new FriendsDto(friendPair.getFriend(),Utils.getUsersPointsForCurrentWeek(friendPair.getFriend()),numberOfActiveChallenges,emptyUserActivity,emptyUserActivity,emptyUserActivity,emptyUserActivity);
+						
 						friendsDtoList.add(friendDtoObj);
 					}
 					
