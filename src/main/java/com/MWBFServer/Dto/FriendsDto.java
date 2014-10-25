@@ -7,17 +7,21 @@ import com.MWBFServer.Users.User;
 public class FriendsDto 
 {
 	private User user;
-	private String currentWeekPoints;
+	private Double currentWeekPoints;
+	private Double currentMonthPoints;
+	private Double currentYearPoints;
 	private int activeNumberOfChallanges;
 	private UserActivityByTime bestDay;
 	private UserActivityByTime bestWeek;
 	private UserActivityByTime bestMonth;
 	private UserActivityByTime bestYear;
 	
-	public FriendsDto(User _user, String _currentWeekPoints, int _activeNumberOfChallanges, UserActivityByTime _bestDay, UserActivityByTime _bestWeek, UserActivityByTime _bestMonth, UserActivityByTime _bestYear)
+	public FriendsDto(User _user, Double _currentWeekPoints,Double _currentMonthPoints,Double _currentYearPoints, int _activeNumberOfChallanges, UserActivityByTime _bestDay, UserActivityByTime _bestWeek, UserActivityByTime _bestMonth, UserActivityByTime _bestYear)
 	{
 		user = _user;
 		currentWeekPoints = _currentWeekPoints;
+		currentMonthPoints = _currentMonthPoints;
+		currentYearPoints = _currentYearPoints;
 		activeNumberOfChallanges = _activeNumberOfChallanges;
 		bestDay = _bestDay;
 		bestWeek = _bestWeek;

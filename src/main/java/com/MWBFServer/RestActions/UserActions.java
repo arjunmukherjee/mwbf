@@ -25,6 +25,7 @@ import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Users.*;
 import com.MWBFServer.Utils.Utils;
+import com.MWBFServer.Utils.Utils.TimeAggregateBy;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -466,11 +467,15 @@ public class UserActions
 						
 						int numberOfActiveChallenges = Utils.getNumberOfActiveChallengesForUser(friendPair.getFriend());
 						
+						Double currentWeekPoints = Utils.getUsersPointsForCurrentTimeInterval(friendPair.getFriend(),TimeAggregateBy.week);
+						Double currentMonthPoints = Utils.getUsersPointsForCurrentTimeInterval(friendPair.getFriend(),TimeAggregateBy.month);
+						Double currentYearPoints = Utils.getUsersPointsForCurrentTimeInterval(friendPair.getFriend(),TimeAggregateBy.year);
+						
 						FriendsDto friendDtoObj = null;
 						if ( ( allTimeHighList != null ) && ( allTimeHighList.size() > 2 )  )
-							friendDtoObj = new FriendsDto(friendPair.getFriend(),Utils.getUsersPointsForCurrentWeek(friendPair.getFriend()),numberOfActiveChallenges,allTimeHighList.get(0),allTimeHighList.get(1),allTimeHighList.get(2),allTimeHighList.get(3));
+							friendDtoObj = new FriendsDto(friendPair.getFriend(),currentWeekPoints,currentMonthPoints,currentYearPoints,numberOfActiveChallenges,allTimeHighList.get(0),allTimeHighList.get(1),allTimeHighList.get(2),allTimeHighList.get(3));
 						else
-							friendDtoObj = new FriendsDto(friendPair.getFriend(),Utils.getUsersPointsForCurrentWeek(friendPair.getFriend()),numberOfActiveChallenges,emptyUserActivity,emptyUserActivity,emptyUserActivity,emptyUserActivity);
+							friendDtoObj = new FriendsDto(friendPair.getFriend(),currentWeekPoints,currentMonthPoints,currentYearPoints,numberOfActiveChallenges,emptyUserActivity,emptyUserActivity,emptyUserActivity,emptyUserActivity);
 						
 						friendsDtoList.add(friendDtoObj);
 					}

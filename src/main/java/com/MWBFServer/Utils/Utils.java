@@ -698,28 +698,56 @@ public class Utils
     }
 
     /**
-     * Get the users points for the week
+     * Get the users points for the timeInterval specified
      * @param _user
-     * @return
+     * @param _timeInterval (week,month,year)
+     * @return total points
      */
-    public static String getUsersPointsForCurrentWeek (User _user)
+    public static Double getUsersPointsForCurrentTimeInterval (User _user, TimeAggregateBy _timeInterval)
     {
     	// Calculate the start and the end of the current week
     	Date date = new Date();
     	Calendar c = Calendar.getInstance();
     	c.setTime(date);
-    	int dayOfWeek = c.get(Calendar.DAY_OF_WEEK) - c.getFirstDayOfWeek();
-    	c.add(Calendar.DAY_OF_MONTH, -dayOfWeek);
-
-    	Date weekStart = c.getTime();
-    	// we do not need the same day a week after, that's why use 6, not 7
-    	c.add(Calendar.DAY_OF_MONTH, 6); 
-    	Date weekEnd = c.getTime();
     	
     	SimpleDateFormat df = new SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH);
     	
+    	String startDate = null;
+    	String endDate = null;
+    	int year = c.get(Calendar.YEAR);
+    	
+    	if ( _timeInterval == TimeAggregateBy.week )
+    	{
+    		int dayOfWeek = c.get(Calendar.DAY_OF_WEEK) - c.getFirstDayOfWeek();
+        	
+        	c.add(Calendar.DAY_OF_MONTH, -dayOfWeek);
+
+        	Date weekStart = c.getTime();
+        	// we do not need the same day a week after, that's why use 6, not 7
+        	c.add(Calendar.DAY_OF_MONTH, 6); 
+        	Date weekEnd = c.getTime();
+        	
+    		startDate = df.format(weekStart);
+    		endDate = df.format(weekEnd);
+    	}
+    	else if ( _timeInterval == TimeAggregateBy.month )
+    	{
+    		df = new SimpleDateFormat("MMM", Locale.ENGLISH);
+    		String month = df.format(date);
+    		startDate = month + " 01, " + year;
+    		endDate = month + " 31, " + year;
+    	}
+    	else
+    	{
+    		startDate = "Jan 01, " + year ;
+    		endDate = "Dec 31, " + year ;
+    	}
+    	
+    	startDate = startDate + " 00:00:01 AM";
+    	endDate = endDate + " 11:59:59 PM";
+    	
     	// Get the users activity for the week
-	    List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(_user, df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
+	    List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(_user, startDate, endDate );
 		Double userPoints = 0.0;
 		if ( ( activityList != null ) && ( activityList.size() > 0 ) )
 		{
@@ -730,7 +758,7 @@ public class Utils
 		// Round off the points to a single precision
 		userPoints = round(userPoints,1);
 			
-		return Double.toString(userPoints);
+		return userPoints;
     }
 	
 	
@@ -789,7 +817,7 @@ public class Utils
 	    	Double friendsPointsAverage = friendsPointsTotal / activeFriendsCount;
 			
 	    	// Get the users points for the week
-	    	Double userPoints = Double.parseDouble(getUsersPointsForCurrentWeek(_user));
+	    	Double userPoints = getUsersPointsForCurrentTimeInterval(_user,TimeAggregateBy.week);
 				
 			// Round off the points to a single precision
 			userPoints = round(userPoints,1);
