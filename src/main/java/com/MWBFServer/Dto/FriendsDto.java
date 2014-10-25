@@ -10,19 +10,25 @@ public class FriendsDto
 	private Double currentWeekPoints;
 	private Double currentMonthPoints;
 	private Double currentYearPoints;
-	private int activeNumberOfChallanges;
+	private int numberOfTotalChallenges;
+	private int numberOfActiveChallenges;
+	private int numberOfCompletedChallenges;
+	private int numberOfWonChallenges;
 	private UserActivityByTime bestDay;
 	private UserActivityByTime bestWeek;
 	private UserActivityByTime bestMonth;
 	private UserActivityByTime bestYear;
 	
-	public FriendsDto(User _user, Double _currentWeekPoints,Double _currentMonthPoints,Double _currentYearPoints, int _activeNumberOfChallanges, UserActivityByTime _bestDay, UserActivityByTime _bestWeek, UserActivityByTime _bestMonth, UserActivityByTime _bestYear)
+	public FriendsDto(User _user, Double _currentWeekPoints,Double _currentMonthPoints,Double _currentYearPoints,int _numberOfTotalChallenges, int _numberOfActiveChallenges,int _numberOfCompletedChallenges,int _numberOfWonChallenges, UserActivityByTime _bestDay, UserActivityByTime _bestWeek, UserActivityByTime _bestMonth, UserActivityByTime _bestYear)
 	{
 		user = _user;
 		currentWeekPoints = _currentWeekPoints;
 		currentMonthPoints = _currentMonthPoints;
 		currentYearPoints = _currentYearPoints;
-		activeNumberOfChallanges = _activeNumberOfChallanges;
+		numberOfTotalChallenges = _numberOfTotalChallenges;
+		numberOfActiveChallenges = _numberOfActiveChallenges;
+		numberOfCompletedChallenges = _numberOfCompletedChallenges;
+		numberOfWonChallenges = _numberOfWonChallenges;
 		bestDay = _bestDay;
 		bestWeek = _bestWeek;
 		bestMonth = _bestMonth;

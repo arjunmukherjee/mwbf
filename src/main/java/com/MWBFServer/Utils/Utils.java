@@ -809,31 +809,59 @@ public class Utils
     }
     
     /**
-     * Returns the number of active challenges the user is currently a part of
+     * Returns the challenge stats for the user
+     * 1. Total number of challenges
+     * 2. Number of active challenges 
+     * 3. Number of completed challenges
+     * 4. Number of challenges won
      * @param _user
-     * @return int
+     * @return List of Integers in the above order
      */
-    public static int getNumberOfActiveChallengesForUser(User _user) 
+    public static List<Integer> getChallengesStatsForUser(User _user) 
 	{
+    	// TODO : Complete implementation for challenges won
+    	
 		List<Challenge> challengeList = m_cache.getUserChallenges(_user);
+		int totalNumberOfChallenges = 0;
     	int numberOfActiveChallenges = 0;
+    	int numberOfCompletedChallenges = 0;
+    	int numberOfChallengesWon = 0;
     	
     	Date today = new Date();
     	
     	if (challengeList != null && challengeList.size() > 0)
     	{
+    		totalNumberOfChallenges = challengeList.size();
 	    	for (Challenge challenge : challengeList)
 	    	{
 	    		// Check if the start date is in the past and the end date is in the future
 	    		// TODO : if the start date is equal to today or endDate is equal to today
 	    		if ( challenge.getStartDate().before(today) && challenge.getEndDate().after(today) )
 	    			numberOfActiveChallenges++;
+	    		
+	    		// Check if the end date is in the past
+	    		// TODO : if the end date is equal to today
+	    		if ( challenge.getEndDate().before(today) )
+	    		{
+	    			numberOfCompletedChallenges++;
+	    			
+	    			// TODO : Challenges won
+	    			// numberOfChallengesWon;
+	    		}
 	    	}
     	}
     	
-		return numberOfActiveChallenges;
+    	// Construct the list to return
+    	List<Integer> returnList = new ArrayList<Integer>();
+    	returnList.add(totalNumberOfChallenges);
+    	returnList.add(numberOfActiveChallenges);
+    	returnList.add(numberOfCompletedChallenges);
+    	returnList.add(numberOfChallengesWon);
+    	
+    	return returnList;
 	}
-
+    
+    
 	public static enum TimeAggregateBy
     {
     	hour,day,week,month,year;
