@@ -473,9 +473,9 @@ public class UserActions
 						
 						FriendsDto friendDtoObj = null;
 						if ( ( allTimeHighList != null ) && ( allTimeHighList.size() > 2 )  )
-							friendDtoObj = new FriendsDto(friendPair.getFriend(),currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),challengeStatsList.get(3),allTimeHighList.get(0),allTimeHighList.get(1),allTimeHighList.get(2),allTimeHighList.get(3));
+							friendDtoObj = new FriendsDto(friendPair.getFriend(),currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),allTimeHighList.get(0),allTimeHighList.get(1),allTimeHighList.get(2),allTimeHighList.get(3));
 						else
-							friendDtoObj = new FriendsDto(friendPair.getFriend(),currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),challengeStatsList.get(3),emptyUserActivity,emptyUserActivity,emptyUserActivity,emptyUserActivity);
+							friendDtoObj = new FriendsDto(friendPair.getFriend(),currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),emptyUserActivity,emptyUserActivity,emptyUserActivity,emptyUserActivity);
 						
 						friendsDtoList.add(friendDtoObj);
 					}

@@ -812,8 +812,7 @@ public class Utils
      * Returns the challenge stats for the user
      * 1. Total number of challenges
      * 2. Number of active challenges 
-     * 3. Number of completed challenges
-     * 4. Number of challenges won
+     * 3. Number of challenges won
      * @param _user
      * @return List of Integers in the above order
      */
@@ -824,7 +823,6 @@ public class Utils
 		List<Challenge> challengeList = m_cache.getUserChallenges(_user);
 		int totalNumberOfChallenges = 0;
     	int numberOfActiveChallenges = 0;
-    	int numberOfCompletedChallenges = 0;
     	int numberOfChallengesWon = 0;
     	
     	Date today = new Date();
@@ -843,8 +841,6 @@ public class Utils
 	    		// TODO : if the end date is equal to today
 	    		if ( challenge.getEndDate().before(today) )
 	    		{
-	    			numberOfCompletedChallenges++;
-	    			
 	    			// TODO : Challenges won
 	    			// numberOfChallengesWon;
 	    		}
@@ -855,7 +851,6 @@ public class Utils
     	List<Integer> returnList = new ArrayList<Integer>();
     	returnList.add(totalNumberOfChallenges);
     	returnList.add(numberOfActiveChallenges);
-    	returnList.add(numberOfCompletedChallenges);
     	returnList.add(numberOfChallengesWon);
     	
     	return returnList;
