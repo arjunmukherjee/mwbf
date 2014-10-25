@@ -769,20 +769,6 @@ public class Utils
      */
     public static WeeklyComparisons getWeeklyStats(User _user)
     {
-    	// Calculate the start and the end of the current week
-    	Date date = new Date();
-    	Calendar c = Calendar.getInstance();
-    	c.setTime(date);
-    	int dayOfWeek = c.get(Calendar.DAY_OF_WEEK) - c.getFirstDayOfWeek();
-    	c.add(Calendar.DAY_OF_MONTH, -dayOfWeek);
-
-    	Date weekStart = c.getTime();
-    	// we do not need the same day a week after, that's why use 6, not 7
-    	c.add(Calendar.DAY_OF_MONTH, 6); 
-    	Date weekEnd = c.getTime();
-    	
-    	SimpleDateFormat df = new SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH);
-    	
     	Double friendsPointsTotal = 0.0;
     	Double leaderPoints = 0.0;
     	
@@ -794,23 +780,15 @@ public class Utils
     	{
 	    	for (Friends friend : friendsList)
 	    	{
-	    		List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(friend.getFriend(), df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
-	    		
-	    		Double friendPoints = 0.0;
-	    		if ( ( activityList != null) && ( activityList.size() > 0 ) )
-	    		{
-	    			for (UserActivity ua : activityList)
-	    				friendPoints = friendPoints + ua.getPoints();
-	    		
-		    		if (friendPoints > leaderPoints)
-		    			leaderPoints = friendPoints;
+	    		Double friendPoints = Utils.getUsersPointsForCurrentTimeInterval(friend.getFriend(),TimeAggregateBy.week);
+	    		if (friendPoints > leaderPoints)
+		    		leaderPoints = friendPoints;
 		    		
-		    		friendsPointsTotal = friendsPointsTotal + friendPoints;
+		    	friendsPointsTotal = friendsPointsTotal + friendPoints;
 		    		
-		    		// Look for active friends
-		    		if ( friendPoints != 0.0 )
-		    			activeFriendsCount++;
-	    		}
+		    	// Look for active friends
+		    	if ( friendPoints != 0.0 )
+		    		activeFriendsCount++;
 	    	}
 	    	
 	    	// Calculate the average across all the active friends
