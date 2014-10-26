@@ -4,7 +4,7 @@ import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Users.User;
 
 @SuppressWarnings("unused")
-public class FriendsDto 
+public class UserDto 
 {
 	private User user;
 	private Double currentWeekPoints;
@@ -17,8 +17,9 @@ public class FriendsDto
 	private UserActivityByTime bestWeek;
 	private UserActivityByTime bestMonth;
 	private UserActivityByTime bestYear;
+	private WeeklyComparisons weeklyComparisons;
 	
-	public FriendsDto(User _user, Double _currentWeekPoints,Double _currentMonthPoints,Double _currentYearPoints,int _numberOfTotalChallenges, int _numberOfActiveChallenges,int _numberOfWonChallenges, UserActivityByTime _bestDay, UserActivityByTime _bestWeek, UserActivityByTime _bestMonth, UserActivityByTime _bestYear)
+	public UserDto(User _user, Double _currentWeekPoints,Double _currentMonthPoints,Double _currentYearPoints,int _numberOfTotalChallenges, int _numberOfActiveChallenges,int _numberOfWonChallenges, UserActivityByTime _bestDay, UserActivityByTime _bestWeek, UserActivityByTime _bestMonth, UserActivityByTime _bestYear)
 	{
 		user = _user;
 		currentWeekPoints = _currentWeekPoints;
@@ -31,5 +32,10 @@ public class FriendsDto
 		bestWeek = _bestWeek;
 		bestMonth = _bestMonth;
 		bestYear = _bestYear;
+	}
+	
+	public void setWeeklyComparisons(WeeklyComparisons _wk)
+	{
+		weeklyComparisons = _wk;
 	}
 }

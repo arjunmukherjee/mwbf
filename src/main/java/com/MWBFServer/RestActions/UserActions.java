@@ -9,8 +9,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.MWBFServer.Dto.FeedItem;
-import com.MWBFServer.Dto.FriendsDto;
-import com.MWBFServer.Dto.WeeklyComparisons;
+import com.MWBFServer.Dto.UserDto;
 import com.google.gson.JsonSyntaxException;
 
 import org.apache.log4j.Logger;
@@ -81,10 +80,10 @@ public class UserActions
 	
 	
 	@POST
-	@Path("/allTimeHighs")
+	@Path("/userInfo")
 	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAllTimeHighs(String _incomingData)
+	public Response getUserInfo(String _incomingData)
 	{
 		JSONObject userData = null;
 		try 
@@ -107,17 +106,13 @@ public class UserActions
 			User user = m_cache.getUserById(email);
 			if ( user != null ) 
 			{
-				// Get the users personal stats
-				Gson gson = new Gson();
-				 
 				// Look up the users personal stats
-				log.info("Getting the users all time high stats.");
-				List<UserActivityByTime> allTimeHighList = Utils.getAllTimeHighs(user);
-				if ( allTimeHighList != null && allTimeHighList.size() > 0 )
-					returnStr = gson.toJson(allTimeHighList);
+				log.info("Getting the users all personal stats.");
+				UserDto userDtoObj = getUserInfo(user);
+				userDtoObj.setWeeklyComparisons(Utils.getWeeklyStats(user));
 				
-				// TODO : Add the stats in this call, so no need to make two rest calls
-				//gson.toJson(Utils.getWeeklyStats(user));
+				Gson gson = new Gson();
+				returnStr = gson.toJson(userDtoObj);
 			}
 		}
 		
@@ -159,9 +154,6 @@ public class UserActions
 				List<LeaderActivityByTime> allTimeHighListFriends = Utils.getLeaderAllTimeHighs(user);
 				if ( allTimeHighListFriends != null && allTimeHighListFriends.size() > 0 )
 					returnStr = gson.toJson(allTimeHighListFriends);
-				
-				// TODO : Add the stats in this call, so no need to make two rest calls
-				//gson.toJson(Utils.getWeeklyStats(user));
 			}
 		}
 		
@@ -449,36 +441,17 @@ public class UserActions
 				// Look up the users friends
 				List<Friends> friendsList = m_cache.getFriends(user);
 				
-				List<FriendsDto> friendsDtoList = null;
+				List<UserDto> friendsDtoList = null;
 				
 				// 1. Null out the user Object and the password fields
 				// 2. Get the stats for each friend
 				// 3. Package into the DTO class
 				if ( friendsList != null && friendsList.size() > 0 )
 				{
-					friendsDtoList = new ArrayList<FriendsDto>();
+					friendsDtoList = new ArrayList<UserDto>();
 					
 					for (Friends friendPair : friendsList)
-					{
-						friendPair.setUser(null);
-						List<UserActivityByTime> allTimeHighList = Utils.getAllTimeHighs(friendPair.getFriend());
-						
-						UserActivityByTime emptyUserActivity = new UserActivityByTime("--", 0.0);
-						
-						List<Integer> challengeStatsList = Utils.getChallengesStatsForUser(friendPair.getFriend());
-						
-						Double currentWeekPoints = Utils.getUsersPointsForCurrentTimeInterval(friendPair.getFriend(),TimeAggregateBy.week);
-						Double currentMonthPoints = Utils.getUsersPointsForCurrentTimeInterval(friendPair.getFriend(),TimeAggregateBy.month);
-						Double currentYearPoints = Utils.getUsersPointsForCurrentTimeInterval(friendPair.getFriend(),TimeAggregateBy.year);
-						
-						FriendsDto friendDtoObj = null;
-						if ( ( allTimeHighList != null ) && ( allTimeHighList.size() > 2 )  )
-							friendDtoObj = new FriendsDto(friendPair.getFriend(),currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),allTimeHighList.get(0),allTimeHighList.get(1),allTimeHighList.get(2),allTimeHighList.get(3));
-						else
-							friendDtoObj = new FriendsDto(friendPair.getFriend(),currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),emptyUserActivity,emptyUserActivity,emptyUserActivity,emptyUserActivity);
-						
-						friendsDtoList.add(friendDtoObj);
-					}
+						friendsDtoList.add(getUserInfo(friendPair.getFriend()));
 					
 					returnStr = gson.toJson(friendsDtoList);
 				}
@@ -492,6 +465,35 @@ public class UserActions
 		}
 		
 		return Utils.buildResponse(returnStr);
+	}
+
+
+	/**
+	 * For each user , get their individual info
+	 * 1. Get the challenge stats
+	 * 2. Get the Points stats
+	 * @param _user
+	 * @return UserDto object
+	 */
+	private UserDto getUserInfo(User _user) 
+	{
+		List<UserActivityByTime> allTimeHighList = Utils.getAllTimeHighs(_user);
+		
+		UserActivityByTime emptyUserActivity = new UserActivityByTime("--", 0.0);
+		
+		List<Integer> challengeStatsList = Utils.getChallengesStatsForUser(_user);
+		
+		Double currentWeekPoints = Utils.getUsersPointsForCurrentTimeInterval(_user,TimeAggregateBy.week);
+		Double currentMonthPoints = Utils.getUsersPointsForCurrentTimeInterval(_user,TimeAggregateBy.month);
+		Double currentYearPoints = Utils.getUsersPointsForCurrentTimeInterval(_user,TimeAggregateBy.year);
+		
+		UserDto userDtoObj = null;
+		if ( ( allTimeHighList != null ) && ( allTimeHighList.size() > 2 )  )
+			userDtoObj = new UserDto(_user,currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),allTimeHighList.get(0),allTimeHighList.get(1),allTimeHighList.get(2),allTimeHighList.get(3));
+		else
+			userDtoObj = new UserDto(_user,currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),emptyUserActivity,emptyUserActivity,emptyUserActivity,emptyUserActivity);
+		
+		return userDtoObj;
 	}
 	
 	
@@ -541,48 +543,8 @@ public class UserActions
         return Utils.buildResponse(returnStr);
     }
     
+   
     @POST
-	@Path("/weeklyComparisons")
-	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response compareUserEffortToFriends(String _incomingData)
-	{
-		JSONObject userData = null;
-		try 
-		{
-			userData = new JSONObject(_incomingData);
-		}
-		catch (JSONException e) 
-		{
-			e.printStackTrace();
-		}
-		
-		String email = userData.optString("user_id").trim();
-		
-		//  First check if the user exists, if not, then register the user
-		String returnStr = null;
-		if ( (email == null) || (email.length() <= 1)  )
-			returnStr =   "{\"success\":0,\"message\":\"Unable to get weekly comparison stats for the user\"}";
-		else
-		{
-			User user = m_cache.getUserById(email);
-			if ( user != null ) 
-			{
-				// Get the users personal stats
-				Gson gson = new Gson();
-				 
-				// Look up the users personal stats
-				log.info("Getting the users weekly comparison stats.");
-				WeeklyComparisons wk = Utils.getWeeklyStats(user);
-				if ( wk != null  )
-					returnStr = gson.toJson(wk);
-			}
-		}
-		
-		return Utils.buildResponse(returnStr);
-	}
-	
-	@POST
 	@Path("/addFriend")
 	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
 	@Produces(MediaType.APPLICATION_JSON)
