@@ -90,6 +90,13 @@
 			<version>1.0.1.Final</version>
 		</dependency>
 		
+		<!-- Java Email -->
+		<dependency>
+    		<groupId>org.codemonkey.simplejavamail</groupId>
+    		<artifactId>simple-java-mail</artifactId>
+    		<version>2.1</version>
+		</dependency>
+		
 		<!-- Log4J -->
 		<dependency>
 			<groupId>log4j</groupId>

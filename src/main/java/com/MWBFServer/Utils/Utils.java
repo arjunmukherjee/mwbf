@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 
 import com.MWBFServer.Dto.FeedItem;
+import com.MWBFServer.Dto.UserDto;
 import com.MWBFServer.Dto.WeeklyComparisons;
 import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
@@ -82,6 +83,35 @@ public class Utils
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * For each user , get their individual info
+	 * 1. Get the challenge stats
+	 * 2. Get the Points stats
+	 * @param _user
+	 * @return UserDto object
+	 */
+	public static UserDto getUserInfo(User _user) 
+	{
+		List<UserActivityByTime> allTimeHighList = Utils.getAllTimeHighs(_user);
+		
+		List<Integer> challengeStatsList = Utils.getChallengesStatsForUser(_user);
+		
+		Double currentWeekPoints = Utils.getUsersPointsForCurrentTimeInterval(_user,TimeAggregateBy.week);
+		Double currentMonthPoints = Utils.getUsersPointsForCurrentTimeInterval(_user,TimeAggregateBy.month);
+		Double currentYearPoints = Utils.getUsersPointsForCurrentTimeInterval(_user,TimeAggregateBy.year);
+		
+		UserDto userDtoObj = null;
+		if ( ( allTimeHighList != null ) && ( allTimeHighList.size() > 2 )  )
+			userDtoObj = new UserDto(_user,currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),allTimeHighList.get(0),allTimeHighList.get(1),allTimeHighList.get(2),allTimeHighList.get(3));
+		else
+		{
+			UserActivityByTime emptyUserActivity = new UserActivityByTime("--", 0.0);
+			userDtoObj = new UserDto(_user,currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),emptyUserActivity,emptyUserActivity,emptyUserActivity,emptyUserActivity);
+		}
+		
+		return userDtoObj;
 	}
 	
 	/**

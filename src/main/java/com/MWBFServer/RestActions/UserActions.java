@@ -108,7 +108,7 @@ public class UserActions
 			{
 				// Look up the users personal stats
 				log.info("Getting the users all personal stats.");
-				UserDto userDtoObj = getUserInfo(user);
+				UserDto userDtoObj = Utils.getUserInfo(user);
 				userDtoObj.setWeeklyComparisons(Utils.getWeeklyStats(user));
 				
 				Gson gson = new Gson();
@@ -451,7 +451,7 @@ public class UserActions
 					friendsDtoList = new ArrayList<UserDto>();
 					
 					for (Friends friendPair : friendsList)
-						friendsDtoList.add(getUserInfo(friendPair.getFriend()));
+						friendsDtoList.add(Utils.getUserInfo(friendPair.getFriend()));
 					
 					returnStr = gson.toJson(friendsDtoList);
 				}
@@ -468,36 +468,7 @@ public class UserActions
 	}
 
 
-	/**
-	 * For each user , get their individual info
-	 * 1. Get the challenge stats
-	 * 2. Get the Points stats
-	 * @param _user
-	 * @return UserDto object
-	 */
-	private UserDto getUserInfo(User _user) 
-	{
-		List<UserActivityByTime> allTimeHighList = Utils.getAllTimeHighs(_user);
-		
-		UserActivityByTime emptyUserActivity = new UserActivityByTime("--", 0.0);
-		
-		List<Integer> challengeStatsList = Utils.getChallengesStatsForUser(_user);
-		
-		Double currentWeekPoints = Utils.getUsersPointsForCurrentTimeInterval(_user,TimeAggregateBy.week);
-		Double currentMonthPoints = Utils.getUsersPointsForCurrentTimeInterval(_user,TimeAggregateBy.month);
-		Double currentYearPoints = Utils.getUsersPointsForCurrentTimeInterval(_user,TimeAggregateBy.year);
-		
-		UserDto userDtoObj = null;
-		if ( ( allTimeHighList != null ) && ( allTimeHighList.size() > 2 )  )
-			userDtoObj = new UserDto(_user,currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),allTimeHighList.get(0),allTimeHighList.get(1),allTimeHighList.get(2),allTimeHighList.get(3));
-		else
-			userDtoObj = new UserDto(_user,currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),emptyUserActivity,emptyUserActivity,emptyUserActivity,emptyUserActivity);
-		
-		return userDtoObj;
-	}
-	
-	
-    @POST
+	@POST
     @Path("/friends/feed")
     @Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
     @Produces(MediaType.APPLICATION_JSON)
@@ -545,10 +516,10 @@ public class UserActions
     
    
     @POST
-	@Path("/addFriend")
+	@Path("/friends/add")
 	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response addUserFriends(String _incomingData)
+	public Response addFriend(String _incomingData)
 	{
 		String returnStr = "{\"success\":0,\"message\":\"Unable to add friend, please try again.\"}";
 		
@@ -586,47 +557,12 @@ public class UserActions
 		return Utils.buildResponse(returnStr);
 	}
 	
-	@POST
-	@Path("/findFriend")
-	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response findFriend(String _incomingData)
-	{
-		String returnStr = "{\"success\":0,\"message\":\"Unable to find your friend. Please ask them to join us..\"}";
-		
-		JSONObject userData = null;
-		try 
-		{
-			userData = new JSONObject(_incomingData);
-			
-			User user = m_cache.getUserById(userData.optString("user_id"));
-			if ( user == null )
-			{
-				log.warn("Unable to find your friend [" + userData.optString("user_id") + "]. Please ask them to join us.");
-				returnStr =   "{\"success\":0,\"message\":\"Unable to find your friend. Please ask them to join us.\"}";
-			}
-			else
-			{
-				log.info("Found friend with id[" + user.getId() + "].");
-				
-				Gson gson = new Gson();
-				returnStr = gson.toJson(user);
-			}
-		}
-		catch (JSONException e) 
-		{
-			e.printStackTrace();
-		}
-	
-		return Utils.buildResponse(returnStr);
-	}
-	
 	
 	@POST
-	@Path("/v1/findFriends")
+	@Path("/friends/find")
 	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response findFriendsV1(String _incomingData)
+	public Response findFriends(String _incomingData)
 	{
 		String returnStr = "{\"success\":0,\"message\":\"Unable to find your friend. Please ask them to join us..\"}";
 		
