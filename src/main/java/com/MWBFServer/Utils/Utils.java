@@ -27,6 +27,7 @@ import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
 import com.MWBFServer.Datasource.DBReturnClasses.LeaderActivityByTime;
+import com.MWBFServer.Datasource.DBReturnClasses.PlayerActivityData;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Datasource.DbConnection;
@@ -296,24 +297,27 @@ public class Utils
 		// TODO : 
 		// 1. Redundant code between feeds and this method
 		// 2. Get activities from the cache
+		
 		Map<String,DBReturnChallenge> challengeMap = null;
 		List<Challenge> challengeList = m_cache.getUserChallenges(_user);
 		if ( ( challengeList != null ) && ( challengeList.size() > 0 ) )
 		{
-
 			challengeMap = new HashMap<String,DBReturnChallenge>();
 
 			Gson gson = new Gson();
 			JsonParser parser = new JsonParser();
-
+			
 			// Construct a unique map of the challengeReturn objects
 			for(Challenge challenge : challengeList )
 			{
+				// Orko --> Run : 1, Walk : 2
+				// Som --> Trek : 2, Swim : 500
+				Map<String, PlayerActivityData> userActivityAggregator = new HashMap<String,PlayerActivityData>();
+				
 				List<UserActivity> userActivityFeedList = new ArrayList<UserActivity>();
 
-				DBReturnChallenge ch = new DBReturnChallenge(challenge.getName(),challenge.getStartDate(),challenge.getEndDate(),null,challenge.getActivitySet());
+				DBReturnChallenge ch = new DBReturnChallenge(challenge.getName(),challenge.getStartDate(),challenge.getEndDate(),challenge.getActivitySet());
 				ch.setCreatorId(challenge.getCreator().getId());
-				ch.setPlayersPointsSet(constructPlayerPointsSet(challenge.getPlayersSet(),ch.getStartDate(),ch.getEndDate(),challenge.getActivitySet()));
 
 				List<?> userActivityList = DbConnection.queryUserActivitiesPerChallenge(challenge.getPlayersSet(),challenge.getActivitySet(),ch.getStartDate(),ch.getEndDate());
 				List<String> messageList = new ArrayList<String>();
@@ -325,6 +329,9 @@ public class Utils
 					String activityId = activityParts[1].substring(1,activityParts[1].length()-1);
 					String activityDateStr = activityParts[2].substring(1);
 					String activityUnits = activityParts[4];
+					String activityPointsStr = activityParts[5];
+					Double activityPoints = Double.parseDouble(activityPointsStr);
+					activityPoints = round(activityPoints, 1);
 					String userId = activityParts[6].substring(1,activityParts[6].length()-2);
 					User user = m_cache.getUserById(userId);
 
@@ -339,11 +346,61 @@ public class Utils
 					}
 
 					UserActivity ua = new UserActivity( user,activityId,activityDate,activityUnits);
-
+					
+					// Construct the user --> Activity aggregation
+					// Orko --> Ran : 5, Swam : 500, Trek : 45
+					// Som --> Ran : 7, Bike : 500, Trek : 55
+					PlayerActivityData playerActData = userActivityAggregator.get(userId);
+					if ( playerActData != null  )
+					{
+						// Update the total points
+						Double totalPts = playerActData.getTotalPoints();
+						if ( totalPts != null )
+							totalPts = totalPts + activityPoints;
+						else
+							totalPts = activityPoints;
+						playerActData.setTotalPoints(totalPts);
+						
+						// Update the aggregate activity map
+						Map<String,Double> actAggMap = playerActData.getActivityAggregateMap();
+						if ( actAggMap != null )
+						{
+							Double actUnits = actAggMap.get(activityId);
+							if ( actUnits != null)
+								actUnits = actUnits + Double.parseDouble(activityUnits);
+							else
+								actUnits = Double.parseDouble(activityUnits);
+							actAggMap.put(activityId, actUnits);
+						}
+						else
+						{
+							actAggMap = new HashMap<String,Double>();
+							actAggMap.put(activityId, Double.parseDouble(activityUnits));
+						}
+						
+						playerActData.setActivityAggregateMap(actAggMap);
+					}
+					else
+					{
+						Map<String,Double> actAggMap = new HashMap<String,Double>();
+						actAggMap.put(activityId, Double.parseDouble(activityUnits));
+						playerActData = new PlayerActivityData(userId, activityPoints, actAggMap);
+					}
+					
+					userActivityAggregator.put(userId, playerActData);
+					
 					// Get the users activity feeds
 					userActivityFeedList.add(ua);
 				}
 
+				// Set the playerActivityData
+				List<PlayerActivityData> playerActDataList = new ArrayList<PlayerActivityData>(userActivityAggregator.values());
+				ch.setPlayerActivityData(playerActDataList);
+				
+				// TODO : Inefficient 
+				// Gets all the activities, sorts them and then only returns the last x number of activities
+				// Must be a better way to instead insert only upto x sorted
+				
 				// Get the list of activities and sort them by time
 				Collections.sort(userActivityFeedList);
 
@@ -371,39 +428,6 @@ public class Utils
 	}
 
 	
-	private static Set<String> constructPlayerPointsSet(Set<String> _players, Date _fromDate, Date _toDate, Set<String> _activitySet)
-	{
-		Gson gson = new Gson();
-		JsonParser parser = new JsonParser();
-		JsonArray jArray;
-		Set<String> playerPointsMap = new HashSet<String>();
-		
-		// Construct the list of activities to sum the points by
-		String activityList = null;
-		for(String activity : _activitySet)
-			activityList = "'" + activity + "'," + activityList; 
-		
-		for (String player : _players)
-		{
-			// Get the points for each player between the start and endDates
-		 	List<?> userActivityList =  DbConnection.queryGetUserActivityByTime(player,_fromDate,_toDate, activityList);
-		 	
-		 	if (userActivityList == null || userActivityList.size() <= 0 )
-		 		playerPointsMap.add(player + "," + "0");
-		 	else
-		 	{
-		 	 	String activityStr = gson.toJson(userActivityList);
-			 	
-			 	jArray = parser.parse(activityStr).getAsJsonArray();
-			 	for(JsonElement obj : jArray )
-			 		playerPointsMap.add(player + "," + obj.toString());
-			}
-		}
-		
-		return playerPointsMap;
-	}
-	
-
 	/**
 	 * Get the personal stats for the user
 	 * @param _user

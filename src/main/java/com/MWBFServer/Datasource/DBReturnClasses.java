@@ -2,14 +2,16 @@ package com.MWBFServer.Datasource;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.MWBFServer.Users.User;
 import com.MWBFServer.Utils.Utils.TimeAggregateBy;
 
-
+@SuppressWarnings("unused")
 public class DBReturnClasses 
 {
 	public static class UserActivityByTime
@@ -72,17 +74,56 @@ public class DBReturnClasses
 		}
 	}
 	
+	public static class PlayerActivityData 
+	{
+		private String userId;
+		private Double totalPoints;
+		private Map<String,Double> activityAggregateMap = new HashMap<String,Double>();
+		
+		public PlayerActivityData(String _userId, Double _totalPoints, Map<String, Double> _activityAggregateMap)
+		{
+			userId = _userId;
+			totalPoints = _totalPoints;
+			activityAggregateMap = _activityAggregateMap;
+		}
+		
+		public Map<String,Double> getActivityAggregateMap()
+		{
+			return activityAggregateMap;
+		}
+		
+		public void setActivityAggregateMap(Map<String, Double> _activityAggregateMap)
+		{
+			activityAggregateMap = _activityAggregateMap;
+		}
+		
+		public Double getTotalPoints()
+		{
+			return totalPoints;
+		}
+		
+		public void setTotalPoints(Double _totalPoints)
+		{
+			totalPoints = _totalPoints;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return "User [" + userId + "], TotalPoints [" + totalPoints + "], AggregateAct[" + activityAggregateMap.toString() + "]";
+		}
+	}
+	
 	public static class DBReturnChallenge 
 	{
-		@SuppressWarnings("unused")
 		private long id;
 		private String name;
 		private String creatorId;
 		private Date startDate;
 		private Date endDate;
-		private Set<String> playerPointsSet = new HashSet<String>();
 		private Set<String> activitySet = new HashSet<String>();
 		private List<String> messageList = new ArrayList<String>();
+		private List<PlayerActivityData> playerActivityDataList = new ArrayList<PlayerActivityData>();
 		
 		/**
 		 * 
@@ -92,12 +133,11 @@ public class DBReturnClasses
 		 * @param _playersSet
 		 * @param _activitySet
 		 */
-		public DBReturnChallenge(String _name, Date _startDate, Date _endDate, Set<String> _playerPointsSet, Set<String> _activitySet)
+		public DBReturnChallenge(String _name, Date _startDate, Date _endDate, Set<String> _activitySet)
 		{
 			name = _name;
 			startDate = _startDate;
 			endDate = _endDate;
-			playerPointsSet = _playerPointsSet;
 			activitySet = _activitySet;
 		}
 		
@@ -112,11 +152,6 @@ public class DBReturnClasses
 		
 		public Date getEndDate() {
 			return endDate;
-		}
-		
-		public void setPlayersPointsSet(Set<String> _playerPointsSet) 
-		{
-			playerPointsSet = _playerPointsSet;
 		}
 		
 		public void setActivitySet(Set<String> _activitySet) 
@@ -134,10 +169,15 @@ public class DBReturnClasses
 			this.creatorId = _creatorId;
 		}
 		
+		public void setPlayerActivityData(List<PlayerActivityData> _playerActivityDataList) 
+		{
+			playerActivityDataList = _playerActivityDataList;
+		}
+		
 		@Override
 		public String toString()
 		{
-			return "Name["+name+"], Creator[" + creatorId + "], StartDate["+startDate.toString()+"], EndDate["+endDate.toString()+"], NumberOfPlayers["+playerPointsSet.size()+"], NumberOfActivities["+activitySet.size()+"], NumberOfMessages[" + messageList.size() + "]";
+			return "Name["+name+"], Creator[" + creatorId + "], StartDate["+startDate.toString()+"], EndDate["+endDate.toString()+"], NumberOfPlayers["+playerActivityDataList.size()+"], NumberOfActivities["+activitySet.size()+"], NumberOfMessages[" + messageList.size() + "]";
 		}	
 	}
 
