@@ -8,11 +8,9 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Response;
@@ -32,12 +30,14 @@ import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Datasource.DbConnection;
 import com.MWBFServer.Users.Friends;
+import com.MWBFServer.Users.PendingFriendRequest;
 import com.MWBFServer.Users.User;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
+@SuppressWarnings("unchecked")
 public class Utils 
 {
 	private static final Logger log = Logger.getLogger(Utils.class);
@@ -250,6 +250,79 @@ public class Utils
 	}
 	
 	/**
+	 * Reject a request, just delete the pending request.
+	 * @param _requestId
+	 * @return
+	 */
+	public static boolean rejectFriendRequest(String _requestId) 
+	{
+		// TODO : Must find a way to notify the requester that the "friend" has rejected the request
+		List<PendingFriendRequest> friendRequestList = (List<PendingFriendRequest>) DbConnection.queryGetFriendRequests(_requestId,null);
+		
+		boolean success = true;
+		if ( ( friendRequestList != null ) && ( friendRequestList.size() > 0 ) )
+			DbConnection.deleteObject(friendRequestList.get(0));
+		else
+			success = false;
+		
+		return success;
+	}
+	
+	/**
+	 * First find the friend request object.
+	 * Extract the user and the friend from the object.
+	 * Insert the rows into the friends table and add to the cache.
+	 * Delete the friendAcceptRequest.
+	 * @param _friendRequestId
+	 * @return success [TRUE|FALSE]
+	 */
+	public static boolean acceptFriendRequest(String _requestId) 
+	{
+		List<PendingFriendRequest> friendRequestList = (List<PendingFriendRequest>) DbConnection.queryGetFriendRequests(_requestId,null);
+		
+		boolean success = true;
+		if ( ( friendRequestList != null ) && ( friendRequestList.size() > 0 ) )
+		{
+			PendingFriendRequest friendRequest = friendRequestList.get(0);
+			
+			User user = m_cache.getUserById(friendRequest.getUserId());
+			User friend = m_cache.getUserById(friendRequest.getFriendId());
+			
+			Friends friendObj = new Friends(user,friend);
+			Friends userObj = new Friends(friend,user);
+			
+			List<Friends> friendsList = new ArrayList<Friends>();
+			friendsList.add(userObj);
+			friendsList.add(friendObj);
+			
+			// Add the friend to the db and cache
+			// Remove the pending request 
+			success = DbConnection.saveList(friendsList);
+			if ( success )
+			{
+				m_cache.addFriend(user, friendObj);
+				DbConnection.deleteObject(friendRequest);
+				
+				log.info("[" + user.getFirstName() + "] and [" + friend.getFirstName() + "] are now friends.");
+			}
+		}
+		else
+			success = false;
+		
+		return success;
+	}
+	
+	/**
+	 * Fetches a list of all the pending friend requests for a given user.
+	 * @param _user
+	 * @return List<PendingFriendRequest>
+	 */
+	public static List<PendingFriendRequest> getFriendRequests(User _user) 
+	{
+		return (List<PendingFriendRequest>) DbConnection.queryGetFriendRequests(null,_user.getId());
+	}
+	
+	/**
 	 * Add a friend to a user.
 	 * @param _user
 	 * @param _friend
@@ -257,17 +330,8 @@ public class Utils
 	 */
 	public static boolean addFriend(User _user, User _friend) 
 	{
-		Friends friendObj = new Friends(_user,_friend);
-		Friends userObj = new Friends(_friend,_user);
-		
-		List<Friends> friendsList = new ArrayList<Friends>();
-		friendsList.add(userObj);
-		friendsList.add(friendObj);
-		
-		// Add the friend to the cache
-		boolean result = DbConnection.saveList(friendsList);
-		if ( result )
-			m_cache.addFriend(_user, friendObj);
+		PendingFriendRequest friendReq = new PendingFriendRequest(_user.getId(),_friend.getId());
+		boolean result = DbConnection.saveObj(friendReq);
 		
 		return result;
 	}
@@ -673,7 +737,6 @@ public class Utils
 	 * @param _challengeId
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	public static boolean deleteChallenge(String _challengeId) 
 	{
 		List<Challenge> challengeList = (List<Challenge>) DbConnection.queryGetChallenge(_challengeId);
@@ -710,45 +773,50 @@ public class Utils
 
         // Get the users activity feeds
         List<UserActivity> userActivityList = m_cache.getUserActivities(_user);
-        activityList.addAll(userActivityList);
-
-        // Get the list of activities and sort them by time
-        Collections.sort(activityList);
-
-        // Populate feed item list
-        List<FeedItem> feedItemList = new ArrayList<FeedItem>();
-        for (UserActivity activity : activityList) 
+        if ( ( userActivityList != null ) && ( userActivityList.size() > 0 ) )
         {
-            // Populate FeedItem object
-            FeedItem item = new FeedItem();
-            item.setActivityDate(activity.getDate());
-            item.setActivityName(activity.getActivityId());
-            
-            if ( !activity.isBonusActivity() )
-            	item.setActivityUnit(m_cache.getMWBFActivity(activity.getActivityId()).getMeasurementUnitShort());
-            
-            item.setActivityValue(activity.getExerciseUnits());
-            item.setFirstName(activity.getUser().getFirstName());
-            item.setLastName(activity.getUser().getLastName());
-            item.setUserId(activity.getUser().getId());
-            item.setPoints(activity.getPoints());
-            item.setFeedPrettyString(activity.constructNotificationString());
-            
-            // Add to feedItemList
-            feedItemList.add(item);
+        	activityList.addAll(userActivityList);
+
+        	// Get the list of activities and sort them by time
+        	Collections.sort(activityList);
+
+        	// Populate feed item list
+        	List<FeedItem> feedItemList = new ArrayList<FeedItem>();
+        	for (UserActivity activity : activityList) 
+        	{
+        		// Populate FeedItem object
+        		FeedItem item = new FeedItem();
+        		item.setActivityDate(activity.getDate());
+        		item.setActivityName(activity.getActivityId());
+
+        		if ( !activity.isBonusActivity() )
+        			item.setActivityUnit(m_cache.getMWBFActivity(activity.getActivityId()).getMeasurementUnitShort());
+
+        		item.setActivityValue(activity.getExerciseUnits());
+        		item.setFirstName(activity.getUser().getFirstName());
+        		item.setLastName(activity.getUser().getLastName());
+        		item.setUserId(activity.getUser().getId());
+        		item.setPoints(activity.getPoints());
+        		item.setFeedPrettyString(activity.constructNotificationString());
+
+        		// Add to feedItemList
+        		feedItemList.add(item);
+        	}
+
+
+        	// Return only the last 50 items
+        	int startIndex = 0;
+        	int endIndex = Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
+        	if( feedItemList.size() > Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
+        		startIndex = feedItemList.size() - Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
+
+        	if( feedItemList.size() < Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
+        		endIndex = feedItemList.size();
+
+        	return feedItemList.subList(startIndex, startIndex + endIndex);
         }
-
-
-        // Return only the last 50 items
-        int startIndex = 0;
-        int endIndex = Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
-        if( feedItemList.size() > Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
-            startIndex = feedItemList.size() - Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
-
-        if( feedItemList.size() < Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
-        	endIndex = feedItemList.size();
         
-        return feedItemList.subList(startIndex, startIndex + endIndex);
+        return null;
     }
 
     /**

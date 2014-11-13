@@ -10,12 +10,13 @@
 
         <!-- Database connection settings -->
         <property name="connection.driver_class">org.postgresql.Driver</property>
-       
+       	
+       	
         <property name="hibernate.connection.url">jdbc:postgresql://ec2-54-83-26-78.compute-1.amazonaws.com:5702/ddeitjflhvtfoq?sslfactory=org.postgresql.ssl.NonValidatingFactory&amp;ssl=true</property>
         <property name="connection.username">u92dgfi63o5e95</property>
         <property name="connection.password">p5t7v64gog9dpj8r9p908866tmk</property>
         
-        <!-- 
+         <!--
         <property name="hibernate.connection.url">jdbc:postgresql://localhost:5433/mwbf</property>
         <property name="connection.username">postgres</property>
         <property name="connection.password">password</property>
@@ -40,8 +41,10 @@
 		<mapping class="com.MWBFServer.Activity.UserActivity"/>
 		<mapping class="com.MWBFServer.Users.User"/>
 		<mapping class="com.MWBFServer.Users.Friends"/>
+		<mapping class="com.MWBFServer.Users.PendingFriendRequest"/>
 		<mapping class="com.MWBFServer.Challenges.Challenge"/>
 		<mapping class="com.MWBFServer.Stats.PersonalStats"/>
+		
         
     </session-factory>
 

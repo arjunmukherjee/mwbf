@@ -9,6 +9,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.MWBFServer.Dto.FeedItem;
+import com.MWBFServer.Dto.FriendRequestsDto;
 import com.MWBFServer.Dto.UserDto;
 import com.google.gson.JsonSyntaxException;
 
@@ -537,15 +538,123 @@ public class UserActions
 			}
 			else
 			{
-				log.info("Adding friend ["+ friend.getId() +"], to User[" + user.getId() + "]");
+				log.info("Creating request for : Friend ["+ friend.getId() +"], User[" + user.getId() + "]");
 				
-				// If successful, add to the local cache
+				// Add the friend request
 				if ( Utils.addFriend(user,friend) )
-					returnStr =   "{\"success\":1,\"message\":\"Friend added.\"}";
+					returnStr =   "{\"success\":1,\"message\":\"Friend request added.\"}";
 				else
 				{
-					log.warn("Unable to add friend, please try again.");
-					returnStr = "{\"success\":0,\"message\":\"Unable to add friend, please try again.\"}";
+					log.warn("Unable to add friend request, please try again.");
+					returnStr = "{\"success\":0,\"message\":\"Unable to add friend request, please try again.\"}";
+				}
+			}
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+
+		return Utils.buildResponse(returnStr);
+	}
+    
+    @POST
+	@Path("/friends/pendingRequests")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getFriendRequests(String _incomingData)
+	{
+    	String returnStr = "{\"success\":0,\"message\":\"Unable to find your pending friend requests.\"}";
+		
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+			User user = m_cache.getUserById(userData.optString("user_id"));
+			if ( user == null )
+			{
+				log.warn("Unable to find user.");
+				returnStr = "{\"success\":0,\"message\":\"Unable to find logged in user (something's wrong).\"}";
+			}
+			else
+			{
+				log.info("Fetching all friend requests for UserId["+ user.getId() +"]");
+				
+				Gson gson = new Gson();
+			 
+				// Look up the users challenges
+				List<PendingFriendRequest> friendRequestList = Utils.getFriendRequests(user);
+				
+				// Find the friend and send back the friend obj
+				// Convert the List to a Json representation
+				if ( friendRequestList != null )
+				{
+					List<FriendRequestsDto> friendRequestsDtoList = new ArrayList<FriendRequestsDto>();
+					for (PendingFriendRequest request : friendRequestList)
+					{
+						User userFromReq = m_cache.getUserById(request.getUserId());
+						UserDto friendDto = Utils.getUserInfo(userFromReq);
+						FriendRequestsDto reqDto = new FriendRequestsDto(request.getUserId(), friendDto, request.getId());
+						friendRequestsDtoList.add(reqDto);
+					}
+					returnStr = gson.toJson(friendRequestsDtoList);
+				}
+				else
+					returnStr = "{\"success\":1,\"message\":\"No friend requests found.\"}";
+			}
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+	
+		return Utils.buildResponse(returnStr);
+	}
+    
+    @POST
+	@Path("/friends/actionRequest")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response acceptFriendRequest(String _incomingData)
+	{
+		String returnStr = "{\"success\":0,\"message\":\"Unable to action friend request, please try again.\"}";
+		
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+			
+			String friendRequestId = userData.optString("friend_request_id");
+			String requestAction = userData.optString("friend_request_action");
+			if ( friendRequestId == null || requestAction == null )
+			{
+				log.warn("Unable to find the pending friend request for id [null].");
+				returnStr = "{\"success\":0,\"message\":\"Invalid friend request Id.\"}";
+			}
+			else
+			{
+				log.info("Actioning [" + requestAction + "] friend request with id ["+ friendRequestId +"]");
+				
+				// Accept the friend request
+				if ( requestAction.equalsIgnoreCase("Accept") )
+				{
+					if ( Utils.acceptFriendRequest(friendRequestId) )
+						returnStr =   "{\"success\":1,\"message\":\"Friend request accepted.\"}";
+					else
+					{
+						log.warn("Unable to accept friend request, please try again.");
+						returnStr = "{\"success\":0,\"message\":\"Unable to accept friend request, please try again.\"}";
+					}
+				}
+				else
+				{
+					if ( Utils.rejectFriendRequest(friendRequestId) )
+						returnStr =   "{\"success\":1,\"message\":\"Friend request rejected.\"}";
+					else
+					{
+						log.warn("Unable to reject friend request, please try again.");
+						returnStr = "{\"success\":0,\"message\":\"Unable to reject friend request, please try again.\"}";
+					}
 				}
 			}
 		}
@@ -582,6 +691,7 @@ public class UserActions
 				User user = m_cache.getUserById(userIdentification);
 				if ( user == null )
 				{
+					// TODO : Exclude the user requesting the search from the results
 					List<User> usersList = m_cache.getUserByName(userIdentification);
 					if ( ( usersList == null ) || ( usersList.size() < 1 ) )
 					{

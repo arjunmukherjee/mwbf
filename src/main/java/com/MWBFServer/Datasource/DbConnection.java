@@ -12,6 +12,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 import com.MWBFServer.Challenges.Challenge;
+import com.MWBFServer.Users.PendingFriendRequest;
 import com.MWBFServer.Users.User;
 import com.MWBFServer.Utils.Utils.TimeAggregateBy;
 
@@ -223,7 +224,63 @@ public class DbConnection
 
 		return executeListQuery(query, session);
 	}
+	
+	/**
+	 * Returns a particular pending friend request or a list of all the pending friend requests.
+	 * @param request_id|null
+	 * @return
+	 */
+	public static List<?> queryGetFriendRequests(String _requestId, String _userId)
+	{
+		// creating session object
+		Session session = getSession();
+		Query query = null;
+		
+		if ( _requestId != null )
+		{
+			long requestIdLong = Long.parseLong(_requestId);
+       	
+			String hql = "FROM PendingFriendRequest FR WHERE FR.id = :requestId";
+			query = session.createQuery(hql);
+			query.setLong("requestId", requestIdLong);
+		}
+		else
+		{
+			String hql = "FROM PendingFriendRequest FR where FR.friendId = :userId";
+			query = session.createQuery(hql);
+			query.setString("userId", _userId);
+		}
+      
+		return (List<?>) executeListQuery(query, session);
+	}
 
+	/**
+	 * Delete a challenge/friend.
+	 * @param _challenge/_friend object to delete
+	 */
+	public static boolean deleteObject(Object _objectToDelete) 
+	{
+		Session s = getSession();
+		try
+		{
+			s.beginTransaction();
+			s.delete(_objectToDelete);
+			s.getTransaction().commit();
+		}
+		catch(Exception e)
+		{
+			log.error("Execption during delete : " + e.getMessage());
+			s.getTransaction().rollback();
+			return false;
+		}
+		finally
+		{
+			s.close();
+		}
+		
+		return true;
+	}
+	
 	/**
 	 * For a given user, get a list of all the challenges the user is involved in.
 	 * @param _user
