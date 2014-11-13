@@ -22,10 +22,8 @@ import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Datasource.DBReturnClasses.LeaderActivityByTime;
 import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
-import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Users.*;
 import com.MWBFServer.Utils.Utils;
-import com.MWBFServer.Utils.Utils.TimeAggregateBy;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 

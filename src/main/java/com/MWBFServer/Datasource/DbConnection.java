@@ -12,7 +12,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 import com.MWBFServer.Challenges.Challenge;
-import com.MWBFServer.Users.PendingFriendRequest;
 import com.MWBFServer.Users.User;
 import com.MWBFServer.Utils.Utils.TimeAggregateBy;
 
