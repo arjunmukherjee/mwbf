@@ -6,7 +6,10 @@ public final class Constants
 	public static int MAX_NUMBER_OF_MESSAGE_FEEDS = 100;
 	
 	// The minimum number of exercises per week the user must do in order to get the cross training bonus
-	public static int EXERCISES_FOR_CROSS_TRAINING_BONUS = 4;
+	public static int NUMBER_OF_EXERCISES_FOR_CROSS_TRAINING_BONUS = 4;
+	
+	// The minimum number of points per exercise per week the user must earn in order to get the cross training bonus
+	public static int POINTS_PER_EXERCISE_FOR_CROSS_TRAINING_BONUS = 8;
 	
 	// The string used to identify a bonus activity
 	public static String BONUS_ACTIVITY_IDENTIFIER = "Bonus";

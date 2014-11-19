@@ -88,4 +88,10 @@ public class FeedItem {
     public void setPoints(double points) {
         this.points = points;
     }
+    
+    @Override
+    public String toString()
+    {
+    	return this.feedPrettyString;
+    }
 }

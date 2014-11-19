@@ -46,8 +46,9 @@ public class BonusContextListener implements ServletContextListener
 		// 1. Iterate through each user
 		// 2. Check their logged activities for the week
 		// 3. If the number of distinct activity types are greater then 4
-		// 4. Insert a bonus row for cross training into their activities
-		// 5. Think about not interfering with clients, i.e. clients should not have to hard-code a "bonus" ignore.
+		// 4. Check if the points per activity is greater than the minimum required to qualify for a bonus worthy activity
+		// 5. Insert a bonus row for cross training into their activities
+		// 6. Think about not interfering with clients, i.e. clients should not have to hard-code a "bonus" ignore.
 		
 		Runnable task = new Runnable()
 		{
@@ -71,13 +72,18 @@ public class BonusContextListener implements ServletContextListener
 				for(User user : DataCache.getInstance().getUsers())
 				{
 					Set<String> activitySet = new HashSet<String>();
+					
+					// Get a list of user activities aggregated by activity
 					List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(user, df.format(weekStart)+" 00:00:01 AM", df.format(weekEnd)+" 11:59:59 PM" );
-					if ( ( activityList != null ) && ( activityList.size() >= Constants.EXERCISES_FOR_CROSS_TRAINING_BONUS ) )
+					if ( ( activityList != null ) && ( activityList.size() >= Constants.NUMBER_OF_EXERCISES_FOR_CROSS_TRAINING_BONUS ) )
 					{
 						for (UserActivity ua : activityList)
-							activitySet.add(ua.getActivityId());
+						{
+							if ( ua.getPoints() >= Constants.POINTS_PER_EXERCISE_FOR_CROSS_TRAINING_BONUS )
+								activitySet.add(ua.getActivityId());
+						}
 						
-						if ( activitySet.size() >= Constants.EXERCISES_FOR_CROSS_TRAINING_BONUS )
+						if ( activitySet.size() >= Constants.NUMBER_OF_EXERCISES_FOR_CROSS_TRAINING_BONUS )
 						{
 							log.info("User [" + user.getFirstName() + "] is eligile for a cross training bonus this week.");
 							

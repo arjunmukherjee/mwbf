@@ -761,23 +761,30 @@ public class Utils
 	public static List<FeedItem> getUserFeedItems(List<Friends> friendsList, User _user)
     {
         // TODO : Highly inefficient
-
+		// Gets a list of all the activities and then only select the last 50
+		
         List<UserActivity> activityList = new ArrayList<UserActivity>();
-        for (Friends friend : friendsList)
+        
+        // Get the activities for all the friends
+        if ( ( friendsList != null ) && ( friendsList.size() > 0 ) )
         {
-        	List<UserActivity> friendActivityList = m_cache.getUserActivities(friend.getFriend());
-        	
-        	if ( ( friendActivityList != null ) && ( friendActivityList.size() > 0 ) )
-        		activityList.addAll(friendActivityList);
+	        for (Friends friend : friendsList)
+	        {
+	        	List<UserActivity> friendActivityList = m_cache.getUserActivities(friend.getFriend());
+	        	
+	        	if ( ( friendActivityList != null ) && ( friendActivityList.size() > 0 ) )
+	        		activityList.addAll(friendActivityList);
+	        }
         }
 
         // Get the users activity feeds
         List<UserActivity> userActivityList = m_cache.getUserActivities(_user);
         if ( ( userActivityList != null ) && ( userActivityList.size() > 0 ) )
-        {
         	activityList.addAll(userActivityList);
 
-        	// Get the list of activities and sort them by time
+        // Get the list of activities and sort them by time
+        if ( ( activityList != null ) && ( activityList.size() > 0 ) )
+        {
         	Collections.sort(activityList);
 
         	// Populate feed item list
@@ -803,13 +810,11 @@ public class Utils
         		feedItemList.add(item);
         	}
 
-
         	// Return only the last 50 items
         	int startIndex = 0;
         	int endIndex = Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
         	if( feedItemList.size() > Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
         		startIndex = feedItemList.size() - Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
-
         	if( feedItemList.size() < Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
         		endIndex = feedItemList.size();
 

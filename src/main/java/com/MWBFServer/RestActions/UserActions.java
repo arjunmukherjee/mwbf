@@ -496,8 +496,7 @@ public class UserActions
                 List<FeedItem> activityList = null;
                 
                 // Look up the friends activities
-                if ( ( friendsList != null ) && ( friendsList.size() > 0 ) )
-                	activityList = Utils.getUserFeedItems(friendsList, user);
+                activityList = Utils.getUserFeedItems(friendsList, user);
 
                 if ( activityList != null )
                     returnStr = gson.toJson(activityList);
