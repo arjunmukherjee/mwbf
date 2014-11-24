@@ -22,6 +22,8 @@ import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Datasource.DBReturnClasses.LeaderActivityByTime;
 import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
+import com.MWBFServer.Notifications.Notifications;
+import com.MWBFServer.Notifications.Notifications.ClientNotification;
 import com.MWBFServer.Users.*;
 import com.MWBFServer.Utils.Utils;
 import com.google.gson.Gson;
@@ -833,6 +835,91 @@ public class UserActions
 		}
 	
 		return Utils.buildResponse(returnStr);
+	}
+	
+	@POST
+	@Path("/notifications")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response checkNotifications(String _incomingData)
+	{
+		String returnStr = null;
+		returnStr =   "{\"success\":1,\"message\":\"Checked user notifications.\"}";
+		
+		log.info("Checking user notifications.");
+
+		Type collectionType = new TypeToken<List<ClientNotification>>(){}.getType();
+		List<ClientNotification> notificationsList = null;
+        try 
+        {
+        	Gson gson = new Gson();
+        	notificationsList = gson.fromJson(_incomingData, collectionType);
+        	
+        	// Process the notifications
+        	// 1. Lookup the friend 
+        	// 2. Get their memberSince date
+        	// 3. Compare their memberSince date with that of the user
+        	// 4. If after , then check if the notification message has been sent
+        	// 5. If sent, do nothing
+        	// 6. If not sent, add to send list and mark as sent, save in db & cache
+        	// 7. If before, discard
+        	if ( ( notificationsList != null ) && ( notificationsList.size() > 0 ) )
+        	{
+        		User user = m_cache.getUserById(notificationsList.get(0).userId);
+        		if ( user != null )
+        		{
+        			List<Notifications> userNotificationList = m_cache.getUserNotifications(user);
+        			List<Notifications> notificationsReturnList = null;
+	        		for (ClientNotification cn : notificationsList)
+	        		{
+	            		User friend = m_cache.getUserByFbId(cn.fbProfileId);
+	            		if ( friend != null)
+	            		{
+	            			if ( friend.getMemberSince().after(user.getMemberSince()) )
+	            			{
+	            				Notifications not = new Notifications(user,cn);
+	            				boolean notifyUser = true;
+	            				if ( userNotificationList != null && userNotificationList.size() > 0 )
+	            				{
+	            					if ( userNotificationList.contains(not) )
+	            						notifyUser = false;
+	            				}
+	            				
+	            				if ( notifyUser )
+	            				{
+	            					if (notificationsReturnList == null)
+            							notificationsReturnList = new ArrayList<Notifications>();
+            						
+            						// Save in cache
+            						m_cache.addNotification(not);
+            						
+            						// Save in Db
+            						Utils.saveObj(not);
+            						
+            						// Create new object to return to user
+            						// Set the user field to the friend object
+            						// That way the receiving client can identify who the new friend who joined was
+            						Notifications returnNot = new Notifications(friend,not.getNotificationMessage());
+            						notificationsReturnList.add(returnNot);
+            					}
+	            			}
+	            		}
+	        		}
+	        		
+	        		// Convert the List to a Json representation
+					if ( ( notificationsReturnList != null) && ( notificationsReturnList.size() > 0 ) )
+						returnStr = gson.toJson(notificationsReturnList);
+        		}
+        	}
+        } 
+        catch (JsonSyntaxException jse) 
+        {
+            log.error("Error processing notificaitons from user.", jse);
+            returnStr =   "{\"success\":0,\"message\":\"Unable to process notifications, please try again.\"}";
+            return Utils.buildResponse(returnStr);
+        }
+		
+        return Utils.buildResponse(returnStr);
 	}
 }
 

@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Challenges.Challenge;
+import com.MWBFServer.Notifications.Notifications;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
 import com.MWBFServer.Utils.Constants;
@@ -26,10 +27,12 @@ public class DataCache
 	private static final Logger log = Logger.getLogger(DataCache.class);
 	
 	private static final Map<String,Activities> m_MWBFActivitiesHash = new HashMap<String,Activities>();
-	private static final Map<String,User> m_usersHash = new HashMap<String,User>();
+	private static final Map<String,User> m_usersHashByEmailId = new HashMap<String,User>();
+	private static final Map<String,User> m_usersHashByFbId = new HashMap<String,User>();
 	private static final Map<User,List<Friends>> m_friendsHash = new HashMap<User,List<Friends>>();
 	private static final Map<User,List<UserActivity>> m_userActivitiesHash = new HashMap<User,List<UserActivity>>();
 	private static final Map<User,List<Challenge>> m_userChallengesHash = new HashMap<User,List<Challenge>>();
+	private static final Map<User,List<Notifications>> m_userNotifications = new HashMap<User,List<Notifications>>();
 	
 	/**
 	 * Singleton class, to cache the data in memory for quick access
@@ -76,6 +79,9 @@ public class DataCache
 		
 		// Load all the user's challenges into the cache
 		loadUserChallenges();
+		
+		// Load all the user's notifications into the cache
+		loadUserNotifications();
 	}
 	
 	/**
@@ -89,7 +95,12 @@ public class DataCache
 		
 		List<User> userList = (List<User>) DbConnection.queryGetUsers();
 		for (User user : userList)
-			m_usersHash.put(user.getEmail(),user);
+		{
+			m_usersHashByEmailId.put(user.getEmail(),user);
+			
+			if ( ( user.getFbProfileId() != null ) && ( user.getFbProfileId().length() > 0 ) )
+				m_usersHashByFbId.put(user.getFbProfileId(),user);
+		}
 	}
 	
 	/**
@@ -101,7 +112,7 @@ public class DataCache
 		// TODO : Too much data here. Will soon become unmanageable
 		// TODO : Optimization 1 : Load only current year
 		log.info("Loading USER-ACTIVITIES into CACHE.");
-		for (User user : m_usersHash.values())
+		for (User user : m_usersHashByEmailId.values())
             m_userActivitiesHash.put(user, (List<UserActivity>) DbConnection.queryGetUserActivity(user));
     }
 	
@@ -131,7 +142,7 @@ public class DataCache
 		log.info("Loading USER-FRIENDS into CACHE.");
 		
 		// Iterate through each of the users and load up their friends
-		for (User user : m_usersHash.values())
+		for (User user : m_usersHashByEmailId.values())
 			m_friendsHash.put(user, (List<Friends>) DbConnection.queryGetFriendsList(user));
 	}
 	
@@ -149,6 +160,56 @@ public class DataCache
 			addChallengeToPlayers(ch);
 	}
 	
+	/**
+	 * Load all the user's notifications from the Database into the hash.
+	 * UserX --> Notification1, Notification2
+	 */
+	@SuppressWarnings("unchecked")
+	private void loadUserNotifications()
+	{
+		log.info("Loading USER-NOTIFICATIONS into CACHE.");
+	
+		List<Notifications> notList = (List<Notifications>) DbConnection.queryGetNotifications();
+		
+		// Iterate through each of the users and load up their notifications
+		if ( ( notList != null ) && ( notList.size() > 0 ) )
+		{
+			for (Notifications not : notList)
+			{
+				List<Notifications> userNotList = m_userNotifications.get(not.getUser());
+				if ( userNotList == null )
+					userNotList = new ArrayList<Notifications>();
+				
+				userNotList.add(not);
+				m_userNotifications.put(not.getUser(), userNotList);
+			}
+		}
+	}
+	
+	/**
+	 * Returns a copy of the list of the user's notifications
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Notifications> getUserNotifications(User _user)
+	{
+		List<Notifications> notificationList = m_userNotifications.get(_user);
+		if ( ( notificationList != null ) && ( notificationList.size() > 0 ) )
+			return (List<Notifications>) copyCollection(new ArrayList<Notifications>(notificationList));
+		else
+			return null;
+	}
+	
+	public void addNotification(Notifications not) 
+	{
+		List<Notifications> userNotList = m_userNotifications.get(not.getUser());
+		if ( userNotList == null )
+			userNotList = new ArrayList<Notifications>();
+		
+		userNotList.add(not);
+		m_userNotifications.put(not.getUser(), userNotList);
+	}
+	
 	
 	/**
 	 * Returns a copy of the list of the users
@@ -157,7 +218,7 @@ public class DataCache
 	@SuppressWarnings("unchecked")
 	public List<User> getUsers()
 	{
-		return (List<User>) copyCollection(new ArrayList<User>(m_usersHash.values()));
+		return (List<User>) copyCollection(new ArrayList<User>(m_usersHashByEmailId.values()));
 	}
 	
 	/**
@@ -166,7 +227,21 @@ public class DataCache
 	 */
 	public User getUserById(String _userId)
 	{
-		User user = m_usersHash.get(_userId);
+		User user = m_usersHashByEmailId.get(_userId);
+		if (user != null)
+			return new User(user);
+		else
+			return null;
+	}
+	
+	/**
+	 * Returns an user, lookup by the Facebook profile id
+	 * @return
+	 */
+	public User getUserByFbId(String _fbProfileId)
+	{
+		User user = m_usersHashByFbId.get(_fbProfileId);
+		
 		if (user != null)
 			return new User(user);
 		else
@@ -185,7 +260,7 @@ public class DataCache
 			returnList = new ArrayList<User>();
 			_name = _name.toLowerCase();
 			
-			for (User user : m_usersHash.values())
+			for (User user : m_usersHashByEmailId.values())
 			{
 				if ( user.getFirstName().toLowerCase().startsWith(_name) || user.getLastName().toLowerCase().startsWith(_name) )
 					returnList.add(user);
@@ -205,7 +280,7 @@ public class DataCache
 	 */
 	public void addUser(User _user)
 	{
-		m_usersHash.put(_user.getEmail(),_user);
+		m_usersHashByEmailId.put(_user.getEmail(),_user);
 	}
 	
 	/**
@@ -240,7 +315,7 @@ public class DataCache
 			m_friendsHash.get(_user).add(_friend);
 		
 		// Add the user to the friend's friendList
-		User friendUser = m_usersHash.get(_friend.getId());
+		User friendUser = m_usersHashByEmailId.get(_friend.getId());
 		List<Friends> friendsFriendsList = m_friendsHash.get(friendUser);
 		Friends friend = new Friends(friendUser,_user);
 		if (friendsFriendsList == null)

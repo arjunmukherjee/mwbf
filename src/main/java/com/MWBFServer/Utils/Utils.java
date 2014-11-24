@@ -43,6 +43,17 @@ public class Utils
 	private static final Logger log = Logger.getLogger(Utils.class);
 	private static final DataCache m_cache = DataCache.getInstance();
 	
+	
+	/**
+	 * Save an object to the DB.
+	 * @param _o
+	 * @return Boolean Success 
+	 */
+	public static boolean saveObj(Object _o) 
+	{
+		return DbConnection.saveObj(_o);
+	}
+	
 	/**
 	 * Add a new user.
 	 * @param _user

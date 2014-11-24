@@ -473,4 +473,15 @@ public class DbConnection
       
         return executeListQuery(query, session);
 	}
+	
+	public static List<?> queryGetNotifications() 
+	{
+		// TODO
+		// creating session object
+		Session session = getSession();
+
+	    Query query = session.createQuery("FROM Notifications as n LEFT JOIN FETCH n.user");
+	
+		return executeListQuery(query, session);
+	}
 }
