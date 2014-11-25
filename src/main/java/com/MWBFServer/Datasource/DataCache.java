@@ -255,6 +255,7 @@ public class DataCache
 	public List<User> getUserByName(String _name)
 	{
 		List<User> returnList = null;
+		StringBuilder fullName = new StringBuilder();;
 		if ( ( _name != null ) && ( _name.length() > 0 ) )
 		{
 			returnList = new ArrayList<User>();
@@ -262,7 +263,19 @@ public class DataCache
 			
 			for (User user : m_usersHashByEmailId.values())
 			{
-				if ( user.getFirstName().toLowerCase().startsWith(_name) || user.getLastName().toLowerCase().startsWith(_name) )
+				// Check the whole name "First Last"
+				if ( _name.contains(" ") )
+				{
+					fullName.append(user.getFirstName().toLowerCase());
+					fullName.append(" ");
+					fullName.append(user.getLastName().toLowerCase());
+					
+					if (fullName.toString().equals(_name))
+						returnList.add(user);
+					
+					fullName.delete(0, fullName.length());
+				}
+				else if ( user.getFirstName().toLowerCase().startsWith(_name) || user.getLastName().toLowerCase().startsWith(_name) )
 					returnList.add(user);
 				
 				if ( returnList.size() == Constants.MAX_FRIENDS_SEARCH_RESULTS )

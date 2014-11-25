@@ -339,8 +339,9 @@ public class Utils
 	 * @param _friend
 	 * @return
 	 */
-	public static boolean addFriend(User _user, User _friend) 
+	public static boolean addFriendRequest(User _user, User _friend) 
 	{
+		// TODO : Check if it is a duplicate friend request
 		PendingFriendRequest friendReq = new PendingFriendRequest(_user.getId(),_friend.getId());
 		boolean result = DbConnection.saveObj(friendReq);
 		

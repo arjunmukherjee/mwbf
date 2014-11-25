@@ -540,7 +540,8 @@ public class UserActions
 				log.info("Creating request for : Friend ["+ friend.getId() +"], User[" + user.getId() + "]");
 				
 				// Add the friend request
-				if ( Utils.addFriend(user,friend) )
+				// TODO : Check if it is a duplicate friend request
+				if ( Utils.addFriendRequest(user,friend) )
 					returnStr =   "{\"success\":1,\"message\":\"Friend request added.\"}";
 				else
 				{
@@ -891,10 +892,10 @@ public class UserActions
             							notificationsReturnList = new ArrayList<Notifications>();
             						
             						// Save in cache
-            						m_cache.addNotification(not);
+            						//m_cache.addNotification(not);
             						
             						// Save in Db
-            						Utils.saveObj(not);
+            						//Utils.saveObj(not);
             						
             						// Create new object to return to user
             						// Set the user field to the friend object
