@@ -97,11 +97,15 @@ public class DBReturnClasses
 			activityAggregateMap = _activityAggregateMap;
 		}
 		
+		public String getUserId()
+		{
+			return userId;
+		}
+		
 		public Double getTotalPoints()
 		{
 			return totalPoints;
 		}
-		
 		public void setTotalPoints(Double _totalPoints)
 		{
 			totalPoints = _totalPoints;

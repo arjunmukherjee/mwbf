@@ -582,7 +582,7 @@ public class UserActions
 				
 				Gson gson = new Gson();
 			 
-				// Look up the users challenges
+				// Look up the users pending friend requests
 				List<PendingFriendRequest> friendRequestList = Utils.getFriendRequests(user);
 				
 				// Find the friend and send back the friend obj

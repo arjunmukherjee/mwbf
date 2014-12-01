@@ -24,6 +24,7 @@ public class Challenge implements Serializable
 	
 	private long id;
 	private User creator;
+	private String winnerId;
 	private String name;
 	private Date startDate;
 	private Date endDate;
@@ -111,10 +112,20 @@ public class Challenge implements Serializable
 		this.activitySet = activitySet;
 	}
 	
+	public String getWinnerId() 
+	{
+		return winnerId;
+	}
+	public void setWinnerId(String _winnerId) 
+	{
+		this.winnerId = _winnerId;
+	}
+	
 	
 	@Override
 	public String toString()
 	{
-		return "Id ["+id+"], Name["+name+"], StartDate["+startDate.toString()+"], EndDate["+endDate.toString()+"], NumberOfPlayers["+playersSet.toString()+"], NumberOfActivities["+activitySet.toString()+"], Creator[" + creator.getEmail() + "]";
+		return "Id ["+id+"], Name["+name+"], Winner[" + winnerId + "], StartDate["+startDate.toString()+"], EndDate["+endDate.toString()+"], NumberOfPlayers["+playersSet.toString()+"], NumberOfActivities["+activitySet.toString()+"], Creator[" + creator.getEmail() + "]";
 	}
+
 }

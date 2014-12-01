@@ -487,6 +487,27 @@ public class DataCache
 		}
 	}
 	
+	/**
+	 * For each player in the challenge update the challenge to their list of challenges 
+	 * @param _ch
+	 */
+	public void updateChallenge(Challenge _ch)
+	{
+		for (String userId : _ch.getPlayersSet())
+		{
+			User user = getUserById(userId);
+			if ( m_userChallengesHash.containsKey(user) )
+			{
+				List<Challenge> challengeList = m_userChallengesHash.get(user);
+				for (Challenge challenge : challengeList)
+				{
+					if (challenge.getId() == _ch.getId())
+						challenge.setWinnerId(_ch.getWinnerId());
+				}
+			}
+		}
+	}
+	
 	
 	/**
 	 * Return a deep copy of the arrayList (using JOS)

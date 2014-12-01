@@ -16,4 +16,7 @@ public final class Constants
 	
 	// The maximum number of search results returned for a free text friend search
 	public static int MAX_FRIENDS_SEARCH_RESULTS = 5;
+	
+	// The hour of the day when the bonus service will run
+	public static int HOUR_OF_DAY_TO_RUN_BONUS_CHECK = 23;
 }

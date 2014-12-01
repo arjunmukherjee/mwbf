@@ -473,6 +473,45 @@ public class Utils
 				List<PlayerActivityData> playerActDataList = new ArrayList<PlayerActivityData>(userActivityAggregator.values());
 				ch.setPlayerActivityData(playerActDataList);
 				
+				// Check if someone won the challenge (i.e. if the challenge is over and the winner hasn't previously been calculated)
+				if ( challenge.getWinnerId() == null )
+				{
+					Date today = new Date();
+					if ( challenge.getEndDate().before(today) )
+		    		{
+						String winningUserId = null;
+						Double winningPoints = null;
+		    			for (PlayerActivityData pa : playerActDataList)
+						{
+							if ( winningUserId == null )
+							{
+								winningUserId = pa.getUserId();
+								winningPoints = pa.getTotalPoints();
+							}
+							else
+							{
+								if ( pa.getTotalPoints() > winningPoints )
+								{
+									winningUserId = pa.getUserId();
+									winningPoints = pa.getTotalPoints();
+								}
+							}
+						}
+		    			
+		    			// Update the challenge
+		    			if ( winningUserId != null )
+		    			{
+			    			challenge.setWinnerId(winningUserId);
+			    			m_cache.updateChallenge(challenge);
+			    			log.info("Challenge [" + challenge.getName() + "] won by [" + challenge.getWinnerId() + "]");
+			    		}
+		    		}
+				}
+				else
+				{
+					log.info("Winner ["+challenge.getWinnerId()+"]");
+				}
+				
 				// TODO : Inefficient 
 				// Gets all the activities, sorts them and then only returns the last x number of activities
 				// Must be a better way to instead insert only upto x sorted
@@ -957,8 +996,6 @@ public class Utils
      */
     public static List<Integer> getChallengesStatsForUser(User _user) 
 	{
-    	// TODO : Complete implementation for challenges won
-    	
 		List<Challenge> challengeList = m_cache.getUserChallenges(_user);
 		int totalNumberOfChallenges = 0;
     	int numberOfActiveChallenges = 0;
@@ -976,12 +1013,11 @@ public class Utils
 	    		if ( challenge.getStartDate().before(today) && challenge.getEndDate().after(today) )
 	    			numberOfActiveChallenges++;
 	    		
-	    		// Check if the end date is in the past
-	    		// TODO : if the end date is equal to today
-	    		if ( challenge.getEndDate().before(today) )
+	    		// Calculate the number of challenges won
+	    		if ( challenge.getWinnerId() != null )
 	    		{
-	    			// TODO : Challenges won
-	    			// numberOfChallengesWon;
+	    			if ( m_cache.getUserById(challenge.getWinnerId()).equals(_user))
+	    				numberOfChallengesWon++;
 	    		}
 	    	}
     	}

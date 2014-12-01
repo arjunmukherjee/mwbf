@@ -148,7 +148,7 @@ public class User implements Serializable
 	@Override
 	public int hashCode()
 	{
-	    return new HashCodeBuilder().append(id).append(userName).toHashCode();
+	    return new HashCodeBuilder().append(email).toHashCode();
 	}
 
 	@Override
@@ -161,8 +161,7 @@ public class User implements Serializable
 	    {
 	        final User other = (User) obj;
 	        return new EqualsBuilder()
-	            .append(id, other.id)
-	            .append(userName, other.userName)
+	            .append(email, other.email)
 	            .isEquals();
 	    } 
 	    else
