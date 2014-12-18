@@ -11,6 +11,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
+import com.MWBFServer.Activity.BonusEnum;
 import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Users.User;
 import com.MWBFServer.Utils.Utils.TimeAggregateBy;
@@ -447,6 +448,10 @@ public class DbConnection
 	 */
 	public static List<?> queryUserActivitiesPerChallenge(Set<String> _playersSet, Set<String> _activitiesSet, Date _startDate, Date _endDate) 
 	{
+		// Add the bonus activities to the list of activities in the challenge
+		for (BonusEnum bonusActivity : BonusEnum.values())
+			_activitiesSet.add(bonusActivity.toString());
+		
 		String playersStr = StringUtils.join(_playersSet, "','");
 		String activityStr = StringUtils.join(_activitiesSet, "','");
 		
