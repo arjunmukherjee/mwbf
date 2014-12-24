@@ -468,7 +468,20 @@ public class Utils
 					// Get the users activity feeds
 					userActivityFeedList.add(ua);
 				}
+				
+				// Add the users who do not have any activities during that time
+				// Add the users with 0 points
+				for (String userId : challenge.getPlayersSet())
+				{
+					if ( !userActivityAggregator.containsKey(userId) )
+					{
+						Map<String,Double> actAggMap = new HashMap<String,Double>();
+						PlayerActivityData playerActData = new PlayerActivityData(userId, 0.001, actAggMap);
+						userActivityAggregator.put(userId, playerActData);
+					}
+				}
 
+				
 				// Set the playerActivityData
 				List<PlayerActivityData> playerActDataList = new ArrayList<PlayerActivityData>(userActivityAggregator.values());
 				ch.setPlayerActivityData(playerActDataList);
@@ -508,9 +521,7 @@ public class Utils
 		    		}
 				}
 				else
-				{
-					log.info("Winner ["+challenge.getWinnerId()+"]");
-				}
+					log.info("Challenge [" + challenge.getName() + "], Winner ["+challenge.getWinnerId()+"]");
 				
 				// TODO : Inefficient 
 				// Gets all the activities, sorts them and then only returns the last x number of activities
