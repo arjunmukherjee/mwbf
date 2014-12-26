@@ -801,14 +801,23 @@ public class Utils
 	 */
 	public static boolean deleteChallenge(String _challengeId) 
 	{
-		List<Challenge> challengeList = (List<Challenge>) DbConnection.queryGetChallenge(_challengeId);
-		Challenge challenge = challengeList.get(0);
-		
 		boolean success = true;
-		if (challenge != null )
-			success = DbConnection.deleteChallenge(challenge);
+	
+		List<Challenge> challengeList = (List<Challenge>) DbConnection.queryGetChallenge(_challengeId);
+		if ( ( challengeList != null ) && ( challengeList.size() > 0 ) )
+		{
+			Challenge challenge = challengeList.get(0);
+			
+			if (challenge != null )
+				success = DbConnection.deleteChallenge(challenge);
+			else
+				success = false;
+		}
 		else
+		{
+			log.warn("Could not find the challenge with Id [" + _challengeId + "]");
 			success = false;
+		}
 		
 		return success;
 	}
