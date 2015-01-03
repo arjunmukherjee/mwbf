@@ -114,6 +114,8 @@ public class Utils
 		Double currentMonthPoints = Utils.getUsersPointsForCurrentTimeInterval(_user,TimeAggregateBy.month);
 		Double currentYearPoints = Utils.getUsersPointsForCurrentTimeInterval(_user,TimeAggregateBy.year);
 		
+		//log.info("User [" + _user.getFirstName() + "], Week [" + currentWeekPoints + "], Month ["+currentMonthPoints+"], Year ["+currentYearPoints+"]");
+		
 		UserDto userDtoObj = null;
 		if ( ( allTimeHighList != null ) && ( allTimeHighList.size() > 2 )  )
 			userDtoObj = new UserDto(_user,currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),allTimeHighList.get(0),allTimeHighList.get(1),allTimeHighList.get(2),allTimeHighList.get(3));

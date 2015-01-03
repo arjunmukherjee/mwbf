@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -191,13 +190,14 @@ public class DataCache
 	 * Returns a copy of the list of the user's notifications
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public List<Notifications> getUserNotifications(User _user)
 	{
 		List<Notifications> notificationList = m_userNotifications.get(_user);
 		if ( ( notificationList != null ) && ( notificationList.size() > 0 ) )
-			return Collections.unmodifiableList(notificationList);
+			return (List<Notifications>) copyCollection(new ArrayList<Notifications>(notificationList));
 		else
-			return Collections.emptyList();
+			return null;
 	}
 	
 	public void addNotification(Notifications not) 
@@ -215,9 +215,10 @@ public class DataCache
 	 * Returns a copy of the list of the users
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public List<User> getUsers()
 	{
-		return Collections.unmodifiableList(new ArrayList<User>(m_usersHashByEmailId.values()));
+		return (List<User>) copyCollection(new ArrayList<User>(m_usersHashByEmailId.values()));
 	}
 	
 	/**
@@ -299,13 +300,13 @@ public class DataCache
 	 * Returns a copy of the list of the user's friends
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public List<Friends> getFriends(User _user)
 	{
-		List<Friends> friendsList = m_friendsHash.get(_user);
-		if ( friendsList != null && friendsList.size() > 0 )
-			return Collections.unmodifiableList(friendsList);
-		else
-			return Collections.emptyList();
+		if ( ( m_friendsHash.get(_user) != null ) && ( m_friendsHash.get(_user).size() > 0 ) )
+			return (List<Friends>) copyCollection(new ArrayList<Friends>(m_friendsHash.get(_user)));
+		else 
+			return null;
 	}
 	
 	/**
@@ -357,22 +358,24 @@ public class DataCache
 	 * Returns a copy of the list of all valid activities
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public List<Activities> getMWBFActivities()
 	{
-		return Collections.unmodifiableList(new ArrayList<Activities>(m_MWBFActivitiesHash.values()));
+		return (List<Activities>) copyCollection(new ArrayList<Activities>(m_MWBFActivitiesHash.values()));
 	}
 	
 	/**
 	 * Returns a copy of the list of the user's activities
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public List<UserActivity> getUserActivities(User _user)
 	{
 		List<UserActivity> userActivityList = m_userActivitiesHash.get(_user);
 		if ( ( userActivityList != null ) && ( userActivityList.size() > 0 ) )
-			return Collections.unmodifiableList(userActivityList);
+			return (List<UserActivity>) copyCollection(new ArrayList<UserActivity>(userActivityList));
 		else
-			return Collections.emptyList();
+			return null;
 	}
 	
 	/**
@@ -383,10 +386,11 @@ public class DataCache
 	 * @param _toDate
 	 * @return List(UserActivity)
 	 */
+	@SuppressWarnings("unchecked")
 	public List<UserActivity> getUserActivitiesFilterByDate(User _user, Date _fromDate, Date _toDate)
 	{
 		// TODO : Implement this
-		return (List<UserActivity>) Collections.unmodifiableList(m_userActivitiesHash.get(_user));
+		return (List<UserActivity>) copyCollection(new ArrayList<UserActivity>(m_userActivitiesHash.get(_user)));
 	}
 	
 	/**
@@ -398,10 +402,11 @@ public class DataCache
 	 * @param _activity
 	 * @return List(UserActivity)
 	 */
+	@SuppressWarnings("unchecked")
 	public List<UserActivity> getUserActivitiesFilterByDateAndActivity(User _user, Date _fromDate, Date _toDate, String _activity)
 	{
 		// TODO : Implement this
-		return (List<UserActivity>) Collections.unmodifiableList(m_userActivitiesHash.get(_user));
+		return (List<UserActivity>) copyCollection(new ArrayList<UserActivity>(m_userActivitiesHash.get(_user)));
 	}
 	
 	/**
@@ -432,13 +437,14 @@ public class DataCache
 	 * Returns a copy of the list of the user's challenges
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public List<Challenge> getUserChallenges(User _user)
 	{
 		List<Challenge> challengeList = m_userChallengesHash.get(_user);
 		if ( ( challengeList != null ) && ( challengeList.size() > 0 ) )
-			return (List<Challenge>) Collections.unmodifiableList(challengeList);
+			return (List<Challenge>) copyCollection(new ArrayList<Challenge>(challengeList));
 		else
-			return Collections.emptyList();
+			return null;
 	}
 	
 	/**
@@ -508,7 +514,7 @@ public class DataCache
 	 * @param _collectionToCopy
 	 * @return
 	 */
-	public List<?> copyColection(List<?> _collectionToCopy)
+	public List<?> copyCollection(List<?> _collectionToCopy)
 	{
 		Object obj = null;
         try 

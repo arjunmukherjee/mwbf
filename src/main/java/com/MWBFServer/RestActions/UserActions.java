@@ -108,7 +108,7 @@ public class UserActions
 			if ( user != null ) 
 			{
 				// Look up the users personal stats
-				log.info("Getting the users all personal stats.");
+				log.info("Getting the users [" + email + "] personal stats.");
 				UserDto userDtoObj = Utils.getUserInfo(user);
 				userDtoObj.setWeeklyComparisons(Utils.getWeeklyStats(user));
 				
