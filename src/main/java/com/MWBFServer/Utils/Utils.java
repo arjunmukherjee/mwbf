@@ -301,6 +301,13 @@ public class Utils
 			User user = m_cache.getUserById(friendRequest.getUserId());
 			User friend = m_cache.getUserById(friendRequest.getFriendId());
 			
+			// First check if the user and the friend are already friends
+			if ( m_cache.getFriends(user).contains(friend) )
+			{
+				log.warn("Duplicate friend request.. User [" + user.getEmail() + "] and friend [" + friend.getEmail() + "] are already friends.");
+				return true;
+			}
+			
 			Friends friendObj = new Friends(user,friend);
 			Friends userObj = new Friends(friend,user);
 			
@@ -591,7 +598,7 @@ public class Utils
 	    
 	    List<LeaderActivityByTime> returnList = new ArrayList<LeaderActivityByTime>();
 	    
-	    List<Friends> friendList = m_cache.getFriends(_user);
+	    List<User> friendList = m_cache.getFriends(_user);
 	    UserActivityByTime bestDayLeader = null;
 	    UserActivityByTime bestWeekLeader = null;
 	    UserActivityByTime bestMonthLeader = null;
@@ -602,27 +609,27 @@ public class Utils
 	    User leaderYear = null;
 	    if ( ( friendList != null ) && ( friendList.size() > 0 ) )
 	    {
-	    	for (Friends friend : friendList)
+	    	for (User friend : friendList)
 	    	{
-	    		List<UserActivityByTime> friendActivitiesByDay = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.day), TimeAggregateBy.day);
+	    		List<UserActivityByTime> friendActivitiesByDay = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend, TimeAggregateBy.day), TimeAggregateBy.day);
 	    		if ( (friendActivitiesByDay != null) && (friendActivitiesByDay.size() > 0) )
 	    		{
-	    			List<UserActivityByTime> friendActivitiesByWeek = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.week), TimeAggregateBy.week);
-	    			List<UserActivityByTime> friendActivitiesByMonth = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.month), TimeAggregateBy.month);
-	    			List<UserActivityByTime> friendActivitiesByYear = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend.getFriend(), TimeAggregateBy.year), TimeAggregateBy.year);
+	    			List<UserActivityByTime> friendActivitiesByWeek = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend, TimeAggregateBy.week), TimeAggregateBy.week);
+	    			List<UserActivityByTime> friendActivitiesByMonth = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend, TimeAggregateBy.month), TimeAggregateBy.month);
+	    			List<UserActivityByTime> friendActivitiesByYear = convertToObjectArray(DbConnection.queryGetAllTimeHighs(friend, TimeAggregateBy.year), TimeAggregateBy.year);
 
 	    			UserActivityByTime friendBestDay = getBestUserAcitivityByPoints(friendActivitiesByDay);
 	    			if (bestDayLeader == null)
 	    			{
 	    				bestDayLeader = friendBestDay;
-	    				leaderDay = friend.getFriend();
+	    				leaderDay = friend;
 	    			}
 	    			else
 	    			{
 	    				if (friendBestDay.getPoints() >= bestDayLeader.getPoints() )
 	    				{
 	    					bestDayLeader = friendBestDay;
-	    					leaderDay = friend.getFriend();
+	    					leaderDay = friend;
 	    				}
 	    			}
 
@@ -630,14 +637,14 @@ public class Utils
 	    			if (bestWeekLeader == null)
 	    			{
 	    				bestWeekLeader = friendBestWeek;
-	    				leaderWeek = friend.getFriend();
+	    				leaderWeek = friend;
 	    			}
 	    			else
 	    			{
 	    				if (friendBestWeek.getPoints() >= bestWeekLeader.getPoints() )
 	    				{
 	    					bestWeekLeader = friendBestWeek;
-	    					leaderWeek = friend.getFriend();
+	    					leaderWeek = friend;
 	    				}
 	    			}
 
@@ -645,14 +652,14 @@ public class Utils
 	    			if (bestMonthLeader == null)
 	    			{
 	    				bestMonthLeader = friendBestMonth;
-	    				leaderMonth = friend.getFriend();
+	    				leaderMonth = friend;
 	    			}
 	    			else
 	    			{
 	    				if (friendBestMonth.getPoints() >= bestMonthLeader.getPoints() )
 	    				{
 	    					bestMonthLeader = friendBestMonth;
-	    					leaderMonth = friend.getFriend();
+	    					leaderMonth = friend;
 	    				}
 	    			}
 
@@ -660,19 +667,19 @@ public class Utils
 	    			if (bestYearLeader == null)
 	    			{
 	    				bestYearLeader = friendBestYear;
-	    				leaderYear = friend.getFriend();
+	    				leaderYear = friend;
 	    			}
 	    			else
 	    			{
 	    				if (friendBestYear.getPoints() >= bestYearLeader.getPoints() )
 	    				{
 	    					bestYearLeader = friendBestYear;
-	    					leaderYear = friend.getFriend();
+	    					leaderYear = friend;
 	    				}
 	    			}
 	    		}
 	    		else
-	    			log.info("No activities found for Friend ["+friend.getFriend().getId()+"]");
+	    			log.info("No activities found for Friend ["+friend.getId()+"]");
 	    	}
 
 	    	LeaderActivityByTime dayLeaderObj = null;
@@ -831,7 +838,7 @@ public class Utils
      * @param _user
      * @return
      */
-	public static List<FeedItem> getUserFeedItems(List<Friends> friendsList, User _user)
+	public static List<FeedItem> getUserFeedItems(List<User> friendsList, User _user)
     {
         // TODO : Highly inefficient
 		// Gets a list of all the activities and then only select the last 50
@@ -841,9 +848,9 @@ public class Utils
         // Get the activities for all the friends
         if ( ( friendsList != null ) && ( friendsList.size() > 0 ) )
         {
-	        for (Friends friend : friendsList)
+	        for (User friend : friendsList)
 	        {
-	        	List<UserActivity> friendActivityList = m_cache.getUserActivities(friend.getFriend());
+	        	List<UserActivity> friendActivityList = m_cache.getUserActivities(friend);
 	        	
 	        	if ( ( friendActivityList != null ) && ( friendActivityList.size() > 0 ) )
 	        		activityList.addAll(friendActivityList);
@@ -975,12 +982,12 @@ public class Utils
     	// Get the friends activities for the week
     	WeeklyComparisons wkComp = null;
     	int activeFriendsCount = 0;
-    	List<Friends> friendsList = m_cache.getFriends(_user);
+    	List<User> friendsList = m_cache.getFriends(_user);
     	if ( ( friendsList != null ) && ( friendsList.size() > 0 ) )
     	{
-	    	for (Friends friend : friendsList)
+	    	for (User friend : friendsList)
 	    	{
-	    		Double friendPoints = Utils.getUsersPointsForCurrentTimeInterval(friend.getFriend(),TimeAggregateBy.week);
+	    		Double friendPoints = Utils.getUsersPointsForCurrentTimeInterval(friend,TimeAggregateBy.week);
 	    		if (friendPoints > leaderPoints)
 		    		leaderPoints = friendPoints;
 		    		

@@ -29,7 +29,7 @@ public class DataCache
 	private static final Map<String,Activities> m_MWBFActivitiesHash = new HashMap<String,Activities>();
 	private static final Map<String,User> m_usersHashByEmailId = new HashMap<String,User>();
 	private static final Map<String,User> m_usersHashByFbId = new HashMap<String,User>();
-	private static final Map<User,List<Friends>> m_friendsHash = new HashMap<User,List<Friends>>();
+	private static final Map<User,List<User>> m_friendsHash = new HashMap<User,List<User>>();
 	private static final Map<User,List<UserActivity>> m_userActivitiesHash = new HashMap<User,List<UserActivity>>();
 	private static final Map<User,List<Challenge>> m_userChallengesHash = new HashMap<User,List<Challenge>>();
 	private static final Map<User,List<Notifications>> m_userNotifications = new HashMap<User,List<Notifications>>();
@@ -143,7 +143,14 @@ public class DataCache
 		
 		// Iterate through each of the users and load up their friends
 		for (User user : m_usersHashByEmailId.values())
-			m_friendsHash.put(user, (List<Friends>) DbConnection.queryGetFriendsList(user));
+		{
+			List<Friends> friendsObjList = (List<Friends>) DbConnection.queryGetFriendsList(user);
+			List<User> friendsList = new ArrayList<User>();
+			for (Friends friendObj : friendsObjList)
+				friendsList.add(friendObj.getFriend());
+		
+			m_friendsHash.put(user, friendsList);
+		}
 	}
 	
 	/**
@@ -301,10 +308,11 @@ public class DataCache
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public List<Friends> getFriends(User _user)
+	public List<User> getFriends(User _user)
 	{
-		if ( ( m_friendsHash.get(_user) != null ) && ( m_friendsHash.get(_user).size() > 0 ) )
-			return (List<Friends>) copyCollection(new ArrayList<Friends>(m_friendsHash.get(_user)));
+		List<User> friendsList = m_friendsHash.get(_user);
+		if ( ( friendsList != null ) && ( friendsList.size() > 0 ) )
+			return (List<User>) copyCollection(new ArrayList<User>(friendsList));
 		else 
 			return null;
 	}
@@ -315,30 +323,30 @@ public class DataCache
 	 */
 	public void addFriend(User _user, Friends _friend)
 	{
-		List<Friends> usersFriendsList = m_friendsHash.get(_user);
+		List<User> usersFriendsList = m_friendsHash.get(_user);
 		
 		// Add the friend to the users friend list
 		if (usersFriendsList == null)
 		{
-			usersFriendsList = new ArrayList<Friends>();
-			usersFriendsList.add(_friend);
+			usersFriendsList = new ArrayList<User>();
+			usersFriendsList.add(_friend.getFriend());
 			m_friendsHash.put(_user, usersFriendsList);
 		}
 		else
-			m_friendsHash.get(_user).add(_friend);
+			m_friendsHash.get(_user).add(_friend.getFriend());
 		
 		// Add the user to the friend's friendList
 		User friendUser = m_usersHashByEmailId.get(_friend.getId());
-		List<Friends> friendsFriendsList = m_friendsHash.get(friendUser);
+		List<User> friendsFriendsList = m_friendsHash.get(friendUser);
 		Friends friend = new Friends(friendUser,_user);
 		if (friendsFriendsList == null)
 		{
-			friendsFriendsList = new ArrayList<Friends>();
-			friendsFriendsList.add(friend);
+			friendsFriendsList = new ArrayList<User>();
+			friendsFriendsList.add(friend.getUser());
 			m_friendsHash.put(friendUser, friendsFriendsList);
 		}
 		else
-			m_friendsHash.get(friendUser).add(friend);
+			m_friendsHash.get(friendUser).add(friend.getUser());
 	}
 	
 	/**

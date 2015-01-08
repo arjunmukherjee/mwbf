@@ -440,7 +440,7 @@ public class UserActions
 				Gson gson = new Gson();
 			 
 				// Look up the users friends
-				List<Friends> friendsList = m_cache.getFriends(user);
+				List<User> friendsList = m_cache.getFriends(user);
 				
 				List<UserDto> friendsDtoList = null;
 				
@@ -451,8 +451,8 @@ public class UserActions
 				{
 					friendsDtoList = new ArrayList<UserDto>();
 					
-					for (Friends friendPair : friendsList)
-						friendsDtoList.add(Utils.getUserInfo(friendPair.getFriend()));
+					for (User friend : friendsList)
+						friendsDtoList.add(Utils.getUserInfo(friend));
 					
 					returnStr = gson.toJson(friendsDtoList);
 				}
@@ -494,7 +494,7 @@ public class UserActions
                 Gson gson = new Gson();
 
                 // Look up the users friends
-                List<Friends> friendsList = m_cache.getFriends(user);
+                List<User> friendsList = m_cache.getFriends(user);
                 List<FeedItem> activityList = null;
                 
                 // Look up the friends activities
