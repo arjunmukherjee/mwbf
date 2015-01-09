@@ -29,7 +29,7 @@ import com.MWBFServer.Utils.Utils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-@Path("/user")
+@Path("/ver1/user")
 public class UserActions
 {
 	private static final Logger log = Logger.getLogger(UserActions.class);

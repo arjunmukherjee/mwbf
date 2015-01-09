@@ -13,7 +13,7 @@
   	</servlet>
   	<servlet-mapping>
     	<servlet-name>RestServlet</servlet-name>
-    	<url-pattern>/mwbf/*</url-pattern>
+    	<url-pattern>/mwbf-api/*</url-pattern>
   	</servlet-mapping>
     
     <listener>

@@ -16,7 +16,7 @@ import com.MWBFServer.Utils.Utils;
 import com.google.gson.Gson;
 
 
-@Path("/mwbf")
+@Path("/ver1/mwbf")
 public class MWBFActions 
 {
 	private static final Logger log = Logger.getLogger(MWBFActions.class);
