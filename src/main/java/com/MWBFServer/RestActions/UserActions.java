@@ -13,6 +13,7 @@ import com.MWBFServer.Dto.FriendRequestsDto;
 import com.MWBFServer.Dto.UserDto;
 import com.google.gson.JsonSyntaxException;
 
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -77,6 +78,67 @@ public class UserActions
 		}
 		
 		return Utils.buildResponse(returnStr);
+	}
+	
+	@POST
+	@Path("/emailLogin")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response addUser(String _incomingData)
+	{
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+		
+		User newUser = new User(userData.optString("email").trim(),
+				WordUtils.capitalize(userData.optString("firstName").trim()),
+				WordUtils.capitalize(userData.optString("lastName").trim()),
+				"");
+		
+		log.info("ADDING USER : Email[" + newUser.getEmail() + "], FirstName[" + newUser.getFirstName() + "], LastName[" + newUser.getLastName() + "]");
+		
+		String returnStr = null;
+		// First check if the email address is already registered
+		if ( m_cache.getUserById(newUser.getEmail()) != null )
+		{
+			log.warn("NOPE : Email is already registered.");
+			returnStr =   "{\"success\":0,\"message\":\"Email is already registered.\"}";
+		}
+		else
+			// If successful, add to the local cache
+			returnStr = addUser(newUser);
+		
+		return Utils.buildResponse(returnStr);
+	}
+	
+	
+	/**
+	 * Add the user : persist in DB and save in cache.
+	 * @param newUser
+	 * @return
+	 */
+	private String addUser(User _newUser) 
+	{
+		String returnStr;
+		// If successful, add to the local cache
+		if ( Utils.addUser(_newUser) )
+		{
+			returnStr =   "{\"success\":1,\"message\":\"Welcome !\"}";
+			m_cache.addUser(_newUser);
+		}
+		else
+		{
+			log.warn("Unable to register user, please try again.");
+			returnStr =   "{\"success\":0,\"message\":\"Unable to register user, please try again.\"}";
+		}
+		
+		return returnStr;
 	}
 	
 	
@@ -161,100 +223,6 @@ public class UserActions
 		return Utils.buildResponse(returnStr);
 	}
 	
-	
-	@POST
-	@Path("/add")
-	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response addUser(String _incomingData)
-	{
-		JSONObject userData = null;
-		try 
-		{
-			userData = new JSONObject(_incomingData);
-		}
-		catch (JSONException e) 
-		{
-			e.printStackTrace();
-		}
-		
-		User newUser = new User(userData.optString("email"),
-								userData.optString("password"),
-								userData.optString("firstName"),
-								userData.optString("lastName"));
-		
-		log.info("ADDING USER : Email[" + newUser.getEmail() + "], FirstName[" + newUser.getFirstName() + "], LastName[" + newUser.getLastName() + "]");
-		
-		String returnStr = null;
-		// First check if the email address is already registered
-		if ( m_cache.getUserById(newUser.getEmail()) != null )
-		{
-			log.warn("Email is already registered.");
-			returnStr =   "{\"success\":0,\"message\":\"Email is already registered.\"}";
-		}
-		else
-			// If successful, add to the local cache
-			returnStr = addUser(newUser);
-		
-		return Utils.buildResponse(returnStr);
-	}
-	
-	
-	@POST
-	@Path("/fbAdd")
-	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response addFBUser(String _incomingData)
-	{
-		JSONObject userData = null;
-		try 
-		{
-			userData = new JSONObject(_incomingData);
-		}
-		catch (JSONException e) 
-		{
-			e.printStackTrace();
-		}
-		
-		User newUser = new User(userData.optString("email"));
-		
-		log.info("ADDING FACEBOOK USER : Email[" + newUser.getEmail() + "]");
-		
-		String returnStr = null;
-		// First check if the email address is already registered
-		if ( m_cache.getUserById(newUser.getEmail()) != null )
-		{
-			log.warn("Email is already registered.");
-			returnStr =   "{\"success\":0,\"message\":\"Email is already registered.\"}";
-		}
-		else
-			returnStr = addUser(newUser);
-		
-		return Utils.buildResponse(returnStr);
-	}
-	
-	/**
-	 * Add the user : persist in DB and save in cache.
-	 * @param newUser
-	 * @return
-	 */
-	private String addUser(User newUser) 
-	{
-		String returnStr;
-		// If successful, add to the local cache
-		if ( Utils.addUser(newUser) )
-		{
-			returnStr =   "{\"success\":1,\"message\":\"Welcome !\"}";
-			m_cache.addUser(newUser);
-		}
-		else
-		{
-			log.warn("Unable to register user, please try again.");
-			returnStr =   "{\"success\":0,\"message\":\"Unable to register user, please try again.\"}";
-		}
-		
-		return returnStr;
-	}
 	
 	@POST
 	@Path("/activity/log")
