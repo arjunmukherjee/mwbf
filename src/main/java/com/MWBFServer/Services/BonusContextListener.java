@@ -60,14 +60,19 @@ public class BonusContextListener implements ServletContextListener
 				// Calculate the start and the end of the current week
 		    	Calendar c = Calendar.getInstance();
 		    	c.setTime(new Date());
-		    	int dayOfWeek = c.get(Calendar.DAY_OF_WEEK) - c.getFirstDayOfWeek();
-		    	c.add(Calendar.DAY_OF_MONTH, -dayOfWeek);
+		    	c.add(Calendar.DAY_OF_MONTH, -7);	// Will run on a Sunday
 
+		    	//int dayOfWeek = c.get(Calendar.DAY_OF_WEEK) - c.getFirstDayOfWeek();
+		    	//c.add(Calendar.DAY_OF_MONTH, -dayOfWeek);
+		    	
 		    	Date weekStart = c.getTime();
 		    	// we do not need the same day a week after, that's why use 6, not 7
 		    	c.add(Calendar.DAY_OF_MONTH, 6); 
 		    	Date weekEnd = c.getTime();
+		    	
 		    	SimpleDateFormat df = new SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH);
+		    	
+		    	log.info("WeekStart ["+df.format(weekStart)+" 00:00:01 AM"+"], WeekEnd ["+df.format(weekEnd)+" 11:59:59 PM"+"]");
 		    	
 				for(User user : DataCache.getInstance().getUsers())
 				{
@@ -100,21 +105,21 @@ public class BonusContextListener implements ServletContextListener
 		};
 		
 		// TODO : Account for Time Zones
-		// Calculate the time between Now and Saturday 10pm
-		Calendar with = Calendar.getInstance();
-	    with.setTime(new Date());
+		// Calculate the time between Now and Sunday 9am
+		Calendar calNow = Calendar.getInstance();
+	    calNow.setTime(new Date());
 
-	    int day = with.get(Calendar.DAY_OF_WEEK);
-	    int hour = with.get(Calendar.HOUR_OF_DAY);
+	    int day = calNow.get(Calendar.DAY_OF_WEEK);
+	    int hour = calNow.get(Calendar.HOUR_OF_DAY);
 	    int currentHourInWeek = day*24 + hour;
-	    int hoursUntiTakeOffOnSaturday = 7*24 + Constants.HOUR_OF_DAY_TO_RUN_BONUS_CHECK;
-	    int delayInHours = hoursUntiTakeOffOnSaturday - currentHourInWeek;
+	    int hoursUntiTakeOffOnDDay = 7*24 + Constants.HOUR_OF_DAY_TO_RUN_BONUS_CHECK;
+	    int delayInHours = hoursUntiTakeOffOnDDay - currentHourInWeek;
 
-	    // Account for the check running at Saturday 11pm
+	    // Account for the check running at Sunday 9am
 	    if ( delayInHours < 0 )
 	    	delayInHours = 24*7 - (Math.abs(delayInHours));
 	    
-	    log.info("Starting Bonus Service in [" + delayInHours + "] hours [Saturday 11pm].");
+	    log.info("Starting Bonus Service in [" + delayInHours + "] hours [Sunday 9am].");
 	
 	 	// Scheduled to run every Saturday at 11pm
 		scheduledExecutorService.scheduleAtFixedRate(task, delayInHours, 24*7, TimeUnit.HOURS);
