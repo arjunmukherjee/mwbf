@@ -18,5 +18,5 @@ public final class Constants
 	public static int MAX_FRIENDS_SEARCH_RESULTS = 5;
 	
 	// The hour of the day when the bonus service will run
-	public static int HOUR_OF_DAY_TO_RUN_BONUS_CHECK = 32;
+	public static int HOUR_OF_DAY_TO_RUN_BONUS_CHECK = 38;
 }
