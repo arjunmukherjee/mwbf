@@ -5,8 +5,9 @@ import java.util.Date;
 /**
  * Created by vpasari on 9/28/14.
  */
-public class FeedItem {
-
+public class FeedItem 
+{
+	private long id;
     private String firstName;
     private String lastName;
     private String userId;
@@ -17,6 +18,15 @@ public class FeedItem {
     private Date activityDate;
     private String feedPrettyString;
 
+    public long getId()
+    {
+    	return id;
+    }
+    public void setId(long _id)
+    {
+    	this.id = _id;
+    }
+    
     public String getFirstName() {
         return firstName;
     }

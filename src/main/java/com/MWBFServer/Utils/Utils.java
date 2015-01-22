@@ -873,6 +873,7 @@ public class Utils
         	{
         		// Populate FeedItem object
         		FeedItem item = new FeedItem();
+        		item.setId(activity.getId());
         		item.setActivityDate(activity.getDate());
         		item.setActivityName(activity.getActivityId());
 
