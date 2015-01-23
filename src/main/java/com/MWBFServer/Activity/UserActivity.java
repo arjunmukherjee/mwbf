@@ -13,6 +13,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Users.User;
 import com.MWBFServer.Utils.Constants;
@@ -193,5 +196,28 @@ public class UserActivity implements Comparable<UserActivity>, Serializable
 	public int compareTo(UserActivity _o) 
 	{
 		return this.getDate().compareTo(_o.getDate());
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return new HashCodeBuilder().append(id).toHashCode();
+	}
+	
+	@Override
+	public boolean equals(final Object obj)
+	{
+		if(obj == this) return true;  // test for reference equality
+	    if(obj == null) return false; // test for null
+	    
+	    if( getClass() == obj.getClass() )
+	    {
+	        final UserActivity other = (UserActivity) obj;
+	        return new EqualsBuilder()
+	            .append(id, other.id)
+	            .isEquals();
+	    } 
+	    else
+	        return false;
 	}
 }

@@ -442,6 +442,26 @@ public class DataCache
 	}
 	
 	/**
+	 * delete an activity from the user's activity list
+	 * @param _ua (UserActivity)
+	 */
+	public void deleteUserActivity(UserActivity _ua)
+	{
+		User user = getUserById(_ua.getUser().getId());
+		_ua.setUser(user);
+		if (user == null)
+			log.warn("Unable to find user [" + _ua.toString() + "] to delete activity.");
+		else
+		{
+			List<UserActivity> userActivityList = m_userActivitiesHash.get(user);
+			if ( userActivityList == null) 
+				log.warn("User Activity list not found.. Something went wrong.");
+			else
+				m_userActivitiesHash.get(user).remove(_ua);
+		}
+	}
+	
+	/**
 	 * Returns a copy of the list of the user's challenges
 	 * @return
 	 */

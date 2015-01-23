@@ -383,6 +383,45 @@ public class UserActions
 	}
 	
 	@POST
+	@Path("/deleteUserActivity")
+	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response deleteActivity(String _incomingData)
+	{
+		JSONObject userData = null;
+		try 
+		{
+			userData = new JSONObject(_incomingData);
+		}
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+		String userId = userData.optString("userId");
+		String activityId = userData.optString("activityId");
+		
+		log.info("Deleting activity [" + activityId + "]  for user [" + userId + "]");
+		
+		String returnStr = null;
+		User user = m_cache.getUserById(userId);
+		if ( user == null )
+		{
+			log.warn("Unable to find user to look up activity");
+			returnStr =   "{\"success\":0,\"message\":\"Unable to find user to look up activity.\"}";
+		}
+		else
+		{
+			// Delete all of the users activities
+			if ( !Utils.deleteActivity(activityId) )
+				returnStr = "{\"success\":0,\"message\":\"Unable to delete user activity.\"}";
+			else
+				returnStr =   "{\"success\":1,\"message\":\"Deleted the users activity.\"}";
+		}
+		
+		return Utils.buildResponse(returnStr);
+	}
+	
+	@POST
 	@Path("/friends")
 	@Consumes({MediaType.APPLICATION_JSON,MediaType.APPLICATION_FORM_URLENCODED})
 	@Produces(MediaType.APPLICATION_JSON)

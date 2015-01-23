@@ -12,6 +12,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 import com.MWBFServer.Activity.BonusEnum;
+import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Users.User;
 import com.MWBFServer.Utils.Utils.TimeAggregateBy;
@@ -324,6 +325,25 @@ public class DbConnection
 	}
 	
 	/**
+	 * Returns an Activity.
+	 * @param _activityId
+	 * @return
+	 */
+	public static List<?> queryGetActivity(String _activityId)
+	{
+		// creating session object
+		Session session = getSession();
+		
+		long activityIdLong = Long.parseLong(_activityId);
+       	
+		String hql = "FROM UserActivity UA WHERE UA.id = :activityId";
+        Query query = session.createQuery(hql);
+        query.setLong("activityId", activityIdLong);
+      
+        return (List<?>) executeListQuery(query, session);
+	}
+	
+	/**
 	 * Delete a challenge.
 	 * @param _challenge
 	 */
@@ -334,6 +354,33 @@ public class DbConnection
 		{
 			s.beginTransaction();
 			s.delete(_challenge);
+			s.getTransaction().commit();
+		}
+		catch(Exception e)
+		{
+			log.error("Execption during delete : " + e.getMessage());
+			s.getTransaction().rollback();
+			return false;
+		}
+		finally
+		{
+			s.close();
+		}
+		
+		return true;
+	} 
+	
+	/**
+	 * Delete an activity.
+	 * @param _activity
+	 */
+	public static boolean deleteActivity(UserActivity _activity) 
+	{
+		Session s = getSession();
+		try
+		{
+			s.beginTransaction();
+			s.delete(_activity);
 			s.getTransaction().commit();
 		}
 		catch(Exception e)

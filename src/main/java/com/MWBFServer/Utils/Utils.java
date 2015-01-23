@@ -821,10 +821,49 @@ public class Utils
 				success = DbConnection.deleteChallenge(challenge);
 			else
 				success = false;
+			
+			if ( success )
+			{
+				// TODO Delete the challenge from the cache
+				//m_cache.
+			}
 		}
 		else
 		{
 			log.warn("Could not find the challenge with Id [" + _challengeId + "]");
+			success = false;
+		}
+		
+		return success;
+	}
+	
+	/**
+	 * First find the activity object.
+	 * Delete the activity object.
+	 * @param _activityId
+	 * @return
+	 */
+	public static boolean deleteActivity(String _activityId) 
+	{
+		boolean success = true;
+	
+		List<UserActivity> activityList = (List<UserActivity>) DbConnection.queryGetActivity(_activityId);
+		if ( ( activityList != null ) && ( activityList.size() > 0 ) )
+		{
+			UserActivity ua = activityList.get(0);
+			
+			if (ua != null )
+				success = DbConnection.deleteActivity(ua);
+			else
+				success = false;
+			
+			// Delete the activity from the users cache
+			if (success)
+				m_cache.deleteUserActivity(ua);
+		}
+		else
+		{
+			log.warn("Could not find the activity with Id [" + _activityId + "]");
 			success = false;
 		}
 		
