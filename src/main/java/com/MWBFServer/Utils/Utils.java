@@ -302,7 +302,7 @@ public class Utils
 			User friend = m_cache.getUserById(friendRequest.getFriendId());
 			
 			// First check if the user and the friend are already friends
-			if ( m_cache.getFriends(user).contains(friend) )
+			if ( ( m_cache.getFriends(user) != null ) && m_cache.getFriends(user).contains(friend) )
 			{
 				log.warn("Duplicate friend request.. User [" + user.getEmail() + "] and friend [" + friend.getEmail() + "] are already friends.");
 				return true;
