@@ -197,12 +197,11 @@ public class DataCache
 	 * Returns a copy of the list of the user's notifications
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	public List<Notifications> getUserNotifications(User _user)
 	{
 		List<Notifications> notificationList = m_userNotifications.get(_user);
 		if ( ( notificationList != null ) && ( notificationList.size() > 0 ) )
-			return (List<Notifications>) copyCollection(new ArrayList<Notifications>(notificationList));
+			return new ArrayList<Notifications>(notificationList);
 		else
 			return null;
 	}
@@ -222,10 +221,9 @@ public class DataCache
 	 * Returns a copy of the list of the users
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	public List<User> getUsers()
 	{
-		return (List<User>) copyCollection(new ArrayList<User>(m_usersHashByEmailId.values()));
+		return new ArrayList<User>(m_usersHashByEmailId.values());
 	}
 	
 	/**
@@ -307,12 +305,11 @@ public class DataCache
 	 * Returns a copy of the list of the user's friends
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	public List<User> getFriends(User _user)
 	{
 		List<User> friendsList = m_friendsHash.get(_user);
 		if ( ( friendsList != null ) && ( friendsList.size() > 0 ) )
-			return (List<User>) copyCollection(new ArrayList<User>(friendsList));
+			return new ArrayList<User>(friendsList);
 		else 
 			return null;
 	}
@@ -366,22 +363,20 @@ public class DataCache
 	 * Returns a copy of the list of all valid activities
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	public List<Activities> getMWBFActivities()
 	{
-		return (List<Activities>) copyCollection(new ArrayList<Activities>(m_MWBFActivitiesHash.values()));
+		return new ArrayList<Activities>(m_MWBFActivitiesHash.values());
 	}
 	
 	/**
 	 * Returns a copy of the list of the user's activities
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	public List<UserActivity> getUserActivities(User _user)
 	{
 		List<UserActivity> userActivityList = m_userActivitiesHash.get(_user);
 		if ( ( userActivityList != null ) && ( userActivityList.size() > 0 ) )
-			return (List<UserActivity>) copyCollection(new ArrayList<UserActivity>(userActivityList));
+			return new ArrayList<UserActivity>(userActivityList);
 		else
 			return null;
 	}
@@ -394,11 +389,10 @@ public class DataCache
 	 * @param _toDate
 	 * @return List(UserActivity)
 	 */
-	@SuppressWarnings("unchecked")
 	public List<UserActivity> getUserActivitiesFilterByDate(User _user, Date _fromDate, Date _toDate)
 	{
 		// TODO : Implement this
-		return (List<UserActivity>) copyCollection(new ArrayList<UserActivity>(m_userActivitiesHash.get(_user)));
+		return new ArrayList<UserActivity>(m_userActivitiesHash.get(_user));
 	}
 	
 	/**
@@ -410,11 +404,10 @@ public class DataCache
 	 * @param _activity
 	 * @return List(UserActivity)
 	 */
-	@SuppressWarnings("unchecked")
 	public List<UserActivity> getUserActivitiesFilterByDateAndActivity(User _user, Date _fromDate, Date _toDate, String _activity)
 	{
 		// TODO : Implement this
-		return (List<UserActivity>) copyCollection(new ArrayList<UserActivity>(m_userActivitiesHash.get(_user)));
+		return new ArrayList<UserActivity>(m_userActivitiesHash.get(_user));
 	}
 	
 	/**
@@ -465,12 +458,11 @@ public class DataCache
 	 * Returns a copy of the list of the user's challenges
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	public List<Challenge> getUserChallenges(User _user)
 	{
 		List<Challenge> challengeList = m_userChallengesHash.get(_user);
 		if ( ( challengeList != null ) && ( challengeList.size() > 0 ) )
-			return (List<Challenge>) copyCollection(new ArrayList<Challenge>(challengeList));
+			return new ArrayList<Challenge>(challengeList);
 		else
 			return null;
 	}
@@ -535,39 +527,4 @@ public class DataCache
 			}
 		}
 	}
-	
-	
-	/**
-	 * Return a deep copy of the arrayList (using JOS)
-	 * @param _collectionToCopy
-	 * @return
-	 */
-	public List<?> copyCollection(List<?> _collectionToCopy)
-	{
-		Object obj = null;
-        try 
-        {
-            // Write the object out to a byte array
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream out = new ObjectOutputStream(bos);
-            out.writeObject(_collectionToCopy);
-            out.flush();
-            out.close();
-
-            // Make an input stream from the byte array and read
-            // a copy of the object back in.
-            ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bos.toByteArray()));
-            obj = in.readObject();
-        }
-        catch(IOException e) 
-        {
-            e.printStackTrace();
-        }
-        catch(ClassNotFoundException cnfe) 
-        {
-            cnfe.printStackTrace();
-        }
-        return (List<?>) obj;
-	}
-
 }

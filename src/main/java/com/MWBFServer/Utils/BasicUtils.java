@@ -1,5 +1,12 @@
 package com.MWBFServer.Utils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.List;
+
 import javax.ws.rs.core.Response;
 
 /**
@@ -56,6 +63,39 @@ public final class BasicUtils
 	    value = value * factor;
 	    long tmp = Math.round(value);
 	    return (double) tmp / factor;
+	}
+	
+	/**
+	 * Return a deep copy of the arrayList (using JOS)
+	 * @param _collectionToCopy
+	 * @return
+	 */
+	public List<?> copyCollection(List<?> _collectionToCopy)
+	{
+		Object obj = null;
+        try 
+        {
+            // Write the object out to a byte array
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(bos);
+            out.writeObject(_collectionToCopy);
+            out.flush();
+            out.close();
+
+            // Make an input stream from the byte array and read
+            // a copy of the object back in.
+            ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bos.toByteArray()));
+            obj = in.readObject();
+        }
+        catch(IOException e) 
+        {
+            e.printStackTrace();
+        }
+        catch(ClassNotFoundException cnfe) 
+        {
+            cnfe.printStackTrace();
+        }
+        return (List<?>) obj;
 	}
 
 }
