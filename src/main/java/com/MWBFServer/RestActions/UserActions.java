@@ -26,6 +26,9 @@ import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
 import com.MWBFServer.Notifications.Notifications;
 import com.MWBFServer.Notifications.Notifications.ClientNotification;
 import com.MWBFServer.Users.*;
+import com.MWBFServer.Utils.BasicUtils;
+import com.MWBFServer.Utils.Constants;
+import com.MWBFServer.Utils.JsonConstants;
 import com.MWBFServer.Utils.Utils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -52,23 +55,23 @@ public class UserActions
 			e.printStackTrace();
 		}
 		
-		String email = userData.optString("email").trim();
-		String firstName = userData.optString("firstName").trim();
-		String lastName = userData.optString("lastName").trim();
-		String profileId = userData.optString("profileId").trim();
+		String email = userData.optString(JsonConstants.EMAIL).trim();
+		String firstName = userData.optString(JsonConstants.FIRST_NAME).trim();
+		String lastName = userData.optString(JsonConstants.LAST_NAME).trim();
+		String profileId = userData.optString(JsonConstants.PROFILE_ID).trim();
 		
 		log.info("FaceBook user login [" + email + "], FirstName[" + firstName + "], LastName[" + lastName + "], ProfileId[" + profileId + "]");
 		
 		//  First check if the user exists, if not, then register the user
 		String returnStr = null;
 		if ( (email == null) || (email.length() <= 1)  )
-			returnStr =   "{\"success\":0,\"message\":\"Unable to login. Invalid email address obtained from Facebook!\"}";
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to login. Invalid email address obtained from Facebook!" );
 		else
 		{
 			String name = firstName + " " + lastName;
 			User user = m_cache.getUserById(email);
 			if ( user != null ) 
-				returnStr =   "{\"success\":1,\"message\":\"Welcome "+name+" !\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Welcome "+name+" !");
 			else
 			{
 				log.info("First time FaceBook User Registering [" + email + "]");
@@ -77,7 +80,7 @@ public class UserActions
 			}
 		}
 		
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 	
 	@POST
@@ -96,9 +99,9 @@ public class UserActions
 			e.printStackTrace();
 		}
 		
-		User newUser = new User(userData.optString("email").trim(),
-				WordUtils.capitalize(userData.optString("firstName").trim()),
-				WordUtils.capitalize(userData.optString("lastName").trim()),
+		User newUser = new User(userData.optString(JsonConstants.EMAIL).trim(),
+				WordUtils.capitalize(userData.optString(JsonConstants.FIRST_NAME).trim()),
+				WordUtils.capitalize(userData.optString(JsonConstants.LAST_NAME).trim()),
 				"");
 		
 		log.info("ADDING USER : Email[" + newUser.getEmail() + "], FirstName[" + newUser.getFirstName() + "], LastName[" + newUser.getLastName() + "]");
@@ -108,13 +111,13 @@ public class UserActions
 		if ( m_cache.getUserById(newUser.getEmail()) != null )
 		{
 			log.warn("NOPE : Email is already registered.");
-			returnStr =   "{\"success\":0,\"message\":\"Email is already registered.\"}";
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Email is already registered.");
 		}
 		else
 			// If successful, add to the local cache
 			returnStr = addUser(newUser);
 		
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 	
 	
@@ -129,13 +132,13 @@ public class UserActions
 		// If successful, add to the local cache
 		if ( Utils.addUser(_newUser) )
 		{
-			returnStr =   "{\"success\":1,\"message\":\"Welcome !\"}";
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Welcome !");
 			m_cache.addUser(_newUser);
 		}
 		else
 		{
 			log.warn("Unable to register user, please try again.");
-			returnStr =   "{\"success\":0,\"message\":\"Unable to register user, please try again.\"}";
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to register user, please try again.");
 		}
 		
 		return returnStr;
@@ -158,12 +161,12 @@ public class UserActions
 			e.printStackTrace();
 		}
 		
-		String email = userData.optString("user_id").trim();
+		String email = userData.optString(JsonConstants.USER_ID).trim();
 		
 		//  First check if the user exists
 		String returnStr = null;
 		if ( (email == null) || (email.length() <= 1)  )
-			returnStr =   "{\"success\":0,\"message\":\"Unable to get all time high for the user\"}";
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to get all time high for the user.");
 		else
 		{
 			User user = m_cache.getUserById(email);
@@ -179,7 +182,7 @@ public class UserActions
 			}
 		}
 		
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 	
 	
@@ -199,12 +202,12 @@ public class UserActions
 			e.printStackTrace();
 		}
 		
-		String email = userData.optString("user_id").trim();
+		String email = userData.optString(JsonConstants.USER_ID).trim();
 		
 		//  First check if the user exists
 		String returnStr = null;
 		if ( (email == null) || (email.length() <= 1)  )
-			returnStr =   "{\"success\":0,\"message\":\"V1 : Unable to get all time high for the user\"}";
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "V1 : Unable to get all time high for the user.");
 		else
 		{
 			User user = m_cache.getUserById(email);
@@ -220,7 +223,7 @@ public class UserActions
 			}
 		}
 		
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 	
 	
@@ -244,20 +247,20 @@ public class UserActions
         catch (JsonSyntaxException jse) 
         {
             log.error("Error logging user activity.", jse);
-            returnStr =   "{\"success\":0,\"message\":\"Unable to log activity, please try again.\"}";
-            return Utils.buildResponse(returnStr);
+            returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to log activity, please try again.");
+            return BasicUtils.buildResponse(returnStr);
         }
 		
 		// If successful, add to the local cache
 		if ( Utils.logActivity(newActivityList) )
-			returnStr =   "{\"success\":1,\"message\":\"Activity logged.\"}";
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Activity logged.");
 		else
 		{
 			log.warn("Unable to log activity, please try again.");
-			returnStr =   "{\"success\":0,\"message\":\"Unable to log activity, please try again.\"}";
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to log activity, please try again.");
 		}
 		
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 	
 	@POST
@@ -277,14 +280,14 @@ public class UserActions
 		}
 
 		String returnStr = null;
-		String fromDate = userData.optString("from_date");
-		String toDate = userData.optString("to_date");
+		String fromDate = userData.optString(JsonConstants.FROM_DATE);
+		String toDate = userData.optString(JsonConstants.TO_DATE);
 		
-		User user = m_cache.getUserById(userData.optString("user_id"));
+		User user = m_cache.getUserById(userData.optString(JsonConstants.USER_ID));
 		if ( user == null )
 		{
 			log.warn("Unable to find user to look up activity");
-			returnStr =   "{\"success\":0,\"message\":\"Unable to find user to look up activity.\"}";
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find user to look up activity.");
 		}
 		else
 		{
@@ -297,10 +300,10 @@ public class UserActions
 			if ( activityList != null )
 				returnStr = gson.toJson(activityList);
 			else
-				returnStr =   "{\"success\":0,\"message\":\"Unable to find activity for user.\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find activity for user.");
 		}
 		
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 
 	@POST
@@ -320,14 +323,14 @@ public class UserActions
 		}
 
 		String returnStr = null;
-		String fromDate = userData.optString("from_date");
-		String toDate = userData.optString("to_date");
+		String fromDate = userData.optString(JsonConstants.FROM_DATE);
+		String toDate = userData.optString(JsonConstants.TO_DATE);
 		
-		User user = m_cache.getUserById(userData.optString("user_id"));
+		User user = m_cache.getUserById(userData.optString(JsonConstants.USER_ID));
 		if ( user == null )
 		{
 			log.warn("Unable to find user to look up activity");
-			returnStr =   "{\"success\":0,\"message\":\"Unable to find user to look up activity.\"}";
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find user to look up activity.");
 		}
 		else
 		{
@@ -340,10 +343,10 @@ public class UserActions
 			if ( activityList != null )
 				returnStr = gson.toJson(activityList);
 			else
-				returnStr =   "{\"success\":0,\"message\":\"Unable to find activity for user.\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find activity for user.");
 		}
 		
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 
 	@POST
@@ -361,25 +364,25 @@ public class UserActions
 		{
 			e.printStackTrace();
 		}
-		log.info("Deleting all activities for user [" + userData.optString("user_id") + "]");
+		log.info("Deleting all activities for user [" + userData.optString(JsonConstants.USER_ID) + "]");
 		
 		String returnStr = null;
-		User user = m_cache.getUserById(userData.optString("user_id"));
+		User user = m_cache.getUserById(userData.optString(JsonConstants.USER_ID));
 		if ( user == null )
 		{
 			log.warn("Unable to find user to look up activity");
-			returnStr =   "{\"success\":0,\"message\":\"Unable to find user to look up activity.\"}";
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find user to look up activity.");
 		}
 		else
 		{
 			// Delete all of the users activities
 			if ( !Utils.deleteAllActivitiesForUser(user) )
-				returnStr = "{\"success\":0,\"message\":\"Unable to delete user activity.\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to delete user activity.");
 			else
-				returnStr =   "{\"success\":1,\"message\":\"Deleted all of the users activities.\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Deleted all of the users activities.");
 		}
 		
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 	
 	@POST
@@ -397,8 +400,8 @@ public class UserActions
 		{
 			e.printStackTrace();
 		}
-		String userId = userData.optString("userId");
-		String activityId = userData.optString("activityId");
+		String userId = userData.optString(JsonConstants.USERID);
+		String activityId = userData.optString(JsonConstants.ACTIVITY_ID);
 		
 		log.info("Deleting activity [" + activityId + "]  for user [" + userId + "]");
 		
@@ -407,18 +410,18 @@ public class UserActions
 		if ( user == null )
 		{
 			log.warn("Unable to find user to look up activity");
-			returnStr =   "{\"success\":0,\"message\":\"Unable to find user to look up activity.\"}";
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find user to look up activity.");
 		}
 		else
 		{
 			// Delete all of the users activities
 			if ( !Utils.deleteActivity(activityId) )
-				returnStr = "{\"success\":0,\"message\":\"Unable to delete user activity.\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to delete user activity.");
 			else
-				returnStr =   "{\"success\":1,\"message\":\"Deleted the users activity.\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Deleted the users activity.");
 		}
 		
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 	
 	@POST
@@ -427,18 +430,18 @@ public class UserActions
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getUserFriends(String _incomingData)
 	{
-		String returnStr = "{\"success\":0,\"message\":\"Unable to find your friends.\"}";
+		String returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find your friends.");
 		
 		JSONObject userData = null;
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			String userId = userData.optString("user_id");
+			String userId = userData.optString(JsonConstants.USER_ID);
 			User user = m_cache.getUserById(userId);
 			if ( user == null )
 			{
 				log.warn("Unable to find logged in user (something's wrong) [" + userId + "].");
-				returnStr = "{\"success\":0,\"message\":\"Unable to find logged in user (something's wrong).\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find logged in user (something's wrong)");
 			}
 			else
 			{
@@ -464,7 +467,7 @@ public class UserActions
 					returnStr = gson.toJson(friendsDtoList);
 				}
 				else
-					returnStr = "{\"success\":0,\"message\":\"Unable to find your friends.\"}";
+					returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find your friends.");
 			}
 		}
 		catch (JSONException e) 
@@ -472,7 +475,7 @@ public class UserActions
 			e.printStackTrace();
 		}
 		
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 
 
@@ -482,17 +485,17 @@ public class UserActions
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserFeedItems(String _incomingData)
     {
-        String returnStr = "{\"success\":0,\"message\":\"Unable to find your friends.\"}";
+        String returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find your friends.");
         JSONObject userData = null;
         try
         {
             userData = new JSONObject(_incomingData);
-            String userId = userData.optString("user_id");
+            String userId = userData.optString(JsonConstants.USER_ID);
             User user = m_cache.getUserById(userId);
             if ( user == null )
             {
                 log.warn("Unable to find logged in user (something's wrong) [" + userId + "].");
-                returnStr = "{\"success\":0,\"message\":\"Unable to find logged in user (something's wrong).\"}";
+                returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find logged in user (something's wrong).");
             }
             else
             {
@@ -510,7 +513,7 @@ public class UserActions
                 if ( activityList != null )
                     returnStr = gson.toJson(activityList);
                 else
-                    returnStr = "{\"success\":0,\"message\":\"Unable to find any activities for friends.\"}";
+                	returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find any activities for friends.");
             }
         }
         catch (JSONException e)
@@ -518,7 +521,7 @@ public class UserActions
             e.printStackTrace();
         }
 
-        return Utils.buildResponse(returnStr);
+        return BasicUtils.buildResponse(returnStr);
     }
     
    
@@ -528,19 +531,19 @@ public class UserActions
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response addFriend(String _incomingData)
 	{
-		String returnStr = "{\"success\":0,\"message\":\"Unable to add friend, please try again.\"}";
+		String returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to add friend, please try again.");
 		
 		JSONObject userData = null;
 		try 
 		{
 			userData = new JSONObject(_incomingData);
 			
-			User user = m_cache.getUserById(userData.optString("user_id"));
-			User friend = m_cache.getUserById(userData.optString("friend_user_id"));
+			User user = m_cache.getUserById(userData.optString(JsonConstants.USER_ID));
+			User friend = m_cache.getUserById(userData.optString(JsonConstants.FRIEND_USER_ID));
 			if ( user == null || friend == null )
 			{
 				log.warn("Unable to find the user or the friend to add.");
-				returnStr = "{\"success\":0,\"message\":\"Unable to find the user or the friend in the system (something's wrong).\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find the user or the friend in the system (something's wrong).");
 			}
 			else
 			{
@@ -549,11 +552,11 @@ public class UserActions
 				// Add the friend request
 				// TODO : Check if it is a duplicate friend request
 				if ( Utils.addFriendRequest(user,friend) )
-					returnStr =   "{\"success\":1,\"message\":\"Friend request added.\"}";
+					returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Friend request added.");
 				else
 				{
 					log.warn("Unable to add friend request, please try again.");
-					returnStr = "{\"success\":0,\"message\":\"Unable to add friend request, please try again.\"}";
+					returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to add friend request, please try again.");
 				}
 			}
 		}
@@ -562,7 +565,7 @@ public class UserActions
 			e.printStackTrace();
 		}
 
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
     
     @POST
@@ -571,17 +574,17 @@ public class UserActions
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getFriendRequests(String _incomingData)
 	{
-    	String returnStr = "{\"success\":0,\"message\":\"Unable to find your pending friend requests.\"}";
+    	String returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find your pending friend requests.");
 		
 		JSONObject userData = null;
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			User user = m_cache.getUserById(userData.optString("user_id"));
+			User user = m_cache.getUserById(userData.optString(JsonConstants.USER_ID));
 			if ( user == null )
 			{
 				log.warn("Unable to find user.");
-				returnStr = "{\"success\":0,\"message\":\"Unable to find logged in user (something's wrong).\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find logged in user (something's wrong).");
 			}
 			else
 			{
@@ -607,7 +610,7 @@ public class UserActions
 					returnStr = gson.toJson(friendRequestsDtoList);
 				}
 				else
-					returnStr = "{\"success\":1,\"message\":\"No friend requests found.\"}";
+					returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "No friend requests found.");
 			}
 		}
 		catch (JSONException e) 
@@ -615,7 +618,7 @@ public class UserActions
 			e.printStackTrace();
 		}
 	
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
     
     @POST
@@ -624,43 +627,43 @@ public class UserActions
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response acceptFriendRequest(String _incomingData)
 	{
-		String returnStr = "{\"success\":0,\"message\":\"Unable to action friend request, please try again.\"}";
+		String returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to action friend request, please try again.");
 		
 		JSONObject userData = null;
 		try 
 		{
 			userData = new JSONObject(_incomingData);
 			
-			String friendRequestId = userData.optString("friend_request_id");
-			String requestAction = userData.optString("friend_request_action");
+			String friendRequestId = userData.optString(JsonConstants.FRIEND_REQUEST_ID);
+			String requestAction = userData.optString(JsonConstants.FRIEND_REQUEST_ACTION);
 			if ( friendRequestId == null || requestAction == null )
 			{
 				log.warn("Unable to find the pending friend request for id [null].");
-				returnStr = "{\"success\":0,\"message\":\"Invalid friend request Id.\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Invalid friend request Id.");
 			}
 			else
 			{
 				log.info("Actioning [" + requestAction + "] friend request with id ["+ friendRequestId +"]");
 				
 				// Accept the friend request
-				if ( requestAction.equalsIgnoreCase("Accept") )
+				if ( requestAction.equalsIgnoreCase(Constants.REQUEST_ACCEPT) )
 				{
 					if ( Utils.acceptFriendRequest(friendRequestId) )
-						returnStr =   "{\"success\":1,\"message\":\"Friend request accepted.\"}";
+						returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Friend request accepted.");
 					else
 					{
 						log.warn("Unable to accept friend request, please try again.");
-						returnStr = "{\"success\":0,\"message\":\"Unable to accept friend request, please try again.\"}";
+						returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to accept friend request, please try again.");
 					}
 				}
 				else
 				{
 					if ( Utils.rejectFriendRequest(friendRequestId) )
-						returnStr =   "{\"success\":1,\"message\":\"Friend request rejected.\"}";
+						returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Friend request rejected.");
 					else
 					{
 						log.warn("Unable to reject friend request, please try again.");
-						returnStr = "{\"success\":0,\"message\":\"Unable to reject friend request, please try again.\"}";
+						returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to reject friend request, please try again.");
 					}
 				}
 			}
@@ -670,7 +673,7 @@ public class UserActions
 			e.printStackTrace();
 		}
 
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 	
 	
@@ -680,14 +683,14 @@ public class UserActions
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response findFriends(String _incomingData)
 	{
-		String returnStr = "{\"success\":0,\"message\":\"Unable to find your friend. Please ask them to join us..\"}";
+		String returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find your friend. Please ask them to join us..");
 		
 		JSONObject userData = null;
 		try 
 		{
 			userData = new JSONObject(_incomingData);
 			
-			String userIdentification = userData.optString("userIdentification");
+			String userIdentification = userData.optString(JsonConstants.USER_IDENTIFICATION_STRING);
 			
 			// First search by email
 			// If user is not found search by first/last name
@@ -703,7 +706,7 @@ public class UserActions
 					if ( ( usersList == null ) || ( usersList.size() < 1 ) )
 					{
 						log.warn("Unable to find your friend [" + userIdentification + "]. Please ask them to join us.");
-						returnStr =   "{\"success\":0,\"message\":\"Unable to find your friend. Please ask them to join us.\"}";
+						returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find your friend. Please ask them to join us.");
 					}
 					else
 					{
@@ -729,7 +732,7 @@ public class UserActions
 			e.printStackTrace();
 		}
 	
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 	
 	@POST
@@ -744,7 +747,7 @@ public class UserActions
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			User user = m_cache.getUserById(userData.optString("user_id"));
+			User user = m_cache.getUserById(userData.optString(JsonConstants.USER_ID));
 			
 			Challenge newChallenge = gson.fromJson(_incomingData, Challenge.class);
 			newChallenge.setCreator(user);
@@ -752,21 +755,21 @@ public class UserActions
 			
 			// If successful, add to the local cache
 			if ( Utils.addChallenge(newChallenge) )
-				returnStr =   "{\"success\":1,\"message\":\"New challenge added.\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "New challenge added.");
 			else
 			{
 				log.warn("Unable to add challenge, please try again.");
-				returnStr =   "{\"success\":0,\"message\":\"Unable to add challenge, please try again.\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to add challenge, please try again.");
 			}
 		} 
 		catch (JSONException e) 
 		{
 			e.printStackTrace();
 			log.warn("Unable to add challenge, please try again.");
-			returnStr =   "{\"success\":0,\"message\":\"Unable to add challenge, please try again.\"}";
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to add challenge, please try again.");
 		}
 		
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 
 	@POST
@@ -780,27 +783,27 @@ public class UserActions
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			String challengeId = userData.optString("challenge_id");
+			String challengeId = userData.optString(JsonConstants.CHALLENGE_ID);
 			
 			log.info("Deleting  challenge [" + challengeId + "]");
 			
 			// If successful, add to the local cache
 			if ( Utils.deleteChallenge(challengeId) )
-				returnStr =   "{\"success\":1,\"message\":\"Challenge deleted.\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Challenge deleted.");
 			else
 			{
 				log.warn("Unable to delete challenge, please try again.");
-				returnStr =   "{\"success\":0,\"message\":\"Unable to delete challenge, please try again.\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to delete challenge, please try again.");
 			}
 		} 
 		catch (JSONException e) 
 		{
 			e.printStackTrace();
 			log.warn("Unable to delete challenge, please try again.");
-			returnStr =   "{\"success\":0,\"message\":\"Unable to delete challenge, please try again.\"}";
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to delete challenge, please try again.");
 		}
 		
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 
 	@POST
@@ -809,17 +812,17 @@ public class UserActions
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAllChallenges(String _incomingData)
 	{
-		String returnStr = "{\"success\":0,\"message\":\"Unable to find your challenges.\"}";
+		String returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find your challenges.");
 		
 		JSONObject userData = null;
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			User user = m_cache.getUserById(userData.optString("user_id"));
+			User user = m_cache.getUserById(userData.optString(JsonConstants.USER_ID));
 			if ( user == null )
 			{
 				log.warn("Unable to find user.");
-				returnStr = "{\"success\":0,\"message\":\"Unable to find logged in user (something's wrong).\"}";
+				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find logged in user (something's wrong).");
 			}
 			else
 			{
@@ -834,7 +837,7 @@ public class UserActions
 				if ( challengeList != null )
 					returnStr = gson.toJson(challengeList);
 				else
-					returnStr = "{\"success\":0,\"message\":\"Unable to find your challenges.\"}";
+					returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find your challenges.");
 			}
 		}
 		catch (JSONException e) 
@@ -842,7 +845,7 @@ public class UserActions
 			e.printStackTrace();
 		}
 	
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 	
 	@POST
@@ -851,8 +854,7 @@ public class UserActions
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response checkNotifications(String _incomingData)
 	{
-		String returnStr = null;
-		returnStr =   "{\"success\":1,\"message\":\"Checked user notifications.\"}";
+		String returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Checked user notifications.");
 		
 		log.info("Checking user notifications.");
 
@@ -898,6 +900,7 @@ public class UserActions
 	            					if (notificationsReturnList == null)
             							notificationsReturnList = new ArrayList<Notifications>();
             						
+	            					// TODO : Check this logic
             						// Save in cache
             						//m_cache.addNotification(not);
             						
@@ -923,11 +926,11 @@ public class UserActions
         catch (JsonSyntaxException jse) 
         {
             log.error("Error processing notificaitons from user.", jse);
-            returnStr =   "{\"success\":0,\"message\":\"Unable to process notifications, please try again.\"}";
-            return Utils.buildResponse(returnStr);
+            returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to process notifications, please try again.");
+            return BasicUtils.buildResponse(returnStr);
         }
 		
-        return Utils.buildResponse(returnStr);
+        return BasicUtils.buildResponse(returnStr);
 	}
 }
 

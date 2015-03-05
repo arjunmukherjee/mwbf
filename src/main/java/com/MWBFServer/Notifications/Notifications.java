@@ -14,7 +14,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.MWBFServer.Datasource.DataCache;
-import com.MWBFServer.Notifications.Notifications.ClientNotification;
 import com.MWBFServer.Users.User;
 
 

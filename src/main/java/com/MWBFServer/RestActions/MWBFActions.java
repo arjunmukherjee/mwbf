@@ -12,7 +12,8 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 
 import com.MWBFServer.Datasource.DataCache;
-import com.MWBFServer.Utils.Utils;
+import com.MWBFServer.Utils.BasicUtils;
+import com.MWBFServer.Utils.JsonConstants;
 import com.google.gson.Gson;
 
 
@@ -32,7 +33,7 @@ public class MWBFActions
 		Gson gson = new Gson();
 		String returnStr = gson.toJson(DataCache.getInstance().getMWBFActivities());
 	
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 	
 	@GET
@@ -41,12 +42,11 @@ public class MWBFActions
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response test()
 	{
-		String returnStr = null;
 		log.info("TEST SERVICE.");
 		
-		returnStr =   "{\"success\":1,\"message\":\"Test successful.\"}";
+		String returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Test successful.");
 
-		return Utils.buildResponse(returnStr);
+		return BasicUtils.buildResponse(returnStr);
 	}
 	
 	

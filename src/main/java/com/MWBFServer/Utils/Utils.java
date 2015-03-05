@@ -13,8 +13,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.ws.rs.core.Response;
-
 import org.apache.log4j.Logger;
 
 import com.MWBFServer.Dto.FeedItem;
@@ -38,11 +36,19 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 @SuppressWarnings("unchecked")
-public class Utils 
+public final class Utils 
 {
 	private static final Logger log = Logger.getLogger(Utils.class);
 	private static final DataCache m_cache = DataCache.getInstance();
 	
+	
+	/**
+	 * Private constructor. This class is not to be instantiated.
+	 */
+	private Utils()
+	{
+        throw new IllegalStateException( "Do not instantiate this class." );
+    }
 	
 	/**
 	 * Save an object to the DB.
@@ -79,7 +85,7 @@ public class Utils
 			if ( act != null )
 			{
 				Double points = act.getPointsPerUnit() * ua.getExerciseUnits();
-				points = Utils.round(points, 1);
+				points = BasicUtils.round(points, 1);
 				ua.setPoints(points);
 			}
 		}
@@ -241,17 +247,6 @@ public class Utils
 	   return returnList;
 	}
 	
-	/**
-	 * Build an HttpResponse string to be sent back to the requester.
-	 * @param _responseString
-	 * @return
-	 */
-	public static Response buildResponse(String _responseString)
-	{
-		Response rb = Response.ok(_responseString).build();
-		return rb;
-	}
-
 	/**
 	 * Deletes all the activities for a given user.
 	 * @param _user
@@ -416,7 +411,7 @@ public class Utils
 					String activityUnits = activityParts[4];
 					String activityPointsStr = activityParts[5];
 					Double activityPoints = Double.parseDouble(activityPointsStr);
-					activityPoints = round(activityPoints, 1);
+					activityPoints = BasicUtils.round(activityPoints, 1);
 					String userId = activityParts[6].substring(1,activityParts[6].length()-2);
 					User user = m_cache.getUserById(userId);
 
@@ -775,7 +770,7 @@ public class Utils
 	    	}
 	    	
 	    	Double points = Double.valueOf(dateParts[2].substring(0, dateParts[2].length()-1));
-	    	points = round(points,1);
+	    	points = BasicUtils.round(points,1);
 	    	UserActivityByTime uat = new UserActivityByTime(dateStr, points);
 	 
 	    	returnList.add(uat);
@@ -784,23 +779,7 @@ public class Utils
 		return returnList;
 	}
 	
-	/**
-	 * Round off a double value.
-	 * 
-	 * @param value
-	 * @param places
-	 * @return
-	 */
-	public static double round(double value, int places) 
-	{
-	    if (places < 0) 
-	    	throw new IllegalArgumentException();
-
-	    long factor = (long) Math.pow(10, places);
-	    value = value * factor;
-	    long tmp = Math.round(value);
-	    return (double) tmp / factor;
-	}
+	
 
 	/**
 	 * First find the challenge object.
@@ -1003,7 +982,7 @@ public class Utils
 		}
 		
 		// Round off the points to a single precision
-		userPoints = round(userPoints,1);
+		userPoints = BasicUtils.round(userPoints,1);
 			
 		return userPoints;
     }
@@ -1045,9 +1024,9 @@ public class Utils
 	    	Double userPoints = getUsersPointsForCurrentTimeInterval(_user,TimeAggregateBy.week);
 				
 			// Round off the points to a single precision
-			userPoints = round(userPoints,1);
-			friendsPointsAverage = round(friendsPointsAverage,1);
-			leaderPoints = round (leaderPoints,1);
+			userPoints = BasicUtils.round(userPoints,1);
+			friendsPointsAverage = BasicUtils.round(friendsPointsAverage,1);
+			leaderPoints = BasicUtils.round (leaderPoints,1);
 			
 			wkComp = new WeeklyComparisons(userPoints, friendsPointsAverage, leaderPoints);
 	    }

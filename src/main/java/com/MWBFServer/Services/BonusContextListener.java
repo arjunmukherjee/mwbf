@@ -60,10 +60,8 @@ public class BonusContextListener implements ServletContextListener
 				// Calculate the start and the end of the current week
 		    	Calendar c = Calendar.getInstance();
 		    	c.setTime(new Date());
-		    	c.add(Calendar.DAY_OF_MONTH, -7);	// Will run on a Sunday
-
-		    	//int dayOfWeek = c.get(Calendar.DAY_OF_WEEK) - c.getFirstDayOfWeek();
-		    	//c.add(Calendar.DAY_OF_MONTH, -dayOfWeek);
+		    	int dayOfWeek = c.get(Calendar.DAY_OF_WEEK) - c.getFirstDayOfWeek();
+		    	c.add(Calendar.DAY_OF_MONTH, -dayOfWeek);
 		    	
 		    	Date weekStart = c.getTime();
 		    	// we do not need the same day a week after, that's why use 6, not 7
@@ -105,7 +103,7 @@ public class BonusContextListener implements ServletContextListener
 		};
 		
 		// TODO : Account for Time Zones
-		// Calculate the time between Now and Sunday 9am
+		// Calculate the time between Now and Saturday 11pm
 		Calendar calNow = Calendar.getInstance();
 	    calNow.setTime(new Date());
 
@@ -115,11 +113,11 @@ public class BonusContextListener implements ServletContextListener
 	    int hoursUntiTakeOffOnDDay = 7*24 + Constants.HOUR_OF_DAY_TO_RUN_BONUS_CHECK;
 	    int delayInHours = hoursUntiTakeOffOnDDay - currentHourInWeek;
 
-	    // Account for the check running at Sunday 9am
+	    // Account for the check running at Saturday 11pm
 	    if ( delayInHours < 0 )
 	    	delayInHours = 24*7 - (Math.abs(delayInHours));
 	    
-	    log.info("Starting Bonus Service in [" + delayInHours + "] hours [Sunday 9am].");
+	    log.info("Starting Bonus Service in [" + delayInHours + "] hours [Saturday 11pm].");
 	
 	 	// Scheduled to run every Saturday at 11pm
 		scheduledExecutorService.scheduleAtFixedRate(task, delayInHours, 24*7, TimeUnit.HOURS);
