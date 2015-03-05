@@ -1,11 +1,7 @@
 package com.MWBFServer.Datasource;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -203,7 +199,7 @@ public class DataCache
 		if ( ( notificationList != null ) && ( notificationList.size() > 0 ) )
 			return new ArrayList<Notifications>(notificationList);
 		else
-			return null;
+			return Collections.emptyList();
 	}
 	
 	public void addNotification(Notifications not) 
@@ -259,7 +255,7 @@ public class DataCache
 	 */
 	public List<User> getUserByName(String _name)
 	{
-		List<User> returnList = null;
+		List<User> returnList = Collections.emptyList();
 		StringBuilder fullName = new StringBuilder();;
 		if ( ( _name != null ) && ( _name.length() > 0 ) )
 		{
@@ -311,7 +307,7 @@ public class DataCache
 		if ( ( friendsList != null ) && ( friendsList.size() > 0 ) )
 			return new ArrayList<User>(friendsList);
 		else 
-			return null;
+			return Collections.emptyList();
 	}
 	
 	/**
@@ -378,7 +374,7 @@ public class DataCache
 		if ( ( userActivityList != null ) && ( userActivityList.size() > 0 ) )
 			return new ArrayList<UserActivity>(userActivityList);
 		else
-			return null;
+			return Collections.emptyList();
 	}
 	
 	/**
@@ -464,7 +460,7 @@ public class DataCache
 		if ( ( challengeList != null ) && ( challengeList.size() > 0 ) )
 			return new ArrayList<Challenge>(challengeList);
 		else
-			return null;
+			return Collections.emptyList();
 	}
 	
 	/**
