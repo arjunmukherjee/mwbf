@@ -673,8 +673,8 @@ public final class Utils
 	    				}
 	    			}
 	    		}
-	    		else
-	    			log.info("No activities found for Friend ["+friend.getId()+"]");
+	    		//else
+	    			//log.info("No activities found for Friend ["+friend.getId()+"]");
 	    	}
 
 	    	LeaderActivityByTime dayLeaderObj = null;
