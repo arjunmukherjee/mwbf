@@ -856,8 +856,6 @@ public class UserActions
 	{
 		String returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Checked user notifications.");
 		
-		log.info("Checking user notifications.");
-
 		Type collectionType = new TypeToken<List<ClientNotification>>(){}.getType();
 		List<ClientNotification> notificationsList = null;
         try 
@@ -900,12 +898,11 @@ public class UserActions
 	            					if (notificationsReturnList == null)
             							notificationsReturnList = new ArrayList<Notifications>();
             						
-	            					// TODO : Check this logic
             						// Save in cache
-            						//m_cache.addNotification(not);
+            						m_cache.addNotification(not);
             						
             						// Save in Db
-            						//Utils.saveObj(not);
+            						Utils.saveObj(not);
             						
             						// Create new object to return to user
             						// Set the user field to the friend object

@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.google.common.collect.ImmutableList;
 
 import org.apache.log4j.Logger;
 
@@ -197,7 +198,7 @@ public class DataCache
 	{
 		List<Notifications> notificationList = m_userNotifications.get(_user);
 		if ( ( notificationList != null ) && ( notificationList.size() > 0 ) )
-			return new ArrayList<Notifications>(notificationList);
+			return ImmutableList.copyOf(notificationList);
 		else
 			return Collections.emptyList();
 	}
@@ -219,7 +220,7 @@ public class DataCache
 	 */
 	public List<User> getUsers()
 	{
-		return new ArrayList<User>(m_usersHashByEmailId.values());
+		return ImmutableList.copyOf(m_usersHashByEmailId.values());
 	}
 	
 	/**
@@ -284,7 +285,7 @@ public class DataCache
 			}
 		}
 		
-		return returnList;
+		return ImmutableList.copyOf(returnList);
 	}
 	
 	
@@ -305,7 +306,7 @@ public class DataCache
 	{
 		List<User> friendsList = m_friendsHash.get(_user);
 		if ( ( friendsList != null ) && ( friendsList.size() > 0 ) )
-			return new ArrayList<User>(friendsList);
+			return ImmutableList.copyOf(friendsList);
 		else 
 			return Collections.emptyList();
 	}
@@ -361,7 +362,7 @@ public class DataCache
 	 */
 	public List<Activities> getMWBFActivities()
 	{
-		return new ArrayList<Activities>(m_MWBFActivitiesHash.values());
+		return ImmutableList.copyOf(m_MWBFActivitiesHash.values());
 	}
 	
 	/**
@@ -372,7 +373,7 @@ public class DataCache
 	{
 		List<UserActivity> userActivityList = m_userActivitiesHash.get(_user);
 		if ( ( userActivityList != null ) && ( userActivityList.size() > 0 ) )
-			return new ArrayList<UserActivity>(userActivityList);
+			return ImmutableList.copyOf(userActivityList);
 		else
 			return Collections.emptyList();
 	}
@@ -388,7 +389,7 @@ public class DataCache
 	public List<UserActivity> getUserActivitiesFilterByDate(User _user, Date _fromDate, Date _toDate)
 	{
 		// TODO : Implement this
-		return new ArrayList<UserActivity>(m_userActivitiesHash.get(_user));
+		return ImmutableList.copyOf(m_userActivitiesHash.get(_user));
 	}
 	
 	/**
@@ -403,7 +404,7 @@ public class DataCache
 	public List<UserActivity> getUserActivitiesFilterByDateAndActivity(User _user, Date _fromDate, Date _toDate, String _activity)
 	{
 		// TODO : Implement this
-		return new ArrayList<UserActivity>(m_userActivitiesHash.get(_user));
+		return ImmutableList.copyOf(m_userActivitiesHash.get(_user));
 	}
 	
 	/**
@@ -457,8 +458,8 @@ public class DataCache
 	public List<Challenge> getUserChallenges(User _user)
 	{
 		List<Challenge> challengeList = m_userChallengesHash.get(_user);
-		if ( ( challengeList != null ) && ( challengeList.size() > 0 ) )
-			return new ArrayList<Challenge>(challengeList);
+		if ( ( challengeList != null ) && ( challengeList.size() > 0 ) )			
+			return ImmutableList.copyOf(challengeList);
 		else
 			return Collections.emptyList();
 	}
