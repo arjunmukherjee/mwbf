@@ -55,10 +55,10 @@ public class UserActions
 			e.printStackTrace();
 		}
 		
-		String email = userData.optString(JsonConstants.EMAIL).trim();
-		String firstName = userData.optString(JsonConstants.FIRST_NAME).trim();
-		String lastName = userData.optString(JsonConstants.LAST_NAME).trim();
-		String profileId = userData.optString(JsonConstants.PROFILE_ID).trim();
+		String email = BasicUtils.extractFieldFromJson(JsonConstants.EMAIL, userData);
+		String firstName = BasicUtils.extractFieldFromJson(JsonConstants.FIRST_NAME, userData);
+		String lastName = BasicUtils.extractFieldFromJson(JsonConstants.LAST_NAME, userData);
+		String profileId = BasicUtils.extractFieldFromJson(JsonConstants.PROFILE_ID, userData);
 		
 		log.info("FaceBook user login [" + email + "], FirstName[" + firstName + "], LastName[" + lastName + "], ProfileId[" + profileId + "]");
 		
@@ -76,7 +76,7 @@ public class UserActions
 			{
 				log.info("First time FaceBook User Registering [" + email + "]");
 				User newUser = new User(email,firstName,lastName,profileId);
-				returnStr = addUser(newUser);
+				returnStr = Utils.addUser(newUser);
 			}
 		}
 		
@@ -99,9 +99,9 @@ public class UserActions
 			e.printStackTrace();
 		}
 		
-		User newUser = new User(userData.optString(JsonConstants.EMAIL).trim(),
-				WordUtils.capitalize(userData.optString(JsonConstants.FIRST_NAME).trim()),
-				WordUtils.capitalize(userData.optString(JsonConstants.LAST_NAME).trim()),
+		User newUser = new User(BasicUtils.extractFieldFromJson(JsonConstants.EMAIL, userData),
+				WordUtils.capitalize(BasicUtils.extractFieldFromJson(JsonConstants.FIRST_NAME, userData)),
+				WordUtils.capitalize(BasicUtils.extractFieldFromJson(JsonConstants.LAST_NAME, userData)),
 				"");
 		
 		log.info("ADDING USER : Email[" + newUser.getEmail() + "], FirstName[" + newUser.getFirstName() + "], LastName[" + newUser.getLastName() + "]");
@@ -114,34 +114,10 @@ public class UserActions
 			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Email is already registered.");
 		}
 		else
-			// If successful, add to the local cache
-			returnStr = addUser(newUser);
+			// If successful, add to the local cache and DB
+			returnStr = Utils.addUser(newUser);
 		
 		return BasicUtils.buildResponse(returnStr);
-	}
-	
-	
-	/**
-	 * Add the user : persist in DB and save in cache.
-	 * @param newUser
-	 * @return
-	 */
-	private String addUser(User _newUser) 
-	{
-		String returnStr;
-		// If successful, add to the local cache
-		if ( Utils.addUser(_newUser) )
-		{
-			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Welcome !");
-			m_cache.addUser(_newUser);
-		}
-		else
-		{
-			log.warn("Unable to register user, please try again.");
-			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to register user, please try again.");
-		}
-		
-		return returnStr;
 	}
 	
 	
@@ -161,7 +137,7 @@ public class UserActions
 			e.printStackTrace();
 		}
 		
-		String email = userData.optString(JsonConstants.USER_ID).trim();
+		String email = BasicUtils.extractFieldFromJson(JsonConstants.USER_ID, userData);
 		
 		//  First check if the user exists
 		String returnStr = null;
@@ -202,7 +178,7 @@ public class UserActions
 			e.printStackTrace();
 		}
 		
-		String email = userData.optString(JsonConstants.USER_ID).trim();
+		String email = BasicUtils.extractFieldFromJson(JsonConstants.USER_ID, userData);
 		
 		//  First check if the user exists
 		String returnStr = null;
@@ -280,10 +256,10 @@ public class UserActions
 		}
 
 		String returnStr = null;
-		String fromDate = userData.optString(JsonConstants.FROM_DATE);
-		String toDate = userData.optString(JsonConstants.TO_DATE);
+		String fromDate = BasicUtils.extractFieldFromJson(JsonConstants.FROM_DATE, userData);
+		String toDate = BasicUtils.extractFieldFromJson(JsonConstants.TO_DATE, userData);
 		
-		User user = m_cache.getUserById(userData.optString(JsonConstants.USER_ID));
+		User user = m_cache.getUserById(BasicUtils.extractFieldFromJson(JsonConstants.USER_ID, userData));
 		if ( user == null )
 		{
 			log.warn("Unable to find user to look up activity");
@@ -323,10 +299,10 @@ public class UserActions
 		}
 
 		String returnStr = null;
-		String fromDate = userData.optString(JsonConstants.FROM_DATE);
-		String toDate = userData.optString(JsonConstants.TO_DATE);
+		String fromDate = BasicUtils.extractFieldFromJson(JsonConstants.FROM_DATE, userData); 
+		String toDate = BasicUtils.extractFieldFromJson(JsonConstants.TO_DATE, userData);
 		
-		User user = m_cache.getUserById(userData.optString(JsonConstants.USER_ID));
+		User user = m_cache.getUserById(BasicUtils.extractFieldFromJson(JsonConstants.USER_ID, userData));
 		if ( user == null )
 		{
 			log.warn("Unable to find user to look up activity");
@@ -364,10 +340,10 @@ public class UserActions
 		{
 			e.printStackTrace();
 		}
-		log.info("Deleting all activities for user [" + userData.optString(JsonConstants.USER_ID) + "]");
+		log.info("Deleting all activities for user [" + BasicUtils.extractFieldFromJson(JsonConstants.USER_ID, userData) + "]");
 		
 		String returnStr = null;
-		User user = m_cache.getUserById(userData.optString(JsonConstants.USER_ID));
+		User user = m_cache.getUserById(BasicUtils.extractFieldFromJson(JsonConstants.USER_ID, userData));
 		if ( user == null )
 		{
 			log.warn("Unable to find user to look up activity");
@@ -400,8 +376,8 @@ public class UserActions
 		{
 			e.printStackTrace();
 		}
-		String userId = userData.optString(JsonConstants.USERID);
-		String activityId = userData.optString(JsonConstants.ACTIVITY_ID);
+		String userId = BasicUtils.extractFieldFromJson(JsonConstants.USERID, userData);
+		String activityId = BasicUtils.extractFieldFromJson(JsonConstants.ACTIVITY_ID, userData);
 		
 		log.info("Deleting activity [" + activityId + "]  for user [" + userId + "]");
 		
@@ -436,7 +412,7 @@ public class UserActions
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			String userId = userData.optString(JsonConstants.USER_ID);
+			String userId = BasicUtils.extractFieldFromJson(JsonConstants.USER_ID, userData);
 			User user = m_cache.getUserById(userId);
 			if ( user == null )
 			{
@@ -490,7 +466,7 @@ public class UserActions
         try
         {
             userData = new JSONObject(_incomingData);
-            String userId = userData.optString(JsonConstants.USER_ID);
+            String userId = BasicUtils.extractFieldFromJson(JsonConstants.USER_ID, userData);
             User user = m_cache.getUserById(userId);
             if ( user == null )
             {
@@ -503,12 +479,8 @@ public class UserActions
 
                 Gson gson = new Gson();
 
-                // Look up the users friends
-                List<User> friendsList = m_cache.getFriends(user);
-                List<FeedItem> activityList = null;
-                
                 // Look up the friends activities
-                activityList = Utils.getUserFeedItems(friendsList, user);
+                List<FeedItem> activityList = Utils.getUserFeedItems(user);
 
                 if ( activityList != null )
                     returnStr = gson.toJson(activityList);
@@ -538,8 +510,8 @@ public class UserActions
 		{
 			userData = new JSONObject(_incomingData);
 			
-			User user = m_cache.getUserById(userData.optString(JsonConstants.USER_ID));
-			User friend = m_cache.getUserById(userData.optString(JsonConstants.FRIEND_USER_ID));
+			User user = m_cache.getUserById(BasicUtils.extractFieldFromJson(JsonConstants.USER_ID, userData));
+			User friend = m_cache.getUserById(BasicUtils.extractFieldFromJson(JsonConstants.FRIEND_USER_ID, userData));
 			if ( user == null || friend == null )
 			{
 				log.warn("Unable to find the user or the friend to add.");
@@ -550,7 +522,6 @@ public class UserActions
 				log.info("Creating request for : Friend ["+ friend.getId() +"], User[" + user.getId() + "]");
 				
 				// Add the friend request
-				// TODO : Check if it is a duplicate friend request
 				if ( Utils.addFriendRequest(user,friend) )
 					returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Friend request added.");
 				else
@@ -580,7 +551,7 @@ public class UserActions
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			User user = m_cache.getUserById(userData.optString(JsonConstants.USER_ID));
+			User user = m_cache.getUserById(BasicUtils.extractFieldFromJson(JsonConstants.USER_ID, userData));
 			if ( user == null )
 			{
 				log.warn("Unable to find user.");
@@ -634,8 +605,8 @@ public class UserActions
 		{
 			userData = new JSONObject(_incomingData);
 			
-			String friendRequestId = userData.optString(JsonConstants.FRIEND_REQUEST_ID);
-			String requestAction = userData.optString(JsonConstants.FRIEND_REQUEST_ACTION);
+			String friendRequestId = BasicUtils.extractFieldFromJson(JsonConstants.FRIEND_REQUEST_ID, userData);
+			String requestAction = BasicUtils.extractFieldFromJson(JsonConstants.FRIEND_REQUEST_ACTION, userData);
 			if ( friendRequestId == null || requestAction == null )
 			{
 				log.warn("Unable to find the pending friend request for id [null].");
@@ -656,7 +627,7 @@ public class UserActions
 						returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to accept friend request, please try again.");
 					}
 				}
-				else
+				else // Reject
 				{
 					if ( Utils.rejectFriendRequest(friendRequestId) )
 						returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Friend request rejected.");
@@ -690,7 +661,7 @@ public class UserActions
 		{
 			userData = new JSONObject(_incomingData);
 			
-			String userIdentification = userData.optString(JsonConstants.USER_IDENTIFICATION_STRING);
+			String userIdentification = BasicUtils.extractFieldFromJson(JsonConstants.USER_IDENTIFICATION_STRING, userData);
 			
 			// First search by email
 			// If user is not found search by first/last name
@@ -747,7 +718,7 @@ public class UserActions
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			User user = m_cache.getUserById(userData.optString(JsonConstants.USER_ID));
+			User user = m_cache.getUserById(BasicUtils.extractFieldFromJson(JsonConstants.USER_ID, userData));
 			
 			Challenge newChallenge = gson.fromJson(_incomingData, Challenge.class);
 			newChallenge.setCreator(user);
@@ -783,7 +754,7 @@ public class UserActions
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			String challengeId = userData.optString(JsonConstants.CHALLENGE_ID);
+			String challengeId = BasicUtils.extractFieldFromJson(JsonConstants.CHALLENGE_ID, userData);
 			
 			log.info("Deleting  challenge [" + challengeId + "]");
 			
@@ -818,7 +789,7 @@ public class UserActions
 		try 
 		{
 			userData = new JSONObject(_incomingData);
-			User user = m_cache.getUserById(userData.optString(JsonConstants.USER_ID));
+			User user = m_cache.getUserById(BasicUtils.extractFieldFromJson(JsonConstants.USER_ID, userData));
 			if ( user == null )
 			{
 				log.warn("Unable to find user.");

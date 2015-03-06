@@ -1,5 +1,10 @@
 package com.MWBFServer.Utils;
 
+/**
+ * Final Abstract class to hold the string literals to help parse the Json objects.
+ * @author arjunmuk
+ *
+ */
 public final class JsonConstants 
 {
 	/**

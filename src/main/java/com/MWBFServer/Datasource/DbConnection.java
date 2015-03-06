@@ -519,7 +519,7 @@ public class DbConnection
 		// creating session object
 		Session session = getSession();
        	
-		String hql = "FROM UserActivity UA WHERE UA.user = :userId";
+		String hql = "FROM UserActivity UA WHERE UA.user = :userId ORDER BY UA.date";
         Query query = session.createQuery(hql);
         query.setString("userId", _user.getId());
       

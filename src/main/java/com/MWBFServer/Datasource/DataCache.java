@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.google.common.collect.ImmutableList;
 
 import org.apache.log4j.Logger;
 
@@ -16,7 +15,9 @@ import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Notifications.Notifications;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
+import com.MWBFServer.Utils.BasicUtils;
 import com.MWBFServer.Utils.Constants;
+import com.google.common.collect.ImmutableList;
 
 public class DataCache 
 {
@@ -285,7 +286,7 @@ public class DataCache
 			}
 		}
 		
-		return ImmutableList.copyOf(returnList);
+		return returnList;
 	}
 	
 	
@@ -369,11 +370,13 @@ public class DataCache
 	 * Returns a copy of the list of the user's activities
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public List<UserActivity> getUserActivities(User _user)
 	{
 		List<UserActivity> userActivityList = m_userActivitiesHash.get(_user);
 		if ( ( userActivityList != null ) && ( userActivityList.size() > 0 ) )
-			return ImmutableList.copyOf(userActivityList);
+			//return ImmutableList.copyOf(userActivityList); TODO : Could not get this to work
+			return (List<UserActivity>) BasicUtils.copyCollection(new ArrayList<UserActivity>(userActivityList));
 		else
 			return Collections.emptyList();
 	}
@@ -458,7 +461,7 @@ public class DataCache
 	public List<Challenge> getUserChallenges(User _user)
 	{
 		List<Challenge> challengeList = m_userChallengesHash.get(_user);
-		if ( ( challengeList != null ) && ( challengeList.size() > 0 ) )			
+		if ( ( challengeList != null ) && ( challengeList.size() > 0 ) )
 			return ImmutableList.copyOf(challengeList);
 		else
 			return Collections.emptyList();
@@ -524,4 +527,5 @@ public class DataCache
 			}
 		}
 	}
+	
 }

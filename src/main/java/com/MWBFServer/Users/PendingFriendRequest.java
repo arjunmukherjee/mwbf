@@ -8,6 +8,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 @Entity
 @Table (name="PENDING_FRIEND_REQUEST")
 public class PendingFriendRequest implements Serializable
@@ -62,6 +64,40 @@ public class PendingFriendRequest implements Serializable
 	public void setFriendId(String _friendId) 
 	{
 		this.friendId = _friendId;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+	    return new HashCodeBuilder().append(userId).append(friendId).toHashCode();
+	}
+
+	@Override
+	public boolean equals(final Object obj)
+	{
+		if(obj == this) return true;  // test for reference equality
+	    if(obj == null) return false; // test for null
+	    
+	    if( getClass() == obj.getClass() )
+	    {
+	        final PendingFriendRequest other = (PendingFriendRequest) obj;
+	        
+	        if ( this.userId.equals(other.userId) && this.friendId.equals(other.friendId) )
+	        	return true;
+	        
+	        if ( this.userId.equals(other.friendId) && this.friendId.equals(other.userId) )
+	        	return true;
+	        
+	        return false;
+	    } 
+	    else
+	        return false;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "User : [" + userId + "] , Friend[" + friendId + "]";
 	}
 	
 }

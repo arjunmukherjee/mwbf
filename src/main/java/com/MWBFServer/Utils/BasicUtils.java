@@ -9,6 +9,8 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
+import org.codehaus.jettison.json.JSONObject;
+
 /**
  * Wrapper class to contain basic utility methods.
  * @author arjunmuk
@@ -23,6 +25,17 @@ public final class BasicUtils
 	{
         throw new IllegalStateException( "Do not instantiate this class." );
     }
+	
+	/**
+	 * Extracts a specific field from a JSON object.
+	 * @param _field
+	 * @param _obj
+	 * @return
+	 */
+	public static String extractFieldFromJson(String _field, JSONObject _obj)
+	{
+		return _obj.optString(_field).trim();
+	}
 	
 	/**
 	 * Construct a JSON formatted string to indicate success or failure of the operation 
@@ -70,7 +83,7 @@ public final class BasicUtils
 	 * @param _collectionToCopy
 	 * @return
 	 */
-	public List<?> copyCollection(List<?> _collectionToCopy)
+	public static List<?> copyCollection(List<?> _collectionToCopy)
 	{
 		Object obj = null;
         try 

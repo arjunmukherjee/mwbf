@@ -189,7 +189,7 @@ public class UserActivity implements Comparable<UserActivity>, Serializable
 	@Override
 	public String toString()
 	{
-		return "User : [" + user.getId() + "], Activity [" + activityId + "], Units [" + exerciseUnits + "], Points [" + points + "], Date [" + date.toString() + "]";
+		return "User : [" + user.getId() + "]:Activity [" + activityId + "]:Units [" + exerciseUnits + "]:Points [" + points + "]:Date [" + date.toString() + "]";
 	}
 
 	@Override

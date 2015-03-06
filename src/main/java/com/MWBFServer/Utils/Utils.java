@@ -60,14 +60,29 @@ public final class Utils
 		return DbConnection.saveObj(_o);
 	}
 	
+	
 	/**
-	 * Add a new user.
-	 * @param _user
+	 * Add the user : persist in DB and save in cache.
+	 * @param newUser
 	 * @return
 	 */
-	public static Boolean addUser(User _user)
+	public static String addUser(User _newUser) 
 	{
-		return DbConnection.saveObj(_user);
+		String returnStr;
+		
+		// If successful, add to the local cache
+		if ( DbConnection.saveObj(_newUser) )
+		{
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Welcome !");
+			m_cache.addUser(_newUser);
+		}
+		else
+		{
+			log.warn("Unable to register user [" + _newUser.getEmail() + "], please try again.");
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to register user, please try again.");
+		}
+		
+		return returnStr;
 	}
 	
 	/**
@@ -345,9 +360,15 @@ public final class Utils
 	 */
 	public static boolean addFriendRequest(User _user, User _friend) 
 	{
-		// TODO : Check if it is a duplicate friend request
+		boolean result = false;
 		PendingFriendRequest friendReq = new PendingFriendRequest(_user.getId(),_friend.getId());
-		boolean result = DbConnection.saveObj(friendReq);
+
+		// Check if it is a duplicate friend request
+		List<PendingFriendRequest> friendReqList = (List<PendingFriendRequest>) DbConnection.queryGetFriendRequests(null,_user.getId());
+		if ( (friendReqList != null) && (friendReqList.size() > 0 ) && friendReqList.contains(friendReq) )
+			log.info("Duplicate friend request , not adding User[" + _user.getEmail() + "], Friend [" + _friend.getEmail() + "]");
+		else
+			result = DbConnection.saveObj(friendReq);
 		
 		return result;
 	}
@@ -856,23 +877,19 @@ public final class Utils
      * @param _user
      * @return
      */
-	public static List<FeedItem> getUserFeedItems(List<User> friendsList, User _user)
+	public static List<FeedItem> getUserFeedItems(User _user)
     {
         // TODO : Highly inefficient
 		// Gets a list of all the activities and then only select the last 50
+		List<UserActivity> activityList = new ArrayList<UserActivity>();
 		
-        List<UserActivity> activityList = new ArrayList<UserActivity>();
-        
-        // Get the activities for all the friends
-        if ( ( friendsList != null ) && ( friendsList.size() > 0 ) )
+		// Look up the users friends
+        List<User> friendsList = m_cache.getFriends(_user);
+		// Get the activities for all the friends
+        if ( friendsList.size() > 0 )
         {
 	        for (User friend : friendsList)
-	        {
-	        	List<UserActivity> friendActivityList = m_cache.getUserActivities(friend);
-	        	
-	        	if ( ( friendActivityList != null ) && ( friendActivityList.size() > 0 ) )
-	        		activityList.addAll(friendActivityList);
-	        }
+	        	activityList.addAll(m_cache.getUserActivities(friend));
         }
 
         // Get the users activity feeds
