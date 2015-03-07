@@ -20,8 +20,8 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.MWBFServer.Activity.*;
 import com.MWBFServer.Challenges.Challenge;
+import com.MWBFServer.Datasource.CacheManager;
 import com.MWBFServer.Datasource.DBReturnClasses.LeaderActivityByTime;
-import com.MWBFServer.Datasource.DataCache;
 import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
 import com.MWBFServer.Notifications.Notifications;
 import com.MWBFServer.Notifications.Notifications.ClientNotification;
@@ -37,7 +37,7 @@ import com.google.gson.reflect.TypeToken;
 public class UserActions
 {
 	private static final Logger log = Logger.getLogger(UserActions.class);
-	private static final DataCache m_cache = DataCache.getInstance();
+	private static final CacheManager m_cache = BasicUtils.getCache();
 	
 	@POST
 	@Path("/fbLogin")

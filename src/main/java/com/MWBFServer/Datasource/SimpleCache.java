@@ -19,10 +19,10 @@ import com.MWBFServer.Utils.BasicUtils;
 import com.MWBFServer.Utils.Constants;
 import com.google.common.collect.ImmutableList;
 
-public class DataCache 
+public class SimpleCache implements CacheManager
 {
-	private static DataCache m_cacheInstance;
-	private static final Logger log = Logger.getLogger(DataCache.class);
+	private static SimpleCache m_cacheInstance;
+	private static final Logger log = Logger.getLogger(SimpleCache.class);
 	
 	private static final Map<String,Activities> m_MWBFActivitiesHash = new HashMap<String,Activities>();
 	private static final Map<String,User> m_usersHashByEmailId = new HashMap<String,User>();
@@ -35,7 +35,7 @@ public class DataCache
 	/**
 	 * Singleton class, to cache the data in memory for quick access
 	 */
-	private DataCache()
+	private SimpleCache()
 	{ 
 		loadData();
 	}
@@ -44,14 +44,14 @@ public class DataCache
 	 * Returns the single cache instance (@ThreadSafe DCL)
 	 * @return
 	 */
-	public static DataCache getInstance()
+	public static SimpleCache getInstance()
 	{
 		if (m_cacheInstance == null)
 		{
-			synchronized(DataCache.class)
+			synchronized(SimpleCache.class)
 			{
 				if ( m_cacheInstance == null )
-					m_cacheInstance = new DataCache();
+					m_cacheInstance = new SimpleCache();
 			}
 		}
 		return m_cacheInstance;
@@ -162,7 +162,7 @@ public class DataCache
 	
 		List<Challenge> listCh = (List<Challenge>) DbConnection.queryGetChallengesHQL();
 		for (Challenge ch : listCh)
-			addChallengeToPlayers(ch);
+			addChallenge(ch);
 	}
 	
 	/**
@@ -467,20 +467,12 @@ public class DataCache
 			return Collections.emptyList();
 	}
 	
-	/**
-	 * Add a challenge to the cache
-	 * @param _ch (Challenge)
-	 */
-	public void addChallenge(Challenge _ch)
-	{
-		addChallengeToPlayers(_ch);
-	}
 	
 	/**
 	 * For each player in the challenge add the challenge to their list of challenges (if it does not already exist)
 	 * @param _ch
 	 */
-	private void addChallengeToPlayers(Challenge _ch)
+	public void addChallenge(Challenge _ch)
 	{
 		for (String userId : _ch.getPlayersSet())
 		{

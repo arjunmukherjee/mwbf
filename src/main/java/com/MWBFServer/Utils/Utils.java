@@ -25,7 +25,7 @@ import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
 import com.MWBFServer.Datasource.DBReturnClasses.LeaderActivityByTime;
 import com.MWBFServer.Datasource.DBReturnClasses.PlayerActivityData;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
-import com.MWBFServer.Datasource.DataCache;
+import com.MWBFServer.Datasource.CacheManager;
 import com.MWBFServer.Datasource.DbConnection;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.PendingFriendRequest;
@@ -39,7 +39,7 @@ import com.google.gson.JsonParser;
 public final class Utils 
 {
 	private static final Logger log = Logger.getLogger(Utils.class);
-	private static final DataCache m_cache = DataCache.getInstance();
+	private static final CacheManager m_cache = BasicUtils.getCache();
 	
 	
 	/**

@@ -11,7 +11,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 
-import com.MWBFServer.Datasource.DataCache;
+import com.MWBFServer.Datasource.SimpleCache;
 import com.MWBFServer.Utils.BasicUtils;
 import com.MWBFServer.Utils.JsonConstants;
 import com.google.gson.Gson;
@@ -31,7 +31,7 @@ public class MWBFActions
 		log.info("Fetching All MWBF Activities.");
 		
 		Gson gson = new Gson();
-		String returnStr = gson.toJson(DataCache.getInstance().getMWBFActivities());
+		String returnStr = gson.toJson(SimpleCache.getInstance().getMWBFActivities());
 	
 		return BasicUtils.buildResponse(returnStr);
 	}

@@ -5,7 +5,7 @@ import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
 
-import com.MWBFServer.Datasource.DataCache;
+import com.MWBFServer.Datasource.SimpleCache;
 
 public class CacheLoaderContextListener implements ServletContextListener 
 {
@@ -23,6 +23,6 @@ public class CacheLoaderContextListener implements ServletContextListener
 		log.info("Starting Cache Loader.");
 		
 		// Will init the single instance, which will in turn load the cache
-		DataCache.getInstance();
+		SimpleCache.getInstance();
 	}
 }

@@ -13,7 +13,7 @@ import javax.persistence.Table;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import com.MWBFServer.Datasource.DataCache;
+import com.MWBFServer.Datasource.SimpleCache;
 import com.MWBFServer.Users.User;
 
 
@@ -46,7 +46,7 @@ public class Notifications implements Serializable
 	{
 		this.notificationMessage = cn.notificationMessage;
 		if (_user == null)
-			this.user = DataCache.getInstance().getUserByFbId(cn.fbProfileId);
+			this.user = SimpleCache.getInstance().getUserByFbId(cn.fbProfileId);
 		else
 			this.user = _user;
 	}

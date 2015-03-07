@@ -11,6 +11,9 @@ import javax.ws.rs.core.Response;
 
 import org.codehaus.jettison.json.JSONObject;
 
+import com.MWBFServer.Datasource.CacheManager;
+import com.MWBFServer.Datasource.SimpleCache;
+
 /**
  * Wrapper class to contain basic utility methods.
  * @author arjunmuk
@@ -25,6 +28,15 @@ public final class BasicUtils
 	{
         throw new IllegalStateException( "Do not instantiate this class." );
     }
+	
+	/**
+	 * Returns an instance of the cache implementation.
+	 * @return
+	 */
+	public static CacheManager getCache()
+	{
+		return SimpleCache.getInstance();
+	}
 	
 	/**
 	 * Extracts a specific field from a JSON object.

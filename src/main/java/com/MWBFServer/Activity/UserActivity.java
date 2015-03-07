@@ -16,8 +16,9 @@ import javax.persistence.Transient;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import com.MWBFServer.Datasource.DataCache;
+import com.MWBFServer.Datasource.CacheManager;
 import com.MWBFServer.Users.User;
+import com.MWBFServer.Utils.BasicUtils;
 import com.MWBFServer.Utils.Constants;
 
 @Entity
@@ -142,7 +143,7 @@ public class UserActivity implements Comparable<UserActivity>, Serializable
  		actString.append(this.user.getFirstName());
  		actString.append(" ");
  		
- 		DataCache cache = DataCache.getInstance();
+ 		CacheManager cache = BasicUtils.getCache();
  		
  		// Bonus activities do not have the info below
  		if ( !isBonusActivity() )

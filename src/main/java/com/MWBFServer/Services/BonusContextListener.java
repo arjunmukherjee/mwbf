@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 import com.MWBFServer.Activity.BonusEnum;
 import com.MWBFServer.Activity.UserActivity;
-import com.MWBFServer.Datasource.DataCache;
+import com.MWBFServer.Datasource.SimpleCache;
 import com.MWBFServer.Users.User;
 import com.MWBFServer.Utils.Constants;
 import com.MWBFServer.Utils.Utils;
@@ -72,7 +72,7 @@ public class BonusContextListener implements ServletContextListener
 		    	
 		    	log.info("WeekStart ["+df.format(weekStart)+" 00:00:01 AM"+"], WeekEnd ["+df.format(weekEnd)+" 11:59:59 PM"+"]");
 		    	
-				for(User user : DataCache.getInstance().getUsers())
+				for(User user : SimpleCache.getInstance().getUsers())
 				{
 					Set<String> activitySet = new HashSet<String>();
 					
