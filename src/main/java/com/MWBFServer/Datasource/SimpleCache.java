@@ -19,6 +19,11 @@ import com.MWBFServer.Utils.BasicUtils;
 import com.MWBFServer.Utils.Constants;
 import com.google.common.collect.ImmutableList;
 
+/**
+ * A simple implementation of the CacheManager interface using HashMaps.
+ * @author arjunmuk
+ *
+ */
 public class SimpleCache implements CacheManager
 {
 	private static SimpleCache m_cacheInstance;
