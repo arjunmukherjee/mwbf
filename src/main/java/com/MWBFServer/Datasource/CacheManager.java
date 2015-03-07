@@ -13,15 +13,6 @@ import com.MWBFServer.Users.User;
 public interface CacheManager 
 {
 	/**
-	 * Returns an instance of the cache implementation.
-	 * @return
-	 */
-	public static CacheManager getCache()
-	{
-		return SimpleCache.getInstance();
-	}
-	
-	/**
 	 * Returns a copy of the list of the user's notifications
 	 * @return
 	 */

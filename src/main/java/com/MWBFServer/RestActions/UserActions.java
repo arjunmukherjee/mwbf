@@ -37,7 +37,7 @@ import com.google.gson.reflect.TypeToken;
 public class UserActions
 {
 	private static final Logger log = Logger.getLogger(UserActions.class);
-	private static final CacheManager m_cache = CacheManager.getCache();
+	private static final CacheManager m_cache = BasicUtils.getCache();
 	
 	@POST
 	@Path("/fbLogin")
