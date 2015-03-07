@@ -12,91 +12,45 @@ import com.MWBFServer.Users.User;
 
 public interface CacheManager 
 {
-	/**
-	 * Returns a copy of the list of the user's notifications
-	 * @return
-	 */
+	// Returns a copy of the list of the user's notifications
 	public List<Notifications> getUserNotifications(User _user);
 	public void addNotification(Notifications not);
 	
-	
-	/**
-	 * Returns a copy of the list of the users
-	 */
+	// Returns a copy of the list of the users
 	public List<User> getUsers();
-	/**
-	 * Returns an user
-	 */
+	// Returns an user
 	public User getUserById(String _userId);
-	/**
-	 * Returns an user, lookup by the Facebook profile id
-	 */
+	// Returns an user, lookup by the Facebook profile id
 	public User getUserByFbId(String _fbProfileId);
-	/**
-	 * Returns a list of users that have a first or last name that starts with the argument passed in
-	 */
+	// Returns a list of users that have a first or last name that starts with the argument passed in
 	public List<User> getUserByName(String _name);
-	/**
-	 * Adds a user to the cache
-	 */
+	// Adds a user to the cache
 	public void addUser(User _user);
 	
-	
-	
-	/**
-	 * Returns a copy of the list of the user's friends
-	 */
+	// Returns a copy of the list of the user's friends
 	public List<User> getFriends(User _user);
-	/**
-	 * Adds a friend to the user's friends list
-	 */
+	// Adds a friend to the user's friends list
 	public void addFriend(User _user, Friends _friend);
 	
-	
-	
-	/**
-	 * Returns an activity
-	 */
+	// Returns an activity
 	public Activities getMWBFActivity(String _activityId);
-	/**
-	 * Returns a copy of the list of all valid activities
-	 */
+	// Returns a copy of the list of all valid activities
 	public List<Activities> getMWBFActivities();
-	/**
-	 * Returns a copy of the list of the user's activities
-	 * @return
-	 */
+	// Returns a copy of the list of the user's activities
 	public List<UserActivity> getUserActivities(User _user);
-	/**
-	 * List of all user activities between a specific date range.
-	 */
+	// List of all user activities between a specific date range.
 	public List<UserActivity> getUserActivitiesFilterByDate(User _user, Date _fromDate, Date _toDate);
-	/**
-	 * List of specific user activities between a specific date range.
-	 */
+	// List of specific user activities between a specific date range.
 	public List<UserActivity> getUserActivitiesFilterByDateAndActivity(User _user, Date _fromDate, Date _toDate, String _activity);
-	/**
-	 * Adds a logged activity to the user's activity list
-	 */
+	// Adds a logged activity to the user's activity list
 	public void addUserActivity(UserActivity _ua);
-	/**
-	 * delete an activity from the user's activity list
-	 */
+	// delete an activity from the user's activity list
 	public void deleteUserActivity(UserActivity _ua);
 	
-	
-	
-	/**
-	 * Returns a copy of the list of the user's challenges
-	 */
+	// Returns a copy of the list of the user's challenges
 	public List<Challenge> getUserChallenges(User _user);
-	/**
-	 * For each player in the challenge add the challenge to their list of challenges (if it does not already exist)
-	 */
+	// For each player in the challenge add the challenge to their list of challenges (if it does not already exist)
 	public void addChallenge(Challenge _ch);
-	/**
-	 * For each player in the challenge update the challenge to their list of challenges 
-	 */
+	// For each player in the challenge update the challenge to their list of challenges 
 	public void updateChallenge(Challenge _ch);
-	
 }
