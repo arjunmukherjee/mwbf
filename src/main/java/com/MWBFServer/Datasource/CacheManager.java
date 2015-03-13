@@ -6,6 +6,7 @@ import java.util.List;
 import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Challenges.Challenge;
+import com.MWBFServer.Dto.FeedItem;
 import com.MWBFServer.Notifications.Notifications;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
@@ -46,6 +47,8 @@ public interface CacheManager
 	public void addUserActivity(UserActivity _ua);
 	// delete an activity from the user's activity list
 	public void deleteUserActivity(UserActivity _ua);
+	// Returns a list of feed items from the users feeds.
+	public List<FeedItem> getActivityFeed(User _user);
 	
 	// Returns a copy of the list of the user's challenges
 	public List<Challenge> getUserChallenges(User _user);

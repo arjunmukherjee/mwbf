@@ -4,20 +4,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 import org.apache.log4j.Logger;
 
 import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Challenges.Challenge;
+import com.MWBFServer.Dto.FeedItem;
 import com.MWBFServer.Notifications.Notifications;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.User;
 import com.MWBFServer.Utils.BasicUtils;
 import com.MWBFServer.Utils.Constants;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.MinMaxPriorityQueue;
+import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
 
 /**
  * A simple implementation of the CacheManager interface using HashMaps.
@@ -35,7 +41,8 @@ public class SimpleCache implements CacheManager
 	private static final Map<User,List<User>> m_friendsHash = new HashMap<User,List<User>>();
 	private static final Map<User,List<UserActivity>> m_userActivitiesHash = new HashMap<User,List<UserActivity>>();
 	private static final Map<User,List<Challenge>> m_userChallengesHash = new HashMap<User,List<Challenge>>();
-	private static final Map<User,List<Notifications>> m_userNotifications = new HashMap<User,List<Notifications>>();
+	private static final Map<User,List<Notifications>> m_userNotifications = new HashMap<User,List<Notifications>>();	
+	private static final Map<User, MinMaxPriorityQueue<UserActivity>> m_userFeedMap = new HashMap<User,MinMaxPriorityQueue<UserActivity>>();
 	
 	/**
 	 * Singleton class, to cache the data in memory for quick access
@@ -80,6 +87,9 @@ public class SimpleCache implements CacheManager
 		// Load all the user's activities into the cache
 		loadUserActivities();
 		
+		// Load all the user's friends activities (feed) into the cache
+		loadUserFeeds();
+		
 		// Load all the user's challenges into the cache
 		loadUserChallenges();
 		
@@ -118,6 +128,32 @@ public class SimpleCache implements CacheManager
 		for (User user : m_usersHashByEmailId.values())
             m_userActivitiesHash.put(user, (List<UserActivity>) DbConnection.queryGetUserActivity(user));
     }
+	
+	/**
+	 * Load the last 100 (Configurable constant) activity feed items.
+	 * User --> Bounded activity Feed Queue
+	 */
+	private void loadUserFeeds() 
+	{
+		log.info("Loading USER-FEEDS into CACHE.");
+		
+		for (User user : m_usersHashByEmailId.values())
+		{
+			MinMaxPriorityQueue<UserActivity> userActivityQueue = MinMaxPriorityQueue.maximumSize(Constants.MAX_NUMBER_OF_MESSAGE_FEEDS).create();
+			
+			// Get a list of friends for each user
+	        List<User> friendsList = getFriends(user);
+	        
+	        // Get the activities for all the friend
+	        for (User friend : friendsList)
+	        	userActivityQueue.addAll(getUserActivities(friend));
+	     
+	        // Get the users activity feeds
+	       	userActivityQueue.addAll(getUserActivities(user));
+
+	        m_userFeedMap.put(user, userActivityQueue);
+		}	
+	}
 	
 	/**
 	 * Add a set of activities to the hash map.
@@ -437,6 +473,71 @@ public class SimpleCache implements CacheManager
 			else
 				m_userActivitiesHash.get(user).add(_ua);
 		}
+		
+		// Update the friends activities
+		updateActivityFeed(_ua);
+	}
+	
+	/**
+	 * 1. Lookup all the user's friends.<br>
+	 * 2. Add the activity to the feed queue.<br>
+	 * 3. Add the activity to the activity user's feed too.
+	 * @param _ua
+	 */
+	private void updateActivityFeed(UserActivity _ua)
+	{
+		User activityUser = _ua.getUser();
+		List<User> friendsList = getFriends(activityUser);
+		
+		// Iterate through the friends
+		// Add the feed to each of their lists
+		for (User user : friendsList)
+			addActivityToFeed(_ua, user);
+		
+		// Add the activity to the activity user's feed too
+		addActivityToFeed(_ua, activityUser);
+	}
+
+	private void addActivityToFeed(UserActivity _ua, User user) 
+	{
+		MinMaxPriorityQueue<UserActivity> userActivityQueue = m_userFeedMap.get(user);
+		if (userActivityQueue == null)
+		{
+			userActivityQueue = MinMaxPriorityQueue.maximumSize(Constants.MAX_NUMBER_OF_MESSAGE_FEEDS).create();
+			userActivityQueue.add(_ua);
+			m_userFeedMap.put(user, userActivityQueue);
+		}
+		else
+			userActivityQueue.add(_ua);
+	}
+	
+	/**
+	 * Returns a list of feed items from the users feeds.
+	 * @param _user
+	 * @return
+	 */
+	public List<FeedItem> getActivityFeed(User _user)
+	{
+		MinMaxPriorityQueue<UserActivity> activityQueue = MinMaxPriorityQueue.maximumSize(Constants.MAX_NUMBER_OF_MESSAGE_FEEDS).create();
+		activityQueue.addAll(m_userFeedMap.get(_user));
+				
+		if ( activityQueue.size() > 0 )
+		{
+			List<FeedItem> returnList = new ArrayList<FeedItem>();
+			while(true)
+			{
+				UserActivity ua = activityQueue.pollLast();
+				if ( ua == null )
+					break;
+				
+				returnList.add(ua.convertToFeedItem());
+			}
+			
+			return ImmutableList.copyOf(returnList);
+		}
+
+		log.info("Returning [0] feed items for user [" + _user.getEmail() + "]");
+		return Collections.emptyList();
 	}
 	
 	/**

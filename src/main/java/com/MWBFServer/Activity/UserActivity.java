@@ -17,6 +17,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.MWBFServer.Datasource.CacheManager;
+import com.MWBFServer.Dto.FeedItem;
 import com.MWBFServer.Users.User;
 import com.MWBFServer.Utils.BasicUtils;
 import com.MWBFServer.Utils.Constants;
@@ -131,6 +132,31 @@ public class UserActivity implements Comparable<UserActivity>, Serializable
 	{
 		this.points = _points;
 	}
+	
+	/**
+	 * Convert the UserActivity into a FeedItem object.
+	 * @return
+	 */
+	public FeedItem convertToFeedItem()
+	{
+		// Populate FeedItem object
+		FeedItem feedItem = new FeedItem();
+		feedItem.setId(this.getId());
+		feedItem.setActivityDate(this.getDate());
+		feedItem.setActivityName(this.getActivityId());
+
+		if ( !this.isBonusActivity() )
+			feedItem.setActivityUnit(BasicUtils.getCache().getMWBFActivity(this.getActivityId()).getMeasurementUnitShort());
+
+		feedItem.setActivityValue(this.getExerciseUnits());
+		feedItem.setFirstName(this.getUser().getFirstName());
+		feedItem.setLastName(this.getUser().getLastName());
+		feedItem.setUserId(this.getUser().getId());
+		feedItem.setPoints(this.getPoints());
+		feedItem.setFeedPrettyString(this.constructNotificationString());
+
+		return feedItem;
+	}
 
 	/**
 	 * Construct a notification string from an activity object.
@@ -190,13 +216,13 @@ public class UserActivity implements Comparable<UserActivity>, Serializable
 	@Override
 	public String toString()
 	{
-		return "User : [" + user.getId() + "]:Activity [" + activityId + "]:Units [" + exerciseUnits + "]:Points [" + points + "]:Date [" + date.toString() + "]";
+		return "User[" + user.getId() + "]:[" + activityId + "]:Units[" + exerciseUnits + "]:Points[" + points + "]:Date[" + date.toString() + "]";
 	}
 
 	@Override
 	public int compareTo(UserActivity _o) 
 	{
-		return this.getDate().compareTo(_o.getDate());
+		return _o.getDate().compareTo(this.getDate());
 	}
 	
 	@Override

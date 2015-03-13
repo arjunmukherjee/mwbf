@@ -871,9 +871,18 @@ public final class Utils
 	}
 
 
+	/**
+     * Get the friends activities for each user
+     * @param _user
+     * @return
+     */
+	public static List<FeedItem> getUserFeedItems_V1(User _user)
+    {
+		return m_cache.getActivityFeed(_user);
+    }
+	
     /**
      * Get the friends activities for each user
-     * @param friendsList
      * @param _user
      * @return
      */
@@ -937,7 +946,7 @@ public final class Utils
         	return feedItemList.subList(startIndex, startIndex + endIndex);
         }
         
-        return null;
+        return Collections.emptyList();
     }
 
     /**
