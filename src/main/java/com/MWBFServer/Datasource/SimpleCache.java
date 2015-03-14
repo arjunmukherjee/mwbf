@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
 
 import org.apache.log4j.Logger;
 
@@ -23,7 +20,6 @@ import com.MWBFServer.Utils.BasicUtils;
 import com.MWBFServer.Utils.Constants;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MinMaxPriorityQueue;
-import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
 
 /**
  * A simple implementation of the CacheManager interface using HashMaps.

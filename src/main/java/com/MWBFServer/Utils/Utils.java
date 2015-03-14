@@ -27,6 +27,7 @@ import com.MWBFServer.Datasource.DBReturnClasses.PlayerActivityData;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Datasource.CacheManager;
 import com.MWBFServer.Datasource.DbConnection;
+import com.MWBFServer.Services.CacheUpdaterContextListener;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.PendingFriendRequest;
 import com.MWBFServer.Users.User;
@@ -112,7 +113,7 @@ public final class Utils
 		if ( result )
 		{
 			for (UserActivity ua : _userActivityList)
-				m_cache.addUserActivity(ua);
+				CacheUpdaterContextListener.addTask(ua);
 		}
 		
 		return result;

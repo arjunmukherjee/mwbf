@@ -30,4 +30,7 @@ public final class Constants
 	
 	// The hour of the day when the bonus service will run
 	public static int HOUR_OF_DAY_TO_RUN_BONUS_CHECK = 23;
+	
+	// The hour of the day when the bonus service will run
+	public static String CACHE_UPDATER_THREAD_NAME = "CacheUpdater";
 }

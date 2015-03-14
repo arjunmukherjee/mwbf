@@ -211,7 +211,7 @@ public class UserActions
 	{
 		String returnStr = null;
 		Gson gson = new Gson();
-
+		
 		log.info("Logging user activities [" + _incomingData + "]");
 
 		Type collectionType = new TypeToken<List<UserActivity>>(){}.getType();

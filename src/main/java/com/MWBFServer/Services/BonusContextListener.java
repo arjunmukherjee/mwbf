@@ -34,7 +34,6 @@ public class BonusContextListener implements ServletContextListener
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) 
 	{
-		// TODO : Cleanup
 		log.info("BonusService stopped.");
 		scheduledExecutorService.shutdown();
 	}
