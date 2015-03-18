@@ -467,7 +467,13 @@ public class SimpleCache implements CacheManager
 				m_userActivitiesHash.put(user, userActivityList);
 			}
 			else
-				m_userActivitiesHash.get(user).add(_ua);
+			{
+				// Guarded by locking on the list of the users activities (one per user)
+				synchronized( userActivityList )
+				{
+					userActivityList.add(_ua);
+				}
+			}
 		}
 		
 		// Update the friends activities
@@ -486,14 +492,15 @@ public class SimpleCache implements CacheManager
 		List<User> friendsList = getFriends(activityUser);
 		
 		// Iterate through the friends
-		// Add the feed to each of their lists
-		for (User user : friendsList)
-			addActivityToFeed(_ua, user);
+		// Add the activity to each of their feeds
+		for (User friend : friendsList)
+			addActivityToFeed(_ua, friend);
 		
 		// Add the activity to the activity user's feed too
 		addActivityToFeed(_ua, activityUser);
 	}
 
+	//@GuardedBy("userActivityQueue")
 	private void addActivityToFeed(UserActivity _ua, User user) 
 	{
 		MinMaxPriorityQueue<UserActivity> userActivityQueue = m_userFeedMap.get(user);
@@ -504,7 +511,13 @@ public class SimpleCache implements CacheManager
 			m_userFeedMap.put(user, userActivityQueue);
 		}
 		else
-			userActivityQueue.add(_ua);
+		{
+			// Thread safe since the critical section is locked by the userActivityQueue (one per user)
+			synchronized(userActivityQueue)
+			{
+				userActivityQueue.add(_ua);
+			}
+		}
 	}
 	
 	/**

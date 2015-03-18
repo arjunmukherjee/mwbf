@@ -219,22 +219,21 @@ public class UserActions
         try 
         {
             newActivityList = gson.fromJson(_incomingData, collectionType);
+            
+            // If successful, add to the local cache
+    		if ( Utils.logActivity(newActivityList) )
+    			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Activity logged.");
+    		else
+    		{
+    			log.warn("Unable to log activity, please try again.");
+    			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to log activity, please try again.");
+    		}
         } 
         catch (JsonSyntaxException jse) 
         {
             log.error("Error logging user activity.", jse);
             returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to log activity, please try again.");
-            return BasicUtils.buildResponse(returnStr);
         }
-		
-		// If successful, add to the local cache
-		if ( Utils.logActivity(newActivityList) )
-			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Activity logged.");
-		else
-		{
-			log.warn("Unable to log activity, please try again.");
-			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to log activity, please try again.");
-		}
 		
 		return BasicUtils.buildResponse(returnStr);
 	}

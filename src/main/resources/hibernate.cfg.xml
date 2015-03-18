@@ -11,16 +11,17 @@
         <!-- Database connection settings -->
         <property name="connection.driver_class">org.postgresql.Driver</property>
        	
-       	
+       	<!-- PRODUCTION/HEROKU -->
         <property name="hibernate.connection.url">jdbc:postgresql://ec2-54-83-26-78.compute-1.amazonaws.com:5702/ddeitjflhvtfoq?sslfactory=org.postgresql.ssl.NonValidatingFactory&amp;ssl=true</property>
         <property name="connection.username">u92dgfi63o5e95</property>
         <property name="connection.password">p5t7v64gog9dpj8r9p908866tmk</property>
         
+        <!-- DEV/LOCALHOST -->
         <!--
         <property name="hibernate.connection.url">jdbc:postgresql://localhost:5433/mwbf</property>
         <property name="connection.username">postgres</property>
         <property name="connection.password">password</property>
-		 -->
+		--> 
 		 
 		<!-- JDBC connection pool (use the built-in) -->
         <property name="connection.pool_size">1</property>
@@ -36,6 +37,13 @@
 
         <!-- Drop and re-create the database schema on startup -->
         <property name="hbm2ddl.auto">update</property>
+        
+        <!-- DB Connection pool parameters -->
+		<property name="hibernate.c3p0.min_size">5</property>
+  		<property name="hibernate.c3p0.max_size">40</property>
+		<property name="hibernate.c3p0.timeout">0</property>
+		<property name="hibernate.c3p0.max_statements">50</property>
+		<property name="hibernate.c3p0.idle_test_period">3000</property>
 
 		<mapping class="com.MWBFServer.Activity.Activities"/>
 		<mapping class="com.MWBFServer.Activity.UserActivity"/>
