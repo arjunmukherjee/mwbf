@@ -170,7 +170,7 @@ public final class Utils
 		List<UserActivity> activityList =  m_cache.getUserActivities(_user);
 		Map<String,UserActivity> activityHash = new HashMap<String,UserActivity>();
 		
-		List<UserActivity> returnList = null;
+		List<UserActivity> returnList = Collections.emptyList();
 		// Aggregate the activities (units and points)
 		if ( ( activityList != null ) && ( activityList.size() > 0 ) )
 		{

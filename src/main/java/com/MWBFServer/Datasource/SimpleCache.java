@@ -565,7 +565,11 @@ public class SimpleCache implements CacheManager
 			if ( userActivityList == null) 
 				log.warn("User Activity list not found.. Something went wrong.");
 			else
+			{
 				m_userActivitiesHash.get(user).remove(_ua);
+				
+				// TODO : Remove from the feeds list
+			}
 		}
 	}
 	

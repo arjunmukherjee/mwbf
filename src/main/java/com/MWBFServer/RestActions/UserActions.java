@@ -23,6 +23,7 @@ import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Datasource.CacheManager;
 import com.MWBFServer.Datasource.DBReturnClasses.LeaderActivityByTime;
 import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
+import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Notifications.Notifications;
 import com.MWBFServer.Notifications.Notifications.ClientNotification;
 import com.MWBFServer.Users.*;
@@ -272,10 +273,9 @@ public class UserActions
 		 
 			// Look up the users activities
 			List<UserActivity> activityList = Utils.getUserActivitiesByActivityForDateRange(user, fromDate, toDate);
-			if ( activityList != null )
-				returnStr = gson.toJson(activityList);
-			else
-				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find activity for user.");
+			returnStr = gson.toJson(activityList);
+			if ( ( activityList != null ) && ( activityList.size() <= 0 ) )
+				log.info("Unable to find activity by activity for : UserId["+ user.getId() +"], Email[" + user.getEmail() + "]");
 		}
 		
 		return BasicUtils.buildResponse(returnStr);
@@ -313,12 +313,11 @@ public class UserActions
 			
 			Gson gson = new Gson();
 		 
-			// Look up the users activities, aggregated by time
-			List<?> activityList = Utils.getUserActivitiesByTimeForDateRange(user, fromDate, toDate);
-			if ( activityList != null )
-				returnStr = gson.toJson(activityList);
-			else
-				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to find activity for user.");
+			// Look up the users activities
+			List<UserActivityByTime> activityList = Utils.getUserActivitiesByTimeForDateRange(user, fromDate, toDate);
+			returnStr = gson.toJson(activityList);
+			if ( ( activityList != null ) && ( activityList.size() <= 0 ) )
+				log.info("Unable to find activity by time for : UserId["+ user.getId() +"], Email[" + user.getEmail() + "]");
 		}
 		
 		return BasicUtils.buildResponse(returnStr);
