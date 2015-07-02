@@ -10,12 +10,18 @@ import javax.persistence.Table;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.log4j.Logger;
+
+import com.MWBFServer.Datasource.DbConnection;
+import com.MWBFServer.Utils.BasicUtils;
+import com.MWBFServer.Utils.JsonConstants;
 
 @Entity
 @Table (name="USER_DETAILS")
 public class User implements Serializable
 {
 	private static final long serialVersionUID = 8391768001302298769L;
+	private static final Logger log = Logger.getLogger(User.class);
 	
 	private String id;
 	private String email;
@@ -172,5 +178,29 @@ public class User implements Serializable
 	public String toString()
 	{
 		return "User : Name [" + getFirstName() + " " + getLastName() + "] ,UserId[" + getId() + "], Email[" + getEmail() + "], UserName[" + getUserName() + "]";
+	}
+	
+	/**
+	 * Add the user : persist in DB and save in cache.
+	 * @param newUser
+	 * @return
+	 */
+	public static String addUser(User _newUser) 
+	{
+		String returnStr;
+		
+		// If successful, add to the local cache
+		if ( DbConnection.saveObj(_newUser) )
+		{
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Welcome !");
+			BasicUtils.getCache().addUser(_newUser);
+		}
+		else
+		{
+			log.warn("Unable to register user [" + _newUser.getEmail() + "], please try again.");
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to register user, please try again.");
+		}
+		
+		return returnStr;
 	}
 }

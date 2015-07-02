@@ -94,7 +94,7 @@ public class BonusContextListener implements ServletContextListener
 							log.info("Bonus ["+bonusActivity.toString()+"]");
 							List<UserActivity> bonusActList = new ArrayList<UserActivity>();
 							bonusActList.add(bonusActivity);
-							Utils.logActivity(bonusActList);
+							UserActivity.logActivity(bonusActList);
 						}
 					}
 				}
