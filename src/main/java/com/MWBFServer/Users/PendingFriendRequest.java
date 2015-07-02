@@ -2,6 +2,7 @@ package com.MWBFServer.Users;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -109,6 +110,24 @@ public class PendingFriendRequest implements Serializable
 		return "User : [" + userId + "] , Friend[" + friendId + "]";
 	}
 	
+	
+	/**
+	 * Returns a request item by the requestId.
+	 * @param _requestId
+	 * @return
+	 */
+	private static PendingFriendRequest getFriendRequest(String _requestId)
+	{
+		PendingFriendRequest pendFriendReqRet = null;
+		
+		@SuppressWarnings("unchecked")
+		List<PendingFriendRequest> friendRequestList = (List<PendingFriendRequest>) DbConnection.queryGetFriendRequests(_requestId,null);
+		if ( ( friendRequestList != null ) && ( friendRequestList.size() > 0 ) )
+			pendFriendReqRet = friendRequestList.get(0);
+		
+		return pendFriendReqRet;
+	}
+	
 	/**
 	 * Reject a request, just delete the pending request.
 	 * @param _requestId
@@ -117,12 +136,11 @@ public class PendingFriendRequest implements Serializable
 	public static boolean rejectFriendRequest(String _requestId) 
 	{
 		// TODO : Must find a way to notify the requester that the "friend" has rejected the request
-		@SuppressWarnings("unchecked")
-		List<PendingFriendRequest> friendRequestList = (List<PendingFriendRequest>) DbConnection.queryGetFriendRequests(_requestId,null);
+		PendingFriendRequest friendRequest = getFriendRequest(_requestId);
 		
 		boolean success = true;
-		if ( ( friendRequestList != null ) && ( friendRequestList.size() > 0 ) )
-			DbConnection.deleteObject(friendRequestList.get(0));
+		if ( friendRequest != null )
+			DbConnection.deleteObject(friendRequest);
 		else
 			success = false;
 		
@@ -140,15 +158,11 @@ public class PendingFriendRequest implements Serializable
 	 */
 	public static boolean acceptFriendRequest(String _requestId) 
 	{
-		@SuppressWarnings("unchecked")
-		List<PendingFriendRequest> friendRequestList = (List<PendingFriendRequest>) DbConnection.queryGetFriendRequests(_requestId,null);
-		CacheManager cache = BasicUtils.getCache();
-		
+		PendingFriendRequest friendRequest = getFriendRequest(_requestId);
 		boolean success = true;
-		if ( ( friendRequestList != null ) && ( friendRequestList.size() > 0 ) )
+		if ( friendRequest != null )
 		{
-			PendingFriendRequest friendRequest = friendRequestList.get(0);
-			
+			CacheManager cache = BasicUtils.getCache();
 			User user = cache.getUserById(friendRequest.getUserId());
 			User friend = cache.getUserById(friendRequest.getFriendId());
 			
@@ -214,7 +228,5 @@ public class PendingFriendRequest implements Serializable
 			result = DbConnection.saveObj(friendReq);
 		
 		return result;
-	}
-
-	
+	}	
 }

@@ -190,19 +190,20 @@ public class User implements Serializable
 	 * @param newUser
 	 * @return
 	 */
-	public static String addUser(User _newUser) 
+	public String addUser() 
 	{
+		User newUser = this;
 		String returnStr;
 		
 		// If successful, add to the local cache
-		if ( DbConnection.saveObj(_newUser) )
+		if ( DbConnection.saveObj(newUser) )
 		{
 			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Welcome !");
-			BasicUtils.getCache().addUser(_newUser);
+			BasicUtils.getCache().addUser(newUser);
 		}
 		else
 		{
-			log.warn("Unable to register user [" + _newUser.getEmail() + "], please try again.");
+			log.warn("Unable to register user [" + newUser.getEmail() + "], please try again.");
 			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to register user, please try again.");
 		}
 		

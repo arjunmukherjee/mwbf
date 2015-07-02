@@ -156,11 +156,12 @@ public class Challenge implements Serializable
 	 * @param _newChallenge
 	 * @return
 	 */
-	public static boolean addChallenge(Challenge _newChallenge) 
+	public boolean addChallenge() 
 	{
-		boolean result = DbConnection.saveObj(_newChallenge);
+		Challenge newChallenge = this;
+		boolean result = DbConnection.saveObj(newChallenge);
 		if ( result )
-			BasicUtils.getCache().addChallenge(_newChallenge);
+			BasicUtils.getCache().addChallenge(newChallenge);
 		
 		return result;
 	}

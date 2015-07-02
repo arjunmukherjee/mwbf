@@ -77,7 +77,7 @@ public class UserActions
 			{
 				log.info("First time FaceBook User Registering [" + email + "]");
 				User newUser = new User(email,firstName,lastName,profileId);
-				returnStr = User.addUser(newUser);
+				returnStr = newUser.addUser();
 			}
 		}
 		
@@ -116,7 +116,7 @@ public class UserActions
 		}
 		else
 			// If successful, add to the local cache and DB
-			returnStr = User.addUser(newUser);
+			returnStr = newUser.addUser();
 		
 		return BasicUtils.buildResponse(returnStr);
 	}
@@ -723,7 +723,7 @@ public class UserActions
 			log.info("Adding new challenge [" + newChallenge.toString() + "]");
 			
 			// If successful, add to the local cache
-			if ( Challenge.addChallenge(newChallenge) )
+			if ( newChallenge.addChallenge() )
 				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "New challenge added.");
 			else
 			{
