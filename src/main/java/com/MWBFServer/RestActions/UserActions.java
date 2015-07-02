@@ -151,7 +151,7 @@ public class UserActions
 			{
 				// Look up the users personal stats
 				log.info("Getting the users [" + email + "] personal stats.");
-				UserDto userDtoObj = Utils.getUserInfo(user);
+				UserDto userDtoObj = user.userInfo();
 				userDtoObj.setWeeklyComparisons(Utils.getWeeklyStats(user));
 				
 				Gson gson = new Gson();
@@ -350,7 +350,7 @@ public class UserActions
 		else
 		{
 			// Delete all of the users activities
-			if ( !Utils.deleteAllActivitiesForUser(user) )
+			if ( !UserActivity.deleteAllActivitiesForUser(user) )
 				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to delete user activity.");
 			else
 				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Deleted all of the users activities.");
@@ -436,7 +436,7 @@ public class UserActions
 					friendsDtoList = new ArrayList<UserDto>();
 					
 					for (User friend : friendsList)
-						friendsDtoList.add(Utils.getUserInfo(friend));
+						friendsDtoList.add(friend.userInfo());
 					
 					returnStr = gson.toJson(friendsDtoList);
 				}
@@ -520,7 +520,7 @@ public class UserActions
 				log.info("Creating request for : Friend ["+ friend.getId() +"], User[" + user.getId() + "]");
 				
 				// Add the friend request
-				if ( Utils.addFriendRequest(user,friend) )
+				if ( PendingFriendRequest.addFriendRequest(user,friend) )
 					returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Friend request added.");
 				else
 				{
@@ -562,7 +562,7 @@ public class UserActions
 				Gson gson = new Gson();
 			 
 				// Look up the users pending friend requests
-				List<PendingFriendRequest> friendRequestList = Utils.getFriendRequests(user);
+				List<PendingFriendRequest> friendRequestList = PendingFriendRequest.getFriendRequests(user);
 				
 				// Find the friend and send back the friend obj
 				// Convert the List to a Json representation
@@ -572,7 +572,7 @@ public class UserActions
 					for (PendingFriendRequest request : friendRequestList)
 					{
 						User userFromReq = m_cache.getUserById(request.getUserId());
-						UserDto friendDto = Utils.getUserInfo(userFromReq);
+						UserDto friendDto = userFromReq.userInfo();
 						FriendRequestsDto reqDto = new FriendRequestsDto(request.getUserId(), friendDto, request.getId());
 						friendRequestsDtoList.add(reqDto);
 					}
@@ -617,7 +617,7 @@ public class UserActions
 				// Accept the friend request
 				if ( requestAction.equalsIgnoreCase(Constants.REQUEST_ACCEPT) )
 				{
-					if ( Utils.acceptFriendRequest(friendRequestId) )
+					if ( PendingFriendRequest.acceptFriendRequest(friendRequestId) )
 						returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Friend request accepted.");
 					else
 					{
@@ -627,7 +627,7 @@ public class UserActions
 				}
 				else // Reject
 				{
-					if ( Utils.rejectFriendRequest(friendRequestId) )
+					if ( PendingFriendRequest.rejectFriendRequest(friendRequestId) )
 						returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Friend request rejected.");
 					else
 					{
@@ -800,7 +800,7 @@ public class UserActions
 				Gson gson = new Gson();
 			 
 				// Look up the users challenges
-				List<DBReturnChallenge> challengeList = Utils.getChallenges(user);
+				List<DBReturnChallenge> challengeList = Challenge.getChallenges(user);
 				
 				// Convert the List to a Json representation
 				if ( challengeList != null )
@@ -867,11 +867,7 @@ public class UserActions
 	            					if (notificationsReturnList == null)
             							notificationsReturnList = new ArrayList<Notifications>();
             						
-            						// Save in cache
-            						m_cache.addNotification(not);
-            						
-            						// Save in Db
-            						Utils.saveObj(not);
+            						not.addNotification();
             						
             						// Create new object to return to user
             						// Set the user field to the friend object

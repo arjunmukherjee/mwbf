@@ -321,4 +321,14 @@ public class UserActivity implements Comparable<UserActivity>, Serializable
 		
 		return success;
 	}
+	
+	/**
+	 * Deletes all the activities for a given user.
+	 * @param _user
+	 * @return Boolean
+	 */
+	public static Boolean deleteAllActivitiesForUser(User _user) 
+	{
+		return DbConnection.deleteAllActivitiesForUser(_user);
+	}
 }

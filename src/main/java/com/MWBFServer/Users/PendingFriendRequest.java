@@ -1,6 +1,8 @@
 package com.MWBFServer.Users;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,6 +11,11 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.log4j.Logger;
+
+import com.MWBFServer.Datasource.CacheManager;
+import com.MWBFServer.Datasource.DbConnection;
+import com.MWBFServer.Utils.BasicUtils;
 
 @Entity
 @Table (name="PENDING_FRIEND_REQUEST")
@@ -18,6 +25,8 @@ public class PendingFriendRequest implements Serializable
 	// thus unable to mark member variable as final
 
 	private static final long serialVersionUID = -7956200177347991322L;
+	private static final Logger log = Logger.getLogger(PendingFriendRequest.class);
+	
 	private long id;
 	private String userId;
 	private String friendId;
@@ -99,5 +108,113 @@ public class PendingFriendRequest implements Serializable
 	{
 		return "User : [" + userId + "] , Friend[" + friendId + "]";
 	}
+	
+	/**
+	 * Reject a request, just delete the pending request.
+	 * @param _requestId
+	 * @return
+	 */
+	public static boolean rejectFriendRequest(String _requestId) 
+	{
+		// TODO : Must find a way to notify the requester that the "friend" has rejected the request
+		@SuppressWarnings("unchecked")
+		List<PendingFriendRequest> friendRequestList = (List<PendingFriendRequest>) DbConnection.queryGetFriendRequests(_requestId,null);
+		
+		boolean success = true;
+		if ( ( friendRequestList != null ) && ( friendRequestList.size() > 0 ) )
+			DbConnection.deleteObject(friendRequestList.get(0));
+		else
+			success = false;
+		
+		return success;
+	}
+	
+	
+	/**
+	 * First find the friend request object.
+	 * Extract the user and the friend from the object.
+	 * Insert the rows into the friends table and add to the cache.
+	 * Delete the friendAcceptRequest.
+	 * @param _friendRequestId
+	 * @return success [TRUE|FALSE]
+	 */
+	public static boolean acceptFriendRequest(String _requestId) 
+	{
+		@SuppressWarnings("unchecked")
+		List<PendingFriendRequest> friendRequestList = (List<PendingFriendRequest>) DbConnection.queryGetFriendRequests(_requestId,null);
+		CacheManager cache = BasicUtils.getCache();
+		
+		boolean success = true;
+		if ( ( friendRequestList != null ) && ( friendRequestList.size() > 0 ) )
+		{
+			PendingFriendRequest friendRequest = friendRequestList.get(0);
+			
+			User user = cache.getUserById(friendRequest.getUserId());
+			User friend = cache.getUserById(friendRequest.getFriendId());
+			
+			// First check if the user and the friend are already friends
+			if ( ( cache.getFriends(user) != null ) && cache.getFriends(user).contains(friend) )
+			{
+				log.warn("Duplicate friend request.. User [" + user.getEmail() + "] and friend [" + friend.getEmail() + "] are already friends.");
+				return true;
+			}
+			
+			Friends friendObj = new Friends(user,friend);
+			Friends userObj = new Friends(friend,user);
+			
+			List<Friends> friendsList = new ArrayList<Friends>();
+			friendsList.add(userObj);
+			friendsList.add(friendObj);
+			
+			// Add the friend to the db and cache
+			// Remove the pending request 
+			success = DbConnection.saveList(friendsList);
+			if ( success )
+			{
+				cache.addFriend(user, friendObj);
+				DbConnection.deleteObject(friendRequest);
+				
+				log.info("[" + user.getFirstName() + "] and [" + friend.getFirstName() + "] are now friends.");
+			}
+		}
+		else
+			success = false;
+		
+		return success;
+	}
+	
+	/**
+	 * Fetches a list of all the pending friend requests for a given user.
+	 * @param _user
+	 * @return List<PendingFriendRequest>
+	 */
+	@SuppressWarnings("unchecked")
+	public static List<PendingFriendRequest> getFriendRequests(User _user) 
+	{
+		return (List<PendingFriendRequest>) DbConnection.queryGetFriendRequests(null,_user.getId());
+	}
+	
+	/**
+	 * Add a friend to a user.
+	 * @param _user
+	 * @param _friend
+	 * @return
+	 */
+	public static boolean addFriendRequest(User _user, User _friend) 
+	{
+		boolean result = false;
+		PendingFriendRequest friendReq = new PendingFriendRequest(_user.getId(),_friend.getId());
+
+		// Check if it is a duplicate friend request
+		@SuppressWarnings("unchecked")
+		List<PendingFriendRequest> friendReqList = (List<PendingFriendRequest>) DbConnection.queryGetFriendRequests(null,_user.getId());
+		if ( (friendReqList != null) && (friendReqList.size() > 0 ) && friendReqList.contains(friendReq) )
+			log.info("Duplicate friend request , not adding User[" + _user.getEmail() + "], Friend [" + _friend.getEmail() + "]");
+		else
+			result = DbConnection.saveObj(friendReq);
+		
+		return result;
+	}
+
 	
 }

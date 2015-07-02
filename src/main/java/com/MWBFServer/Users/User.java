@@ -2,6 +2,7 @@ package com.MWBFServer.Users;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,8 +14,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.log4j.Logger;
 
 import com.MWBFServer.Datasource.DbConnection;
+import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
+import com.MWBFServer.Dto.UserDto;
 import com.MWBFServer.Utils.BasicUtils;
 import com.MWBFServer.Utils.JsonConstants;
+import com.MWBFServer.Utils.Utils;
+import com.MWBFServer.Utils.Utils.TimeAggregateBy;
 
 @Entity
 @Table (name="USER_DETAILS")
@@ -202,5 +207,34 @@ public class User implements Serializable
 		}
 		
 		return returnStr;
+	}
+	
+	
+	/**
+	 * For each user , get their individual info
+	 * 1. Get the challenge stats
+	 * 2. Get the Points stats
+	 * @return UserDto object
+	 */
+	public UserDto userInfo() 
+	{
+		List<UserActivityByTime> allTimeHighList = Utils.getAllTimeHighs(this);
+		
+		List<Integer> challengeStatsList = Utils.getChallengesStatsForUser(this);
+		
+		Double currentWeekPoints = Utils.getUsersPointsForCurrentTimeInterval(this,TimeAggregateBy.week);
+		Double currentMonthPoints = Utils.getUsersPointsForCurrentTimeInterval(this,TimeAggregateBy.month);
+		Double currentYearPoints = Utils.getUsersPointsForCurrentTimeInterval(this,TimeAggregateBy.year);
+		
+		UserDto userDtoObj = null;
+		if ( ( allTimeHighList != null ) && ( allTimeHighList.size() > 2 )  )
+			userDtoObj = new UserDto(this,currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),allTimeHighList.get(0),allTimeHighList.get(1),allTimeHighList.get(2),allTimeHighList.get(3));
+		else
+		{
+			UserActivityByTime emptyUserActivity = new UserActivityByTime("--", 0.0);
+			userDtoObj = new UserDto(this,currentWeekPoints,currentMonthPoints,currentYearPoints,challengeStatsList.get(0),challengeStatsList.get(1),challengeStatsList.get(2),emptyUserActivity,emptyUserActivity,emptyUserActivity,emptyUserActivity);
+		}
+		
+		return userDtoObj;
 	}
 }
