@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import com.MWBFServer.Dto.FeedItem;
 import com.MWBFServer.Dto.UserDto;
 import com.MWBFServer.Dto.WeeklyComparisons;
+import com.MWBFServer.Activity.Activities;
 import com.MWBFServer.Activity.UserActivity;
 import com.MWBFServer.Challenges.Challenge;
 import com.MWBFServer.Datasource.DBReturnClasses.DBReturnChallenge;
@@ -26,6 +27,7 @@ import com.MWBFServer.Datasource.DBReturnClasses.PlayerActivityData;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Datasource.CacheManager;
 import com.MWBFServer.Datasource.DbConnection;
+import com.MWBFServer.Services.CacheUpdaterContextListener;
 import com.MWBFServer.Users.Friends;
 import com.MWBFServer.Users.PendingFriendRequest;
 import com.MWBFServer.Users.User;
@@ -59,6 +61,63 @@ public final class Utils
 		return DbConnection.saveObj(_o);
 	}
 	
+	
+	/**
+	 * Add the user : persist in DB and save in cache.
+	 * @param newUser
+	 * @return
+	 */
+	public static String addUser(User _newUser) 
+	{
+		String returnStr;
+		
+		// If successful, add to the local cache
+		if ( DbConnection.saveObj(_newUser) )
+		{
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Welcome !");
+			m_cache.addUser(_newUser);
+		}
+		else
+		{
+			log.warn("Unable to register user [" + _newUser.getEmail() + "], please try again.");
+			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to register user, please try again.");
+		}
+		
+		return returnStr;
+	}
+	
+	/**
+	 * Log the users activities.
+	 * @param _userActivityList
+	 * @return
+	 */
+	public static Boolean logActivity(List<UserActivity> _userActivityList)
+	{
+		// Multiply the activity's points * the number of exercise units and then store in db
+		for (UserActivity ua : _userActivityList)
+		{
+			Activities act = m_cache.getMWBFActivity(ua.getActivityId());
+			// Will get used while persisting bonus activities
+			if ( act != null )
+			{
+				Double points = act.getPointsPerUnit() * ua.getExerciseUnits();
+				points = BasicUtils.round(points, 1);
+				ua.setPoints(points);
+			}
+		}
+
+		// Save activity to DB
+		boolean result = DbConnection.saveList(_userActivityList);
+		
+		// If DB save was successful, then save to local cache
+		if ( result )
+		{
+			for (UserActivity ua : _userActivityList)
+				CacheUpdaterContextListener.addTask(ua);
+		}
+		
+		return result;
+	}
 	
 	/**
 	 * For each user , get their individual info
@@ -315,6 +374,21 @@ public final class Utils
 		return result;
 	}
 
+	/**
+	 * Add a new challenge.
+	 * @param _newChallenge
+	 * @return
+	 */
+	public static boolean addChallenge(Challenge _newChallenge) 
+	{
+		boolean result = DbConnection.saveObj(_newChallenge);
+		if ( result )
+			m_cache.addChallenge(_newChallenge);
+		
+		return result;
+	}
+	
+		
 	/**
 	 * Get a list of all the challenges the user is in
 	 * @param _user
@@ -727,6 +801,77 @@ public final class Utils
 		return returnList;
 	}
 	
+	
+
+	/**
+	 * First find the challenge object.
+	 * Delete the challenge object.
+	 * @param _challengeId
+	 * @return
+	 */
+	public static boolean deleteChallenge(String _challengeId) 
+	{
+		boolean success = true;
+	
+		List<Challenge> challengeList = (List<Challenge>) DbConnection.queryGetChallenge(_challengeId);
+		if ( ( challengeList != null ) && ( challengeList.size() > 0 ) )
+		{
+			Challenge challenge = challengeList.get(0);
+			
+			if (challenge != null )
+				success = DbConnection.deleteChallenge(challenge);
+			else
+				success = false;
+			
+			if ( success )
+			{
+				// TODO Delete the challenge from the cache
+				//m_cache.
+			}
+		}
+		else
+		{
+			log.warn("Could not find the challenge with Id [" + _challengeId + "]");
+			success = false;
+		}
+		
+		return success;
+	}
+	
+	/**
+	 * First find the activity object.
+	 * Delete the activity object.
+	 * @param _activityId
+	 * @return
+	 */
+	public static boolean deleteActivity(String _activityId) 
+	{
+		boolean success = true;
+	
+		List<UserActivity> activityList = (List<UserActivity>) DbConnection.queryGetActivity(_activityId);
+		if ( ( activityList != null ) && ( activityList.size() > 0 ) )
+		{
+			UserActivity ua = activityList.get(0);
+			
+			if (ua != null )
+				success = DbConnection.deleteActivity(ua);
+			else
+				success = false;
+			
+			// Delete the activity from the users cache
+			if (success)
+				m_cache.deleteUserActivity(ua);
+		}
+		else
+		{
+			log.warn("Could not find the activity with Id [" + _activityId + "]");
+			success = false;
+		}
+		
+		return success;
+	}
+
+
 	/**
      * Get the friends activities for each user
      * @param _user

@@ -77,7 +77,7 @@ public class UserActions
 			{
 				log.info("First time FaceBook User Registering [" + email + "]");
 				User newUser = new User(email,firstName,lastName,profileId);
-				returnStr = User.addUser(newUser);
+				returnStr = Utils.addUser(newUser);
 			}
 		}
 		
@@ -116,7 +116,7 @@ public class UserActions
 		}
 		else
 			// If successful, add to the local cache and DB
-			returnStr = User.addUser(newUser);
+			returnStr = Utils.addUser(newUser);
 		
 		return BasicUtils.buildResponse(returnStr);
 	}
@@ -222,7 +222,7 @@ public class UserActions
             newActivityList = gson.fromJson(_incomingData, collectionType);
             
             // If successful, add to the local cache
-    		if ( UserActivity.logActivity(newActivityList) )
+    		if ( Utils.logActivity(newActivityList) )
     			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Activity logged.");
     		else
     		{
@@ -389,7 +389,7 @@ public class UserActions
 		else
 		{
 			// Delete all of the users activities
-			if ( !UserActivity.deleteActivity(activityId) )
+			if ( !Utils.deleteActivity(activityId) )
 				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_NO, "Unable to delete user activity.");
 			else
 				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Deleted the users activity.");
@@ -723,7 +723,7 @@ public class UserActions
 			log.info("Adding new challenge [" + newChallenge.toString() + "]");
 			
 			// If successful, add to the local cache
-			if ( Challenge.addChallenge(newChallenge) )
+			if ( Utils.addChallenge(newChallenge) )
 				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "New challenge added.");
 			else
 			{
@@ -757,7 +757,7 @@ public class UserActions
 			log.info("Deleting  challenge [" + challengeId + "]");
 			
 			// If successful, add to the local cache
-			if ( Challenge.deleteChallenge(challengeId) )
+			if ( Utils.deleteChallenge(challengeId) )
 				returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Challenge deleted.");
 			else
 			{

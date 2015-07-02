@@ -3,7 +3,6 @@ package com.MWBFServer.Activity;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,12 +15,9 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.log4j.Logger;
 
 import com.MWBFServer.Datasource.CacheManager;
-import com.MWBFServer.Datasource.DbConnection;
 import com.MWBFServer.Dto.FeedItem;
-import com.MWBFServer.Services.CacheUpdaterContextListener;
 import com.MWBFServer.Users.User;
 import com.MWBFServer.Utils.BasicUtils;
 import com.MWBFServer.Utils.Constants;
@@ -31,8 +27,6 @@ import com.MWBFServer.Utils.Constants;
 public class UserActivity implements Comparable<UserActivity>, Serializable
 {
 	private static final long serialVersionUID = 8072074771603090386L;
-	private static final Logger log = Logger.getLogger(UserActivity.class);
-	private static final CacheManager m_cache = BasicUtils.getCache();
 
 	private long id;
 	private User user;
@@ -252,73 +246,5 @@ public class UserActivity implements Comparable<UserActivity>, Serializable
 	    } 
 	    else
 	        return false;
-	}
-	
-	
-	/**
-	 * Log the users activities.
-	 * @param _userActivityList
-	 * @return
-	 */
-	public static Boolean logActivity(List<UserActivity> _userActivityList)
-	{
-		// Multiply the activity's points * the number of exercise units and then store in db
-		for (UserActivity ua : _userActivityList)
-		{
-			Activities act = m_cache.getMWBFActivity(ua.getActivityId());
-			// Will get used while persisting bonus activities
-			if ( act != null )
-			{
-				Double points = act.getPointsPerUnit() * ua.getExerciseUnits();
-				points = BasicUtils.round(points, 1);
-				ua.setPoints(points);
-			}
-		}
-
-		// Save activity to DB
-		boolean result = DbConnection.saveList(_userActivityList);
-		
-		// If DB save was successful, then save to local cache
-		if ( result )
-		{
-			for (UserActivity ua : _userActivityList)
-				CacheUpdaterContextListener.addTask(ua);
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * First find the activity object.
-	 * Delete the activity object.
-	 * @param _activityId
-	 * @return
-	 */
-	public static boolean deleteActivity(String _activityId) 
-	{
-		boolean success = true;
-	
-		@SuppressWarnings("unchecked")
-		List<UserActivity> activityList = (List<UserActivity>) DbConnection.queryGetActivity(_activityId);
-		if ( ( activityList != null ) && ( activityList.size() > 0 ) )
-		{
-			UserActivity ua = activityList.get(0);
-			
-			if (ua != null )
-				success = DbConnection.deleteActivity(ua);
-			else
-				success = false;
-			
-			// Delete the activity from the users cache
-			if (success)
-				m_cache.deleteUserActivity(ua);
-		}
-		else
-		{
-			log.warn("Could not find the activity with Id [" + _activityId + "]");
-			success = false;
-		}
-		
-		return success;
 	}
 }
