@@ -382,79 +382,12 @@ public final class Utils
      * @param _user
      * @return
      */
-	public static List<FeedItem> getUserFeedItems_V1(User _user)
+	public static List<FeedItem> getUserFeedItems(User _user)
     {
 		return m_cache.getActivityFeed(_user);
     }
 	
-    /**
-     * Get the friends activities for each user
-     * @param _user
-     * @return
-     */
-	public static List<FeedItem> getUserFeedItems(User _user)
-    {
-        // TODO : Highly inefficient
-		// Gets a list of all the activities and then only select the last 50
-		List<UserActivity> activityList = new ArrayList<UserActivity>();
-		
-		// Look up the users friends
-        List<User> friendsList = m_cache.getFriends(_user);
-		// Get the activities for all the friends
-        if ( friendsList.size() > 0 )
-        {
-	        for (User friend : friendsList)
-	        	activityList.addAll(m_cache.getUserActivities(friend));
-        }
-
-        // Get the users activity feeds
-        List<UserActivity> userActivityList = m_cache.getUserActivities(_user);
-        if ( ( userActivityList != null ) && ( userActivityList.size() > 0 ) )
-        	activityList.addAll(userActivityList);
-
-        // Get the list of activities and sort them by time
-        if ( ( activityList != null ) && ( activityList.size() > 0 ) )
-        {
-        	Collections.sort(activityList);
-
-        	// Populate feed item list
-        	List<FeedItem> feedItemList = new ArrayList<FeedItem>();
-        	for (UserActivity activity : activityList) 
-        	{
-        		// Populate FeedItem object
-        		FeedItem item = new FeedItem();
-        		item.setId(activity.getId());
-        		item.setActivityDate(activity.getDate());
-        		item.setActivityName(activity.getActivityId());
-
-        		if ( !activity.isBonusActivity() )
-        			item.setActivityUnit(m_cache.getMWBFActivity(activity.getActivityId()).getMeasurementUnitShort());
-
-        		item.setActivityValue(activity.getExerciseUnits());
-        		item.setFirstName(activity.getUser().getFirstName());
-        		item.setLastName(activity.getUser().getLastName());
-        		item.setUserId(activity.getUser().getId());
-        		item.setPoints(activity.getPoints());
-        		item.setFeedPrettyString(activity.constructNotificationString());
-
-        		// Add to feedItemList
-        		feedItemList.add(item);
-        	}
-
-        	// Return only the last 50 items
-        	int startIndex = 0;
-        	int endIndex = Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
-        	if( feedItemList.size() > Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
-        		startIndex = feedItemList.size() - Constants.MAX_NUMBER_OF_MESSAGE_FEEDS;
-        	if( feedItemList.size() < Constants.MAX_NUMBER_OF_MESSAGE_FEEDS )
-        		endIndex = feedItemList.size();
-
-        	return feedItemList.subList(startIndex, startIndex + endIndex);
-        }
-        
-        return Collections.emptyList();
-    }
-
+    
     /**
      * Get the users points for the timeInterval specified
      * @param _user

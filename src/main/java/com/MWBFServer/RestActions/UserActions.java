@@ -478,7 +478,7 @@ public class UserActions
                 Gson gson = new Gson();
 
                 // Look up the friends activities
-                List<FeedItem> activityList = Utils.getUserFeedItems_V1(user);
+                List<FeedItem> activityList = Utils.getUserFeedItems(user);
 
                 if ( activityList != null )
                     returnStr = gson.toJson(activityList);
