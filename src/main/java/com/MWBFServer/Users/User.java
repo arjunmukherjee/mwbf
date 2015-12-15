@@ -13,6 +13,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.log4j.Logger;
 
+import com.MWBFServer.Datasource.CacheManager;
 import com.MWBFServer.Datasource.DbConnection;
 import com.MWBFServer.Datasource.DBReturnClasses.UserActivityByTime;
 import com.MWBFServer.Dto.UserDto;
@@ -199,7 +200,7 @@ public class User implements Serializable
 		if ( DbConnection.saveObj(newUser) )
 		{
 			returnStr = BasicUtils.constructReturnString(JsonConstants.SUCCESS_YES, "Welcome !");
-			BasicUtils.getCache().addUser(newUser);
+			CacheManager.getCache().addUser(newUser);
 		}
 		else
 		{

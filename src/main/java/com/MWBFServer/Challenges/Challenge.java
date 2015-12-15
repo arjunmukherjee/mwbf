@@ -161,7 +161,7 @@ public class Challenge implements Serializable
 		Challenge newChallenge = this;
 		boolean result = DbConnection.saveObj(newChallenge);
 		if ( result )
-			BasicUtils.getCache().addChallenge(newChallenge);
+			CacheManager.getCache().addChallenge(newChallenge);
 		
 		return result;
 	}
@@ -215,7 +215,7 @@ public class Challenge implements Serializable
 		// 1. Redundant code between feeds and this method
 		// 2. Get activities from the cache
 		
-		CacheManager cache = BasicUtils.getCache();
+		CacheManager cache = CacheManager.getCache();
 		
 		Map<String,DBReturnChallenge> challengeMap = null;
 		List<Challenge> challengeList = cache.getUserChallenges(_user);

@@ -161,7 +161,7 @@ public class PendingFriendRequest implements Serializable
 		boolean success = true;
 		if ( friendRequest != null )
 		{
-			CacheManager cache = BasicUtils.getCache();
+			CacheManager cache = CacheManager.getCache();
 			User user = cache.getUserById(friendRequest.getUserId());
 			User friend = cache.getUserById(friendRequest.getFriendId());
 			

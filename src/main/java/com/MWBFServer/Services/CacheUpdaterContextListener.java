@@ -11,7 +11,7 @@ import javax.servlet.ServletContextListener;
 import org.apache.log4j.Logger;
 
 import com.MWBFServer.Activity.UserActivity;
-import com.MWBFServer.Utils.BasicUtils;
+import com.MWBFServer.Datasource.CacheManager;
 import com.MWBFServer.Utils.Constants;
 
 public class CacheUpdaterContextListener implements ServletContextListener
@@ -64,7 +64,7 @@ public class CacheUpdaterContextListener implements ServletContextListener
 							@Override
 							public void run() 
 						    {
-						        BasicUtils.getCache().addUserActivity(ua);
+								CacheManager.getCache().addUserActivity(ua);
 						    }
 						});
 					} 

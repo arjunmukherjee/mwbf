@@ -26,7 +26,7 @@ import com.google.common.collect.MinMaxPriorityQueue;
  * @author arjunmuk
  *
  */
-public class SimpleCache implements CacheManager
+public class SimpleCache extends CacheManager
 {
 	private static SimpleCache m_cacheInstance;
 	private static final Logger log = Logger.getLogger(SimpleCache.class);

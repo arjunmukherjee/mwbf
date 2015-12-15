@@ -29,7 +29,7 @@ import com.google.gson.JsonParser;
 
 public final class Utils 
 {
-	private static final CacheManager m_cache = BasicUtils.getCache();
+	private static final CacheManager m_cache = CacheManager.getCache();
 	
 	
 	/**

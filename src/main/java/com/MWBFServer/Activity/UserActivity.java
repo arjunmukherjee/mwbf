@@ -151,7 +151,7 @@ public class UserActivity implements Comparable<UserActivity>, Serializable
 		feedItem.setActivityName(this.getActivityId());
 
 		if ( !this.isBonusActivity() )
-			feedItem.setActivityUnit(BasicUtils.getCache().getMWBFActivity(this.getActivityId()).getMeasurementUnitShort());
+			feedItem.setActivityUnit(CacheManager.getCache().getMWBFActivity(this.getActivityId()).getMeasurementUnitShort());
 
 		feedItem.setActivityValue(this.getExerciseUnits());
 		feedItem.setFirstName(this.getUser().getFirstName());
@@ -174,7 +174,7 @@ public class UserActivity implements Comparable<UserActivity>, Serializable
  		actString.append(this.user.getFirstName());
  		actString.append(" ");
  		
- 		CacheManager cache = BasicUtils.getCache();
+ 		CacheManager cache = CacheManager.getCache();
  		
  		// Bonus activities do not have the info below
  		if ( !isBonusActivity() )
@@ -264,7 +264,7 @@ public class UserActivity implements Comparable<UserActivity>, Serializable
 		// Multiply the activity's points * the number of exercise units and then store in db
 		for (UserActivity ua : _userActivityList)
 		{
-			Activities act = BasicUtils.getCache().getMWBFActivity(ua.getActivityId());
+			Activities act = CacheManager.getCache().getMWBFActivity(ua.getActivityId());
 			// Will get used while persisting bonus activities
 			if ( act != null )
 			{
@@ -311,7 +311,7 @@ public class UserActivity implements Comparable<UserActivity>, Serializable
 			
 			// Delete the activity from the users cache
 			if (success)
-				BasicUtils.getCache().deleteUserActivity(ua);
+				CacheManager.getCache().deleteUserActivity(ua);
 		}
 		else
 		{

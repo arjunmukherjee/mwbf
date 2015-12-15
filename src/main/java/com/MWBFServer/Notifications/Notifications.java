@@ -13,10 +13,10 @@ import javax.persistence.Table;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import com.MWBFServer.Datasource.CacheManager;
 import com.MWBFServer.Datasource.DbConnection;
 import com.MWBFServer.Datasource.SimpleCache;
 import com.MWBFServer.Users.User;
-import com.MWBFServer.Utils.BasicUtils;
 
 
 /**
@@ -126,7 +126,7 @@ public class Notifications implements Serializable
 		// 1. Save in Db
 		// 2. If successful save in cache
 		if ( DbConnection.saveObj(not) )
-			BasicUtils.getCache().addNotification(not);
+			CacheManager.getCache().addNotification(not);
 	}
 	
 	public class ClientNotification

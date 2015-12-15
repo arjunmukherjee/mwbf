@@ -30,15 +30,6 @@ public final class BasicUtils
     }
 	
 	/**
-	 * Returns an instance of the cache implementation.
-	 * @return
-	 */
-	public static CacheManager getCache()
-	{
-		return SimpleCache.getInstance();
-	}
-	
-	/**
 	 * Extracts a specific field from a JSON object.
 	 * @param _field
 	 * @param _obj
