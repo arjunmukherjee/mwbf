@@ -11,9 +11,6 @@ import javax.ws.rs.core.Response;
 
 import org.codehaus.jettison.json.JSONObject;
 
-import com.MWBFServer.Datasource.CacheManager;
-import com.MWBFServer.Datasource.SimpleCache;
-
 /**
  * Wrapper class to contain basic utility methods.
  * @author arjunmuk
