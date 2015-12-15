@@ -59,6 +59,7 @@ public abstract class CacheManager
 	
 	/**
 	 * Returns an instance of the cache implementation.
+	 * Currently it is the simple HashMap based caching.
 	 * @return
 	 */
 	public static CacheManager getCache()
